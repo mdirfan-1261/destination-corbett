@@ -7,6 +7,8 @@ import {
   Mail,
   LogIn,
   Loader2,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 export default function AdminLoginPage() {
@@ -14,6 +16,7 @@ export default function AdminLoginPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -59,20 +62,14 @@ export default function AdminLoginPage() {
   };
 
   return (
-    // NOTE: no `overflow-hidden` here anymore — that was clipping/hiding
-    // content on short phone screens instead of letting it scroll.
-    <main
-      className="relative min-h-[100dvh] overflow-x-hidden bg-cover bg-center bg-no-repeat"
-      
-      
-    >
+    <main className="relative min-h-[100dvh] overflow-x-hidden bg-cover bg-center bg-no-repeat">
       {/* Background Overlay */}
       <div className="absolute inset-0 bg-[#18352A]/40" />
 
-      {/* Glow blurs live in their own clipped layer, so they never
-          force horizontal scroll / clip real content */}
+      {/* Glow blurs */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -left-24 -top-24 h-56 w-56 rounded-full bg-[#C88A3D]/20 blur-3xl sm:h-72 sm:w-72" />
+
         <div className="absolute -bottom-24 -right-24 h-64 w-64 rounded-full bg-[#66734A]/25 blur-3xl sm:h-80 sm:w-80" />
       </div>
 
@@ -137,8 +134,6 @@ export default function AdminLoginPage() {
                     }
                     placeholder="admin@destinationcorbett.com"
                     required
-                    // text-base (16px) on mobile stops iOS Safari from
-                    // auto-zooming the page when the input is focused
                     className="h-12 w-full rounded-xl border border-white/70 bg-white/45 pl-10 pr-3 text-base text-[#172033] placeholder:text-gray-400 outline-none backdrop-blur-xl transition-all duration-300 focus:border-[#C88A3D]/70 focus:bg-white/65 focus:ring-4 focus:ring-[#C88A3D]/10 sm:h-auto sm:rounded-2xl sm:py-3.5 sm:pl-11 sm:pr-4 sm:text-sm"
                   />
                 </div>
@@ -159,15 +154,41 @@ export default function AdminLoginPage() {
                   />
 
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) =>
                       setPassword(e.target.value)
                     }
                     placeholder="Enter your password"
                     required
-                    className="h-12 w-full rounded-xl border border-white/70 bg-white/45 pl-10 pr-3 text-base text-[#172033] placeholder:text-gray-400 outline-none backdrop-blur-xl transition-all duration-300 focus:border-[#C88A3D]/70 focus:bg-white/65 focus:ring-4 focus:ring-[#C88A3D]/10 sm:h-auto sm:rounded-2xl sm:py-3.5 sm:pl-11 sm:pr-4 sm:text-sm"
+                    className="h-12 w-full rounded-xl border border-white/70 bg-white/45 pl-10 pr-12 text-base text-[#172033] placeholder:text-gray-400 outline-none backdrop-blur-xl transition-all duration-300 focus:border-[#C88A3D]/70 focus:bg-white/65 focus:ring-4 focus:ring-[#C88A3D]/10 sm:h-auto sm:rounded-2xl sm:py-3.5 sm:pl-11 sm:pr-12 sm:text-sm"
                   />
+
+                  {/* Show / Hide Password */}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowPassword((prev) => !prev)
+                    }
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#66734A] transition-colors hover:text-[#C88A3D] sm:right-4"
+                    aria-label={
+                      showPassword
+                        ? "Hide password"
+                        : "Show password"
+                    }
+                  >
+                    {showPassword ? (
+                      <EyeOff
+                        size={19}
+                        strokeWidth={1.8}
+                      />
+                    ) : (
+                      <Eye
+                        size={19}
+                        strokeWidth={1.8}
+                      />
+                    )}
+                  </button>
                 </div>
               </div>
 

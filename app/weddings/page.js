@@ -504,7 +504,7 @@ export default function WeddingsPage() {
                   loop
                   playsInline
                   preload="metadata"
-                  poster="/weddings/wedding-experience.jpg"
+                 //{/* poster="/weddings/wedding-experience.jpg" */} 
                   className="absolute inset-0 h-full w-full object-cover object-center"
                 >
 
