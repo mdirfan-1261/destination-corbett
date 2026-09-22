@@ -265,17 +265,17 @@ const selectedLocation =
       );
 
       const response = await fetch(
-        "http://localhost:5000/api/enquiries",
-        {
-          method: "POST",
+  `${process.env.NEXT_PUBLIC_API_URL}/api/enquiries`,
+  {
+    method: "POST",
 
-          headers: {
-            "Content-Type": "application/json",
-          },
+    headers: {
+      "Content-Type": "application/json",
+    },
 
-          body: JSON.stringify(enquiryData),
-        }
-      );
+    body: JSON.stringify(enquiryData),
+  }
+);
 
       const data = await response.json();
 
