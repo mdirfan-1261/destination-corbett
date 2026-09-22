@@ -1,7 +1,8 @@
 "use client";
 
+
 import { useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Image from "next/image";
 import {
   CalendarDays,
@@ -35,7 +36,7 @@ const initialFormData = {
   message: "",
 };
 
-export default function ContactPage() {
+function ContactPage() {
   const searchParams = useSearchParams();
 
  
@@ -1151,5 +1152,14 @@ const selectedLocation =
       </section>
 
     </main>
+  );
+}
+
+
+export default function ContactPageWrapper() {
+  return (
+    <Suspense fallback={null}>
+      <ContactPage />
+    </Suspense>
   );
 }
