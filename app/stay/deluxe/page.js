@@ -313,6 +313,8 @@ export default function DeluxeHotelsPage() {
 
                                     </Link>
 
+                                    
+
                                 </div>
 
                             </div>

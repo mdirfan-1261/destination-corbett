@@ -58,6 +58,7 @@ function EnquiriesContent() {
   const [itemsPerPage, setItemsPerPage] = useState(15);
 
   const [activeModalEnquiry, setActiveModalEnquiry] = useState(null);
+  const [statusMessage, setStatusMessage] = useState("");
 
   // AUXILIARY PANE (RIGHT PANEL) STATE
   const [isPaneOpen, setIsPaneOpen] = useState(true);
@@ -71,6 +72,7 @@ function EnquiriesContent() {
     contact: true,
     email: true,
     category: true,
+    enquiryDate: true,
     status: true,
     assignedTo: true,
     action: true,
@@ -157,6 +159,7 @@ function EnquiriesContent() {
       if (!response.ok) {
         throw new Error(data.message || "Failed to fetch enquiries");
       }
+
 
       setEnquiries(data.enquiries || data.data || (Array.isArray(data) ? data : []));
     } catch (error) {
@@ -399,43 +402,80 @@ function EnquiriesContent() {
 
   /* MANUAL STATUS UPDATE */
   const updateStatus = async (id, status) => {
-    const allowedStatuses = ["pending", "contacted", "confirmed"];
-    if (!allowedStatuses.includes(status.toLowerCase())) {
-      alert("Invalid status");
-      return;
-    }
+  const allowedStatuses = ["pending", "contacted", "confirmed"];
 
-    const token = localStorage.getItem("adminToken");
+  if (!allowedStatuses.includes(status.toLowerCase())) {
+    alert("Invalid status");
+    return;
+  }
 
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/enquiries/${id}/status`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ status }),
-        }
-      );
+  const token = localStorage.getItem("adminToken");
 
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to update status");
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/enquiries/${id}/status`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          status: status.toLowerCase(),
+        }),
       }
+    );
 
-      setEnquiries((prev) =>
-        prev.map((item) => (item._id === id ? { ...item, status } : item))
-      );
+    const data = await response.json().catch(() => ({}));
 
-      setActiveModalEnquiry((prev) =>
-        prev?._id === id ? { ...prev, status } : prev
+    if (!response.ok) {
+      throw new Error(
+        data.message || "Failed to update status"
       );
-    } catch (error) {
-      alert(error.message || "Failed to update status");
     }
-  };
+    setStatusMessage(
+  data.message || "Enquiry status updated successfully"
+);
+
+setTimeout(() => {
+  setStatusMessage("");
+}, 3000);
+
+    // Backend se jo actual message aaya hai wahi show hoga
+   // alert(data.message || "Enquiry status updated successfully");
+
+    // Update enquiry in list
+    setEnquiries((prev) =>
+      prev.map((item) =>
+        item._id === id
+          ? {
+              ...item,
+              status: status.toLowerCase(),
+              customerId: data.enquiry?.customerId || item.customerId,
+            }
+          : item
+      )
+    );
+
+    // Update currently opened enquiry modal/drawer
+    setActiveModalEnquiry((prev) =>
+      prev?._id === id
+        ? {
+            ...prev,
+            status: status.toLowerCase(),
+            customerId:
+              data.enquiry?.customerId || prev.customerId,
+          }
+        : prev
+    );
+  } catch (error) {
+    console.error("Update enquiry status error:", error);
+
+    alert(
+      error.message || "Failed to update status"
+    );
+  }
+};
 
   /* DIRECT ROW STAFF ASSIGNMENT */
   const assignRowEnquiry = async (id, staffId) => {
@@ -791,8 +831,39 @@ function EnquiriesContent() {
   const isDrawerOpen = activeModalEnquiry && isPaneOpen;
 
   return (
-    <div className="min-h-[calc(100vh-64px)] overflow-x-hidden px-1.5 py-2 sm:px-3 lg:px-4">
-      <div className="mx-auto max-w-[1600px]">
+  <div className="min-h-[calc(100vh-64px)] overflow-x-hidden px-1.5 py-2 sm:px-3 lg:px-4">
+
+    {statusMessage && (
+      <div className="fixed right-5 top-5 z-[9999] w-[360px] max-w-[calc(100vw-2rem)] rounded-xl border border-emerald-200 bg-white p-4 shadow-2xl">
+        <div className="flex items-start gap-3">
+          
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-lg font-bold text-emerald-600">
+            ✓
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-bold text-[#18352A]">
+              Status Updated
+            </p>
+
+            <p className="mt-1 text-xs leading-5 text-[#66734A]">
+              {statusMessage}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setStatusMessage("")}
+            className="text-gray-400 hover:text-gray-700"
+          >
+            <X size={14} />
+          </button>
+
+        </div>
+      </div>
+    )}
+
+    <div className="mx-auto max-w-[1600px]">
         {/* TOP HEADER */}
         <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
@@ -1084,6 +1155,10 @@ function EnquiriesContent() {
                       <th className="hidden lg:table-cell px-2 py-1.5 truncate">CATEGORY</th>
                     )}
 
+                    {visibleCols.enquiryDate && (
+  <th className="hidden lg:table-cell px-2 py-1.5 truncate">ENQUIRY DATE</th>
+)}
+
                     {visibleCols.status && (
                       <th className="w-[85px] px-1 py-1.5">STATUS</th>
                     )}
@@ -1214,6 +1289,20 @@ function EnquiriesContent() {
                               <CategoryBadge item={item} />
                             </td>
                           )}
+
+                          {/* ENQUIRY DATE */}
+{visibleCols.enquiryDate && (
+  <td className="px-2 py-1.5 whitespace-nowrap">
+    {item.createdAt ? (
+      <span className="text-[10.5px] font-medium text-[#18352A]">
+        {formatDate(item.createdAt)}
+      </span>
+    ) : (
+      <span className="text-gray-400 text-[10px]">-</span>
+    )}
+  </td>
+)}
+                          
 
                           {/* Status Dropdown */}
                           {visibleCols.status && (
@@ -1790,7 +1879,7 @@ function EnquiryDetails({
               ["Safari Date", formatDate(formData.safariDate)],
               ["Time Slot", formData.preferredTime],
               ["Inquiry Type", formData.inquiryType],
-              ["Created Date", formatDate(enquiry.createdAt)],
+              ["Enquiry Date", formatDate(enquiry.createdAt)],
             ].map(
               ([label, value]) =>
                 value !== undefined &&

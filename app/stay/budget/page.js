@@ -3,11 +3,16 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
-import { ArrowRight, MapPin, ChevronDown } from "lucide-react";
+import {
+    ArrowRight,
+    MapPin,
+    ChevronDown,
+    CalendarDays,
+} from "lucide-react";
 
 const budgetHotels = [
     {
-        id: 1,
+        id: "corbett-nature-retreat",
         name: "Corbett Nature Retreat",
         location: "Dhikuli, Jim Corbett",
         image: "/stay/budget-1.jpg",
@@ -20,7 +25,7 @@ const budgetHotels = [
         cancellation: "Free cancellation",
     },
     {
-        id: 2,
+        id: "forest-view-resort",
         name: "Forest View Resort",
         location: "Sitabani Road, Corbett",
         image: "/stay/budget-2.jpg",
@@ -33,7 +38,7 @@ const budgetHotels = [
         cancellation: "Free cancellation",
     },
     {
-        id: 3,
+        id: "corbett-green-stay",
         name: "Corbett Green Stay",
         location: "Ramnagar, Uttarakhand",
         image: "/stay/budget-3.jpg",
@@ -46,7 +51,7 @@ const budgetHotels = [
         cancellation: "Free cancellation",
     },
     {
-        id: 4,
+        id: "jungle-edge-retreat",
         name: "Jungle Edge Retreat",
         location: "Dhela, Jim Corbett",
         image: "/stay/budget-4.jpg",
@@ -114,8 +119,6 @@ export default function BudgetHotelsPage() {
 
                 <div className="max-w-7xl mx-auto px-5 sm:px-6">
 
-                    {/* Heading */}
-
                     <div className="max-w-2xl mb-10 sm:mb-12">
 
                         <p className="text-sm font-semibold tracking-[3px] text-[#C88A3D] mb-4">
@@ -137,127 +140,139 @@ export default function BudgetHotelsPage() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 lg:gap-6">
 
-                        {budgetHotels.map((hotel) => (
+                        {budgetHotels.map((hotel) => {
 
-                            <div
-                                key={hotel.id}
-                                onClick={() => handleToggle(hotel.id)}
-                                className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer"
-                            >
+                            /*
+                             * Book Now ab direct checkout par nahi jayega.
+                             * Pehle selected property ka detail page open hoga.
+                             */
+                            const propertyUrl =
+                                `/stay/${encodeURIComponent(hotel.id)}`;
 
-                                {/* Image */}
+                            /*
+                             * Existing Enquiry flow same rahega.
+                             */
+                            const enquiryUrl =
+                                `/contact?hotel=${encodeURIComponent(hotel.name)}` +
+                                `&hotelImage=${encodeURIComponent(hotel.image)}` +
+                                `&location=${encodeURIComponent(hotel.location)}`;
 
-                                <div className="h-[220px] sm:h-[240px] overflow-hidden">
+                            return (
+                                <div
+                                    key={hotel.id}
+                                    onClick={() => handleToggle(hotel.id)}
+                                    className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer"
+                                >
 
-                                    <img
-                                        src={hotel.image}
-                                        alt={hotel.name}
-                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                                    />
+                                    {/* ================= IMAGE ================= */}
 
-                                </div>
+                                    <div className="h-[220px] sm:h-[240px] overflow-hidden">
 
-                                {/* Content */}
-
-                                <div className="p-5">
-
-                                    {/* Location + Chevron */}
-
-                                    <div className="flex items-center justify-between gap-3">
-
-                                        <div className="flex items-center gap-1.5 text-sm text-[#C88A3D] font-medium min-w-0">
-
-                                            <MapPin
-                                                size={15}
-                                                className="shrink-0"
-                                            />
-
-                                            <span className="truncate">
-                                                {hotel.location}
-                                            </span>
-
-                                        </div>
-
-                                        <ChevronDown
-                                            size={19}
-                                            className={`shrink-0 text-[#C88A3D] transition-transform duration-300 ${
-                                                expanded === hotel.id
-                                                    ? "rotate-180"
-                                                    : ""
-                                            }`}
+                                        <img
+                                            src={hotel.image}
+                                            alt={hotel.name}
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                                         />
 
                                     </div>
 
-                                    {/* Hotel Name */}
+                                    {/* ================= CONTENT ================= */}
 
-                                    <h3 className="mt-2 text-xl sm:text-2xl font-bold text-[#172033]">
-                                        {hotel.name}
-                                    </h3>
+                                    <div className="p-5">
 
-                                    {/* Rating + Reviews */}
+                                        {/* LOCATION */}
 
-                                    <div className="flex items-center gap-2 mt-2">
+                                        <div className="flex items-center justify-between gap-3">
 
-                                        <span className="text-[#C88A3D] font-semibold">
-                                            ★ {hotel.rating}
-                                        </span>
+                                            <div className="flex items-center gap-1.5 text-sm text-[#C88A3D] font-medium min-w-0">
 
-                                        <span className="text-sm text-gray-500">
-                                            ({hotel.reviews})
-                                        </span>
+                                                <MapPin
+                                                    size={15}
+                                                    className="shrink-0"
+                                                />
 
-                                    </div>
+                                                <span className="truncate">
+                                                    {hotel.location}
+                                                </span>
 
-                                    {/* ================= NORMAL DESCRIPTION ================= */}
+                                            </div>
 
-                                    {expanded !== hotel.id && (
+                                            <ChevronDown
+                                                size={19}
+                                                className={`shrink-0 text-[#C88A3D] transition-transform duration-300 ${
+                                                    expanded === hotel.id
+                                                        ? "rotate-180"
+                                                        : ""
+                                                }`}
+                                            />
 
-                                        <p className="mt-2 text-sm text-gray-600 leading-6 line-clamp-1">
-                                            {hotel.description}
-                                        </p>
+                                        </div>
 
-                                    )}
+                                        {/* NAME */}
 
-                                    {/* ================= EXPANDED DETAILS ================= */}
+                                        <h3 className="mt-2 text-xl sm:text-2xl font-bold text-[#172033]">
+                                            {hotel.name}
+                                        </h3>
 
-                                    {expanded === hotel.id && (
+                                        {/* RATING */}
 
-                                        <div className="mt-3">
+                                        <div className="flex items-center gap-2 mt-2">
 
-                                            {/* Full Description */}
+                                            <span className="text-[#C88A3D] font-semibold">
+                                                ★ {hotel.rating}
+                                            </span>
 
-                                            <p className="text-sm text-gray-600 leading-6">
+                                            <span className="text-sm text-gray-500">
+                                                ({hotel.reviews})
+                                            </span>
+
+                                        </div>
+
+                                        {/* DESCRIPTION */}
+
+                                        {expanded !== hotel.id && (
+                                            <p className="mt-2 text-sm text-gray-600 leading-6 line-clamp-1">
                                                 {hotel.description}
                                             </p>
+                                        )}
 
-                                            {/* Guests + Cancellation */}
+                                        {/* EXPANDED */}
 
-                                            <div className="mt-4 pt-4 border-t border-gray-100">
+                                        {expanded === hotel.id && (
 
-                                                <div className="grid grid-cols-2 gap-4">
+                                            <div className="mt-3">
 
-                                                    <div>
+                                                <p className="text-sm text-gray-600 leading-6">
+                                                    {hotel.description}
+                                                </p>
 
-                                                        <p className="text-xs text-gray-500">
-                                                            Guests
-                                                        </p>
+                                                <div className="mt-4 pt-4 border-t border-gray-100">
 
-                                                        <p className="text-sm font-semibold text-[#172033] mt-1">
-                                                            {hotel.guests}
-                                                        </p>
+                                                    <div className="grid grid-cols-2 gap-4">
 
-                                                    </div>
+                                                        <div>
 
-                                                    <div>
+                                                            <p className="text-xs text-gray-500">
+                                                                Guests
+                                                            </p>
 
-                                                        <p className="text-xs text-gray-500">
-                                                            Cancellation
-                                                        </p>
+                                                            <p className="text-sm font-semibold text-[#172033] mt-1">
+                                                                {hotel.guests}
+                                                            </p>
 
-                                                        <p className="text-sm font-semibold text-green-600 mt-1">
-                                                            {hotel.cancellation}
-                                                        </p>
+                                                        </div>
+
+                                                        <div>
+
+                                                            <p className="text-xs text-gray-500">
+                                                                Cancellation
+                                                            </p>
+
+                                                            <p className="text-sm font-semibold text-green-600 mt-1">
+                                                                {hotel.cancellation}
+                                                            </p>
+
+                                                        </div>
 
                                                     </div>
 
@@ -265,58 +280,67 @@ export default function BudgetHotelsPage() {
 
                                             </div>
 
+                                        )}
+
+                                        {/* PRICE */}
+
+                                        <div className="mt-4 pt-4 border-t border-gray-100">
+
+                                            <p className="text-xs text-gray-500">
+                                                Starting from
+                                            </p>
+
+                                            <p className="text-xl sm:text-2xl font-bold text-[#172033]">
+
+                                                {hotel.price}
+
+                                                <span className="text-sm font-normal text-gray-500">
+                                                    {" "} / night
+                                                </span>
+
+                                            </p>
+
+                                            <p className="text-xs text-green-600 font-medium mt-1">
+                                                + taxes
+                                            </p>
+
                                         </div>
 
-                                    )}
+                                        {/* ================= ACTIONS ================= */}
 
-                                    {/* ================= PRICE ================= */}
+                                        <div className="mt-5 flex flex-col gap-2.5 sm:flex-row">
 
-                                    <div className="mt-4 pt-4 border-t border-gray-100">
+                                            {/* ENQUIRE NOW */}
 
-                                        <p className="text-xs text-gray-500">
-                                            Starting from
-                                        </p>
+                                            <Link
+                                                href={enquiryUrl}
+                                                onClick={(e) => e.stopPropagation()}
+                                                className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-lg border border-[#172033] px-4 text-sm font-semibold text-[#172033] transition hover:bg-[#172033] hover:text-white"
+                                            >
+                                                Enquire Now
 
-                                        <p className="text-xl sm:text-2xl font-bold text-[#172033]">
+                                                <ArrowRight size={16} />
+                                            </Link>
 
-                                            {hotel.price}
+                                            {/* BOOK NOW */}
 
-                                            <span className="text-sm font-normal text-gray-500">
-                                                {" "} / night
-                                            </span>
+                                            <Link
+                                                href={propertyUrl}
+                                                onClick={(e) => e.stopPropagation()}
+                                                className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-lg bg-[#C88A3D] px-4 text-sm font-semibold text-white transition hover:bg-[#B9782F]"
+                                            >
+                                                <CalendarDays size={16} />
 
-                                        </p>
+                                                Book Now
+                                            </Link>
 
-                                        <p className="text-xs text-green-600 font-medium mt-1">
-                                            + taxes
-                                        </p>
+                                        </div>
 
                                     </div>
 
-                                    {/* ================= ENQUIRE ================= */}
-
-                                    <Link
-                                        href={`/contact?hotel=${encodeURIComponent(
-                                            hotel.name
-                                        )}&hotelImage=${encodeURIComponent(
-                                            hotel.image
-                                        )}&location=${encodeURIComponent(
-                                            hotel.location
-                                        )}`}
-                                        onClick={(e) => e.stopPropagation()}
-                                        className="inline-flex items-center gap-2 mt-4 text-sm sm:text-base text-[#172033] font-semibold hover:text-[#C88A3D] transition"
-                                    >
-                                        Enquire Now
-
-                                        <ArrowRight size={17} />
-
-                                    </Link>
-
                                 </div>
-
-                            </div>
-
-                        ))}
+                            );
+                        })}
 
                     </div>
 
