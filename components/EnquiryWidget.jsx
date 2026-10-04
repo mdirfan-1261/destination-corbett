@@ -34,11 +34,7 @@ export default function EnquiryWidget() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (
-      !formData.name ||
-      !formData.phone ||
-      !formData.email
-    ) {
+    if (!formData.name || !formData.phone || !formData.email) {
       setError("Please fill all fields.");
       return;
     }
@@ -103,12 +99,12 @@ export default function EnquiryWidget() {
           onClick={() => setShowEnquiry(true)}
           className="
             flex items-center gap-2
-            bg-[#C88A3D]
+            bg-[#C87532]
             text-white
             px-4 py-3
             rounded-full
             shadow-xl
-            hover:bg-[#A96F2E]
+            hover:bg-[#B96928]
             hover:scale-105
             transition
           "
@@ -141,7 +137,7 @@ export default function EnquiryWidget() {
           <div className="flex items-center justify-between bg-[#172033] px-4 py-3 text-white">
 
             <div>
-              <p className="text-[10px] uppercase tracking-wider text-[#C88A3D] font-semibold">
+              <p className="text-[10px] uppercase tracking-wider text-[#C87532] font-semibold">
                 Quick Enquiry
               </p>
 
@@ -221,7 +217,7 @@ export default function EnquiryWidget() {
                   bg-white
                   text-xs
                   outline-none
-                  focus:border-[#C88A3D]
+                  focus:border-[#C87532]
                 "
               />
 
@@ -241,7 +237,7 @@ export default function EnquiryWidget() {
                   bg-white
                   text-xs
                   outline-none
-                  focus:border-[#C88A3D]
+                  focus:border-[#C87532]
                 "
               />
 
@@ -261,7 +257,7 @@ export default function EnquiryWidget() {
                   bg-white
                   text-xs
                   outline-none
-                  focus:border-[#C88A3D]
+                  focus:border-[#C87532]
                 "
               />
 
@@ -273,13 +269,13 @@ export default function EnquiryWidget() {
                 className="
                   w-full
                   flex items-center justify-center gap-2
-                  bg-[#C88A3D]
+                  bg-[#C87532]
                   text-white
                   py-2.5
                   rounded-lg
                   text-xs
                   font-semibold
-                  hover:bg-[#A96F2E]
+                  hover:bg-[#B96928]
                   transition
                   disabled:opacity-60
                 "

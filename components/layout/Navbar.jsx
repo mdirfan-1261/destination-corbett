@@ -19,33 +19,40 @@ export default function Navbar() {
       <header className="sticky top-0 z-50 bg-white/60 backdrop-blur-2xl border-b border-white/70 shadow-[0_8px_30px_rgba(23,32,51,0.08)]">
 
         {/* ================= NAVBAR CONTAINER ================= */}
-        <div className="max-w-7xl mx-auto px-5 py-1.5 flex items-center justify-between gap-2">
+        <div className="max-w-7xl mx-auto px-3 sm:px-5 py-1.5 flex items-center justify-between gap-2">
 
-          {/* ================= LOGO ================= */}
-          <Link
-            href="/"
-            className="flex items-center shrink-0"
-            onClick={() => setOpen(false)}
-          >
-            <div className="group relative flex items-center gap-2.5 cursor-pointer">
-              <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-xl border border-[#C87532] shadow-sm transition-all duration-300 group-hover:scale-105">
-                <img
-                  src="/logo/corbett-logo 1.jpeg"
-                  alt="Destination Corbett"
-                  className="h-full w-full object-cover"
-                />
-              </div>
+        
+{/* ================= LOGO ================= */}
+<Link
+  href="/"
+  className="flex items-center shrink-0"
+  onClick={() => setOpen(false)}
+>
+  <div className="group relative flex items-center gap-1.5 sm:gap-2.5 cursor-pointer">
+    
+    {/* LOGO IMAGE */}
+    <div className="relative h-8 w-8 sm:h-10 sm:w-10 shrink-0 overflow-hidden rounded-lg sm:rounded-xl border border-[#C87532] shadow-sm transition-all duration-300 group-hover:scale-105">
+      <img
+        src="/logo/corbett-logo 1.jpeg"
+        alt="Destination Corbett"
+        className="h-full w-full object-cover"
+      />
+    </div>
 
-              <div className="flex flex-col">
-                <span className="text-xs font-black tracking-wider text-[#18352A] uppercase leading-none">
-                  DESTINATION
-                </span>
-                <span className="text-[11px] font-extrabold text-[#C87532] tracking-widest uppercase leading-none mt-1">
-                  CORBETT
-                </span>
-              </div>
-            </div>
-          </Link>
+    {/* LOGO TEXT */}
+    <div className="flex flex-col">
+      <span className="text-[10px] sm:text-xs font-black tracking-wide sm:tracking-wider text-[#18352A] uppercase leading-none">
+        DESTINATION
+      </span>
+
+      <span className="text-[9px] sm:text-[11px] font-extrabold text-[#C87532] tracking-wider sm:tracking-widest uppercase leading-none mt-0.5 sm:mt-1">
+        CORBETT
+      </span>
+    </div>
+
+  </div>
+</Link>
+
 
           {/* ================= DESKTOP NAVIGATION (RESTORED LIQUID GLASS) ================= */}
           <nav className="hidden lg:flex items-center gap-1 text-sm font-semibold">

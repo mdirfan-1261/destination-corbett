@@ -11,12 +11,15 @@ import {
   RefreshCw,
   Users,
   Building2,
+  CalendarDays,
 } from "lucide-react";
 
 const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://localhost:5000";
 
 const emptyForm = {
+  groupId: "",
   name: "",
   description: "",
   status: "active",
@@ -39,6 +42,26 @@ export default function GroupsPage() {
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  // --------------------------------------------------
+  // DATE FORMAT
+  // --------------------------------------------------
+
+  const formatDate = (date) => {
+    if (!date) return "—";
+
+    const parsedDate = new Date(date);
+
+    if (Number.isNaN(parsedDate.getTime())) {
+      return "—";
+    }
+
+    return parsedDate.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  };
 
   // --------------------------------------------------
   // GET GROUPS
@@ -98,7 +121,9 @@ export default function GroupsPage() {
       );
     } catch (err) {
       console.error("Fetch groups error:", err);
+
       setGroups([]);
+
       setError(
         err.message || "Failed to fetch groups."
       );
@@ -137,6 +162,7 @@ export default function GroupsPage() {
 
     setError("");
     setSuccess("");
+
     setShowModal(true);
   };
 
@@ -144,6 +170,7 @@ export default function GroupsPage() {
     setEditingGroup(group);
 
     setFormData({
+      groupId: group.groupId || "",
       name: group.name || "",
       description: group.description || "",
       status: group.status || "active",
@@ -151,6 +178,7 @@ export default function GroupsPage() {
 
     setError("");
     setSuccess("");
+
     setShowModal(true);
   };
 
@@ -159,6 +187,7 @@ export default function GroupsPage() {
 
     setShowModal(false);
     setEditingGroup(null);
+
     setFormData({
       ...emptyForm,
     });
@@ -170,6 +199,11 @@ export default function GroupsPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!formData.groupId.trim()) {
+      setError("Group ID is required.");
+      return;
+    }
 
     if (!formData.name.trim()) {
       setError("Group name is required.");
@@ -204,8 +238,15 @@ export default function GroupsPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          groupId: formData.groupId
+            .trim()
+            .toLowerCase(),
+
           name: formData.name.trim(),
-          description: formData.description.trim(),
+
+          description:
+            formData.description.trim(),
+
           status: formData.status,
         }),
       });
@@ -267,7 +308,8 @@ export default function GroupsPage() {
       setError("");
       setSuccess("");
 
-      const token = localStorage.getItem("adminToken");
+      const token =
+        localStorage.getItem("adminToken");
 
       if (!token) {
         throw new Error(
@@ -289,8 +331,10 @@ export default function GroupsPage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
+            groupId: group.groupId,
             name: group.name,
-            description: group.description || "",
+            description:
+              group.description || "",
             status: nextStatus,
           }),
         }
@@ -355,10 +399,12 @@ export default function GroupsPage() {
 
     try {
       setDeletingId(group.id);
+
       setError("");
       setSuccess("");
 
-      const token = localStorage.getItem("adminToken");
+      const token =
+        localStorage.getItem("adminToken");
 
       if (!token) {
         throw new Error(
@@ -435,6 +481,9 @@ export default function GroupsPage() {
         group.name
           ?.toLowerCase()
           .includes(searchValue) ||
+        group.groupId
+          ?.toLowerCase()
+          .includes(searchValue) ||
         group.description
           ?.toLowerCase()
           .includes(searchValue);
@@ -460,139 +509,195 @@ export default function GroupsPage() {
   ).length;
 
   return (
-    <div className="min-h-screen bg-[#F7F5F0] p-4 sm:p-6 lg:p-8">
-      <div className="mx-auto max-w-7xl">
+    <div className="min-h-screen bg-[#F7F5F0] px-[6px] py-3 sm:px-3 sm:py-4 md:px-4 lg:px-6 lg:py-5">
+      <div className="mx-auto w-full max-w-7xl">
 
         {/* HEADER */}
-        <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
 
-          <div>
-            <div className="mb-2 flex items-center gap-2 text-sm text-[#64748B]">
-              <Building2 size={16} />
-              <span>Administration</span>
-              <span>/</span>
-              <span>Groups</span>
+        <div className="mb-4 sm:mb-5 lg:mb-5">
+          <div className="flex flex-col gap-3 sm:gap-4 lg:flex-row lg:items-end lg:justify-between">
+
+            <div className="min-w-0">
+
+              <div className="mb-1 flex items-center gap-1.5 text-[10px] sm:text-[11px] text-[#64748B]">
+                <Building2
+                  size={13}
+                  className="shrink-0"
+                />
+
+                <span>
+                  Administration
+                </span>
+
+                <span>/</span>
+
+                <span>
+                  Groups
+                </span>
+              </div>
+
+              <h1 className="text-lg sm:text-xl lg:text-2xl font-bold tracking-tight text-[#172033]">
+                Groups & Departments
+              </h1>
+
+              <p className="mt-0.5 text-[10px] sm:text-xs lg:text-sm text-[#64748B]">
+                Manage organizational groups and departments.
+              </p>
+
             </div>
 
-            <h1 className="text-2xl font-semibold text-[#172033] sm:text-3xl">
-              Groups & Departments
-            </h1>
+            <button
+              type="button"
+              onClick={openCreateModal}
+              className="inline-flex w-full sm:w-auto items-center justify-center gap-1.5 rounded-lg bg-[#C87532] px-3.5 sm:px-4 py-2 sm:py-2.5 text-[11px] sm:text-xs lg:text-sm font-semibold text-white shadow-sm transition hover:bg-[#B96928] active:bg-[#A85F24]"
+            >
+              <Plus
+                size={15}
+              />
 
-            <p className="mt-1 text-sm text-[#64748B]">
-              Manage organizational groups and departments.
-            </p>
+              Create Group
+            </button>
+
           </div>
-
-          <button
-            type="button"
-            onClick={openCreateModal}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#C87532] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#B76527]"
-          >
-            <Plus size={18} />
-            Create Group
-          </button>
         </div>
 
         {/* ALERTS */}
 
         {error && (
-          <div className="mb-5 flex items-start justify-between gap-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            <span>{error}</span>
+          <div className="mb-3 flex items-start justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-[11px] sm:text-xs text-red-700">
+
+            <span className="min-w-0 break-words">
+              {error}
+            </span>
 
             <button
               type="button"
-              onClick={() => setError("")}
-              className="shrink-0"
+              onClick={() =>
+                setError("")
+              }
+              className="shrink-0 rounded-md p-0.5 hover:bg-red-100"
             >
-              <X size={17} />
+              <X size={14} />
             </button>
+
           </div>
         )}
 
         {success && (
-          <div className="mb-5 flex items-start justify-between gap-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-            <span>{success}</span>
+          <div className="mb-3 flex items-start justify-between gap-3 rounded-lg border border-green-200 bg-green-50 px-3 py-2.5 text-[11px] sm:text-xs text-green-700">
+
+            <span className="min-w-0 break-words">
+              {success}
+            </span>
 
             <button
               type="button"
-              onClick={() => setSuccess("")}
-              className="shrink-0"
+              onClick={() =>
+                setSuccess("")
+              }
+              className="shrink-0 rounded-md p-0.5 hover:bg-green-100"
             >
-              <X size={17} />
+              <X size={14} />
             </button>
+
           </div>
         )}
 
         {/* STATS */}
 
-        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="mb-3 sm:mb-4 grid grid-cols-3 gap-1.5 sm:gap-2.5">
 
-          <div className="rounded-2xl border border-[#E2E8F0] bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-[#64748B]">
+          {/* TOTAL */}
+
+          <div className="rounded-lg border border-[#E2E8F0] bg-white px-2.5 py-2.5 sm:px-3.5 sm:py-3.5 shadow-sm">
+
+            <div className="flex items-center justify-between gap-1.5">
+
+              <div className="min-w-0">
+
+                <p className="truncate text-[8px] sm:text-[10px] lg:text-xs text-[#64748B]">
                   Total Groups
                 </p>
 
-                <p className="mt-2 text-2xl font-semibold text-[#172033]">
+                <p className="mt-0.5 text-base sm:text-lg lg:text-xl font-bold text-[#172033]">
                   {groups.length}
                 </p>
+
               </div>
 
-              <div className="rounded-xl bg-[#F7F5F0] p-3 text-[#C87532]">
-                <Building2 size={21} />
+              <div className="hidden sm:flex shrink-0 rounded-lg bg-[#F7F5F0] p-2 text-[#C87532]">
+                <Building2 size={17} />
               </div>
+
             </div>
+
           </div>
 
-          <div className="rounded-2xl border border-[#E2E8F0] bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-[#64748B]">
-                  Active Groups
+          {/* ACTIVE */}
+
+          <div className="rounded-lg border border-[#E2E8F0] bg-white px-2.5 py-2.5 sm:px-3.5 sm:py-3.5 shadow-sm">
+
+            <div className="flex items-center justify-between gap-1.5">
+
+              <div className="min-w-0">
+
+                <p className="truncate text-[8px] sm:text-[10px] lg:text-xs text-[#64748B]">
+                  Active
                 </p>
 
-                <p className="mt-2 text-2xl font-semibold text-[#18352A]">
+                <p className="mt-0.5 text-base sm:text-lg lg:text-xl font-bold text-[#18352A]">
                   {activeCount}
                 </p>
+
               </div>
 
-              <div className="rounded-xl bg-green-50 p-3 text-green-600">
-                <Users size={21} />
+              <div className="hidden sm:flex shrink-0 rounded-lg bg-green-50 p-2 text-green-600">
+                <Users size={17} />
               </div>
+
             </div>
+
           </div>
 
-          <div className="rounded-2xl border border-[#E2E8F0] bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-[#64748B]">
-                  Inactive Groups
+          {/* INACTIVE */}
+
+          <div className="rounded-lg border border-[#E2E8F0] bg-white px-2.5 py-2.5 sm:px-3.5 sm:py-3.5 shadow-sm">
+
+            <div className="flex items-center justify-between gap-1.5">
+
+              <div className="min-w-0">
+
+                <p className="truncate text-[8px] sm:text-[10px] lg:text-xs text-[#64748B]">
+                  Inactive
                 </p>
 
-                <p className="mt-2 text-2xl font-semibold text-[#172033]">
+                <p className="mt-0.5 text-base sm:text-lg lg:text-xl font-bold text-[#172033]">
                   {inactiveCount}
                 </p>
+
               </div>
 
-              <div className="rounded-xl bg-gray-100 p-3 text-gray-600">
-                <Power size={21} />
+              <div className="hidden sm:flex shrink-0 rounded-lg bg-gray-100 p-2 text-gray-600">
+                <Power size={17} />
               </div>
+
             </div>
+
           </div>
 
         </div>
 
         {/* FILTER BAR */}
 
-        <div className="mb-5 rounded-2xl border border-[#E2E8F0] bg-white p-4 shadow-sm">
+        <div className="mb-3 sm:mb-4 rounded-lg border border-[#E2E8F0] bg-white p-2 sm:p-3 shadow-sm">
 
-          <div className="flex flex-col gap-3 lg:flex-row">
+          <div className="flex flex-col gap-2 sm:flex-row">
 
-            <div className="relative flex-1">
+            <div className="relative min-w-0 flex-1">
+
               <Search
-                size={18}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]"
+                size={15}
+                className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#94A3B8]"
               />
 
               <input
@@ -602,76 +707,92 @@ export default function GroupsPage() {
                   setSearch(e.target.value)
                 }
                 placeholder="Search groups..."
-                className="h-11 w-full rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] pl-10 pr-4 text-sm text-[#172033] outline-none transition focus:border-[#C87532] focus:ring-2 focus:ring-[#C87532]/10"
+                className="h-9 sm:h-10 w-full rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] pl-8 pr-3 text-[11px] sm:text-xs lg:text-sm text-[#172033] outline-none transition focus:border-[#C87532] focus:ring-2 focus:ring-[#C87532]/10"
               />
+
             </div>
 
-            <select
-              value={statusFilter}
-              onChange={(e) =>
-                setStatusFilter(e.target.value)
-              }
-              className="h-11 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] px-4 text-sm text-[#172033] outline-none focus:border-[#C87532]"
-            >
-              <option value="all">
-                All Status
-              </option>
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:gap-2">
 
-              <option value="active">
-                Active
-              </option>
-
-              <option value="inactive">
-                Inactive
-              </option>
-            </select>
-
-            <button
-              type="button"
-              onClick={fetchGroups}
-              disabled={loading}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[#E2E8F0] bg-white px-4 text-sm font-medium text-[#172033] transition hover:bg-[#F8FAFC] disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <RefreshCw
-                size={17}
-                className={
-                  loading
-                    ? "animate-spin"
-                    : ""
+              <select
+                value={statusFilter}
+                onChange={(e) =>
+                  setStatusFilter(
+                    e.target.value
+                  )
                 }
-              />
-              Refresh
-            </button>
+                className="h-9 sm:h-10 min-w-0 rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] px-2.5 sm:px-3 text-[11px] sm:text-xs lg:text-sm text-[#172033] outline-none focus:border-[#C87532]"
+              >
+                <option value="all">
+                  All Status
+                </option>
+
+                <option value="active">
+                  Active
+                </option>
+
+                <option value="inactive">
+                  Inactive
+                </option>
+              </select>
+
+              <button
+                type="button"
+                onClick={fetchGroups}
+                disabled={loading}
+                className="inline-flex h-9 sm:h-10 items-center justify-center gap-1.5 rounded-lg border border-[#E2E8F0] bg-white px-3 text-[11px] sm:text-xs lg:text-sm font-medium text-[#172033] transition hover:bg-[#F8FAFC] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <RefreshCw
+                  size={14}
+                  className={
+                    loading
+                      ? "animate-spin"
+                      : ""
+                  }
+                />
+
+                Refresh
+              </button>
+
+            </div>
 
           </div>
         </div>
 
-        {/* TABLE */}
+        {/* GROUP LIST */}
 
-        <div className="overflow-hidden rounded-2xl border border-[#E2E8F0] bg-white shadow-sm">
+        <div className="overflow-hidden rounded-lg border border-[#E2E8F0] bg-white shadow-sm">
 
           {loading ? (
-            <div className="flex min-h-[300px] items-center justify-center">
-              <div className="flex items-center gap-3 text-sm text-[#64748B]">
+            <div className="flex min-h-[220px] items-center justify-center">
+
+              <div className="flex items-center gap-2 text-xs text-[#64748B]">
+
                 <RefreshCw
-                  size={18}
+                  size={16}
                   className="animate-spin"
                 />
+
                 Loading groups...
-              </div>
-            </div>
-          ) : filteredGroups.length === 0 ? (
-            <div className="flex min-h-[300px] flex-col items-center justify-center px-6 text-center">
-              <div className="mb-4 rounded-2xl bg-[#F7F5F0] p-4 text-[#C87532]">
-                <Building2 size={28} />
+
               </div>
 
-              <h3 className="text-base font-semibold text-[#172033]">
+            </div>
+          ) : filteredGroups.length === 0 ? (
+
+            <div className="flex min-h-[240px] flex-col items-center justify-center px-5 text-center">
+
+              <div className="mb-3 rounded-xl bg-[#F7F5F0] p-3 text-[#C87532]">
+                <Building2 size={23} />
+              </div>
+
+              <h3 className="text-sm font-semibold text-[#172033]">
                 No groups found
               </h3>
 
-              <p className="mt-1 max-w-md text-sm text-[#64748B]">
-                {search || statusFilter !== "all"
+              <p className="mt-1 max-w-md text-[10px] sm:text-xs text-[#64748B]">
+                {search ||
+                statusFilter !== "all"
                   ? "Try changing your search or status filter."
                   : "Create your first group to start managing departments."}
               </p>
@@ -680,80 +801,263 @@ export default function GroupsPage() {
                 statusFilter === "all" && (
                   <button
                     type="button"
-                    onClick={openCreateModal}
-                    className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#C87532] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#B76527]"
+                    onClick={
+                      openCreateModal
+                    }
+                    className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-[#C87532] px-3.5 py-2 text-[11px] sm:text-xs font-semibold text-white hover:bg-[#B96928]"
                   >
-                    <Plus size={17} />
+                    <Plus size={14} />
+
                     Create Group
                   </button>
                 )}
+
             </div>
+
           ) : (
-            <div className="overflow-x-auto">
 
-              <table className="w-full min-w-[760px]">
+            <>
+              {/* DESKTOP / TABLET */}
 
-                <thead>
-                  <tr className="border-b border-[#E2E8F0] bg-[#F8FAFC] text-left">
-                    <th className="px-5 py-4 text-xs font-semibold uppercase tracking-wide text-[#64748B]">
-                      Group
-                    </th>
+              <div className="hidden md:block overflow-x-auto">
 
-                    <th className="px-5 py-4 text-xs font-semibold uppercase tracking-wide text-[#64748B]">
-                      Description
-                    </th>
+                <table className="w-full">
 
-                    <th className="px-5 py-4 text-xs font-semibold uppercase tracking-wide text-[#64748B]">
-                      Status
-                    </th>
+                  <thead>
 
-                    <th className="px-5 py-4 text-right text-xs font-semibold uppercase tracking-wide text-[#64748B]">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
+                    <tr className="border-b border-[#E2E8F0] bg-[#F8FAFC] text-left">
 
-                <tbody>
+                      <th className="px-4 lg:px-5 py-3 text-[9px] lg:text-[10px] font-semibold uppercase tracking-wide text-[#64748B]">
+                        Group
+                      </th>
 
-                  {filteredGroups.map(
-                    (group) => (
-                      <tr
-                        key={group.id}
-                        className="border-b border-[#E2E8F0] last:border-b-0 hover:bg-[#FAFBFC]"
-                      >
+                      <th className="px-4 lg:px-5 py-3 text-[9px] lg:text-[10px] font-semibold uppercase tracking-wide text-[#64748B]">
+                        Description
+                      </th>
 
-                        <td className="px-5 py-4">
-                          <div className="flex items-center gap-3">
+                      <th className="px-4 lg:px-5 py-3 text-[9px] lg:text-[10px] font-semibold uppercase tracking-wide text-[#64748B]">
+                        Created
+                      </th>
 
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F7F5F0] text-[#C87532]">
-                              <Building2
-                                size={19}
-                              />
+                      <th className="px-4 lg:px-5 py-3 text-[9px] lg:text-[10px] font-semibold uppercase tracking-wide text-[#64748B]">
+                        Status
+                      </th>
+
+                      <th className="px-4 lg:px-5 py-3 text-right text-[9px] lg:text-[10px] font-semibold uppercase tracking-wide text-[#64748B]">
+                        Actions
+                      </th>
+
+                    </tr>
+
+                  </thead>
+
+                  <tbody>
+
+                    {filteredGroups.map(
+                      (group) => (
+                        <tr
+                          key={group.id}
+                          className="border-b border-[#E2E8F0] last:border-b-0 transition hover:bg-[#FAFBFC]"
+                        >
+
+                          {/* GROUP */}
+
+                          <td className="px-4 lg:px-5 py-3">
+
+                            <div className="flex items-center gap-2.5">
+
+                              <div className="flex h-8 w-8 lg:h-9 lg:w-9 shrink-0 items-center justify-center rounded-lg bg-[#F7F5F0] text-[#C87532]">
+                                <Building2 size={15} />
+                              </div>
+
+                              <div className="min-w-0">
+
+                                <p className="truncate text-[11px] lg:text-xs font-semibold text-[#172033]">
+                                  {group.name}
+                                </p>
+
+                                <p className="mt-0.5 truncate text-[9px] lg:text-[10px] text-[#94A3B8]">
+                                  {group.groupId ||
+                                    group.id}
+                                </p>
+
+                              </div>
+
                             </div>
 
-                            <div>
-                              <p className="font-medium text-[#172033]">
+                          </td>
+
+                          {/* DESCRIPTION */}
+
+                          <td className="max-w-[280px] px-4 lg:px-5 py-3">
+
+                            <p className="truncate text-[10px] lg:text-xs text-[#64748B]">
+                              {group.description ||
+                                "No description"}
+                            </p>
+
+                          </td>
+
+                          {/* CREATED */}
+
+                          <td className="px-4 lg:px-5 py-3">
+
+                            <div className="flex items-center gap-1.5 text-[10px] lg:text-xs text-[#64748B] whitespace-nowrap">
+
+                              <CalendarDays
+                                size={13}
+                                className="text-[#94A3B8]"
+                              />
+
+                              {formatDate(
+                                group.createdAt
+                              )}
+
+                            </div>
+
+                          </td>
+
+                          {/* STATUS */}
+
+                          <td className="px-4 lg:px-5 py-3">
+
+                            <span
+                              className={`inline-flex rounded-full px-2 py-0.5 text-[9px] lg:text-[10px] font-semibold ${
+                                group.status ===
+                                "active"
+                                  ? "bg-green-50 text-green-700"
+                                  : "bg-gray-100 text-gray-600"
+                              }`}
+                            >
+                              {group.status ===
+                              "active"
+                                ? "Active"
+                                : "Inactive"}
+                            </span>
+
+                          </td>
+
+                          {/* ACTIONS */}
+
+                          <td className="px-4 lg:px-5 py-3">
+
+                            <div className="flex justify-end gap-1.5">
+
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  openEditModal(
+                                    group
+                                  )
+                                }
+                                className="rounded-md border border-[#E2E8F0] p-1.5 text-[#64748B] transition hover:border-[#C87532] hover:bg-[#F7F5F0] hover:text-[#C87532]"
+                                title="Edit"
+                              >
+                                <Pencil size={13} />
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  toggleStatus(
+                                    group
+                                  )
+                                }
+                                className={`rounded-md border p-1.5 transition ${
+                                  group.status ===
+                                  "active"
+                                    ? "border-amber-200 text-amber-600 hover:bg-amber-50"
+                                    : "border-green-200 text-green-600 hover:bg-green-50"
+                                }`}
+                                title={
+                                  group.status ===
+                                  "active"
+                                    ? "Deactivate"
+                                    : "Activate"
+                                }
+                              >
+                                <Power size={13} />
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleDelete(
+                                    group
+                                  )
+                                }
+                                disabled={
+                                  deletingId ===
+                                  group.id
+                                }
+                                className="rounded-md border border-red-200 p-1.5 text-red-500 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                                title="Delete"
+                              >
+                                {deletingId ===
+                                group.id ? (
+                                  <RefreshCw
+                                    size={13}
+                                    className="animate-spin"
+                                  />
+                                ) : (
+                                  <Trash2 size={13} />
+                                )}
+                              </button>
+
+                            </div>
+
+                          </td>
+
+                        </tr>
+                      )
+                    )}
+
+                  </tbody>
+
+                </table>
+
+              </div>
+
+              {/* MOBILE */}
+
+              <div className="md:hidden divide-y divide-[#E2E8F0]">
+
+                {filteredGroups.map(
+                  (group) => (
+                    <div
+                      key={group.id}
+                      className="p-2"
+                    >
+
+                      <div className="rounded-lg border border-[#E2E8F0] bg-white p-2.5">
+
+                        {/* TOP */}
+
+                        <div className="flex items-start justify-between gap-2">
+
+                          <div className="flex min-w-0 items-center gap-2">
+
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#F7F5F0] text-[#C87532]">
+                              <Building2 size={15} />
+                            </div>
+
+                            <div className="min-w-0">
+
+                              <p className="truncate text-xs font-semibold text-[#172033]">
                                 {group.name}
                               </p>
 
-                              <p className="mt-0.5 text-xs text-[#94A3B8]">
-                                {group.id}
+                              <p className="mt-0.5 truncate text-[9px] text-[#94A3B8]">
+                                {group.groupId ||
+                                  group.id}
                               </p>
+
                             </div>
 
                           </div>
-                        </td>
 
-                        <td className="max-w-md px-5 py-4">
-                          <p className="truncate text-sm text-[#64748B]">
-                            {group.description ||
-                              "No description"}
-                          </p>
-                        </td>
-
-                        <td className="px-5 py-4">
                           <span
-                            className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                            className={`shrink-0 rounded-full px-2 py-0.5 text-[8px] font-semibold ${
                               group.status ===
                               "active"
                                 ? "bg-green-50 text-green-700"
@@ -765,90 +1069,124 @@ export default function GroupsPage() {
                               ? "Active"
                               : "Inactive"}
                           </span>
-                        </td>
 
-                        <td className="px-5 py-4">
-                          <div className="flex justify-end gap-2">
+                        </div>
 
-                            <button
-                              type="button"
-                              onClick={() =>
-                                openEditModal(
-                                  group
-                                )
-                              }
-                              className="rounded-lg border border-[#E2E8F0] p-2 text-[#64748B] transition hover:border-[#C87532] hover:text-[#C87532]"
-                              title="Edit"
-                            >
-                              <Pencil
-                                size={16}
-                              />
-                            </button>
+                        {/* INFO */}
 
-                            <button
-                              type="button"
-                              onClick={() =>
-                                toggleStatus(
-                                  group
-                                )
-                              }
-                              className={`rounded-lg border p-2 transition ${
-                                group.status ===
-                                "active"
-                                  ? "border-amber-200 text-amber-600 hover:bg-amber-50"
-                                  : "border-green-200 text-green-600 hover:bg-green-50"
-                              }`}
-                              title={
-                                group.status ===
-                                "active"
-                                  ? "Deactivate"
-                                  : "Activate"
-                              }
-                            >
-                              <Power
-                                size={16}
-                              />
-                            </button>
+                        <div className="mt-2 grid grid-cols-2 gap-1.5">
 
-                            <button
-                              type="button"
-                              onClick={() =>
-                                handleDelete(
-                                  group
-                                )
-                              }
-                              disabled={
-                                deletingId ===
-                                group.id
-                              }
-                              className="rounded-lg border border-red-200 p-2 text-red-500 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
-                              title="Delete"
-                            >
-                              {deletingId ===
-                              group.id ? (
-                                <RefreshCw
-                                  size={16}
-                                  className="animate-spin"
-                                />
-                              ) : (
-                                <Trash2
-                                  size={16}
-                                />
-                              )}
-                            </button>
+                          <div className="rounded-md bg-[#F8FAFC] px-2 py-1.5">
+
+                            <p className="text-[8px] text-[#94A3B8]">
+                              Description
+                            </p>
+
+                            <p className="mt-0.5 truncate text-[9px] text-[#64748B]">
+                              {group.description ||
+                                "No description"}
+                            </p>
 
                           </div>
-                        </td>
 
-                      </tr>
-                    )
-                  )}
+                          <div className="rounded-md bg-[#F8FAFC] px-2 py-1.5">
 
-                </tbody>
+                            <p className="text-[8px] text-[#94A3B8]">
+                              Created
+                            </p>
 
-              </table>
+                            <div className="mt-0.5 flex items-center gap-1 text-[9px] text-[#64748B]">
 
-            </div>
+                              <CalendarDays
+                                size={10}
+                                className="shrink-0"
+                              />
+
+                              {formatDate(
+                                group.createdAt
+                              )}
+
+                            </div>
+
+                          </div>
+
+                        </div>
+
+                        {/* ACTIONS */}
+
+                        <div className="mt-2 flex items-center gap-1.5">
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              openEditModal(
+                                group
+                              )
+                            }
+                            className="flex h-7 flex-1 items-center justify-center gap-1 rounded-md border border-[#E2E8F0] text-[9px] font-medium text-[#64748B] transition hover:border-[#C87532] hover:bg-[#F7F5F0] hover:text-[#C87532]"
+                          >
+                            <Pencil size={11} />
+
+                            Edit
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              toggleStatus(
+                                group
+                              )
+                            }
+                            className={`flex h-7 flex-1 items-center justify-center gap-1 rounded-md border text-[9px] font-medium transition ${
+                              group.status ===
+                              "active"
+                                ? "border-amber-200 text-amber-600 hover:bg-amber-50"
+                                : "border-green-200 text-green-600 hover:bg-green-50"
+                            }`}
+                          >
+                            <Power size={11} />
+
+                            {group.status ===
+                            "active"
+                              ? "Deactivate"
+                              : "Activate"}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleDelete(
+                                group
+                              )
+                            }
+                            disabled={
+                              deletingId ===
+                              group.id
+                            }
+                            className="flex h-7 w-8 shrink-0 items-center justify-center rounded-md border border-red-200 text-red-500 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                            title="Delete"
+                          >
+                            {deletingId ===
+                            group.id ? (
+                              <RefreshCw
+                                size={11}
+                                className="animate-spin"
+                              />
+                            ) : (
+                              <Trash2 size={11} />
+                            )}
+                          </button>
+
+                        </div>
+
+                      </div>
+
+                    </div>
+                  )
+                )}
+
+              </div>
+            </>
           )}
 
         </div>
@@ -858,35 +1196,37 @@ export default function GroupsPage() {
       {/* CREATE / EDIT MODAL */}
 
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-0 backdrop-blur-sm sm:items-center sm:p-4">
 
-          <div className="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl">
+          <div className="w-full overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:max-w-md sm:rounded-2xl">
 
             {/* MODAL HEADER */}
 
-            <div className="flex items-center justify-between border-b border-[#E2E8F0] px-6 py-5">
+            <div className="flex items-center justify-between gap-3 border-b border-[#E2E8F0] px-4 py-3.5 sm:px-5 sm:py-4">
 
-              <div>
-                <h2 className="text-lg font-semibold text-[#172033]">
+              <div className="min-w-0">
+
+                <h2 className="text-sm sm:text-base font-semibold text-[#172033]">
                   {editingGroup
                     ? "Edit Group"
                     : "Create Group"}
                 </h2>
 
-                <p className="mt-1 text-sm text-[#64748B]">
+                <p className="mt-0.5 text-[9px] sm:text-[11px] text-[#64748B]">
                   {editingGroup
                     ? "Update group information."
                     : "Add a new organizational group."}
                 </p>
+
               </div>
 
               <button
                 type="button"
                 onClick={closeModal}
                 disabled={saving}
-                className="rounded-lg p-2 text-[#64748B] hover:bg-[#F8FAFC]"
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[#64748B] hover:bg-[#F8FAFC]"
               >
-                <X size={19} />
+                <X size={15} />
               </button>
 
             </div>
@@ -895,11 +1235,42 @@ export default function GroupsPage() {
 
             <form
               onSubmit={handleSubmit}
-              className="space-y-5 p-6"
+              className="max-h-[calc(94vh-65px)] overflow-y-auto space-y-3.5 p-4 sm:p-5"
             >
 
+              {/* GROUP ID */}
+
               <div>
-                <label className="mb-2 block text-sm font-medium text-[#172033]">
+
+                <label className="mb-1.5 block text-[10px] sm:text-xs font-medium text-[#172033]">
+                  Group ID
+                </label>
+
+                <input
+                  type="text"
+                  name="groupId"
+                  value={formData.groupId}
+                  onChange={handleChange}
+                  placeholder="e.g. safari"
+                  required
+                  disabled={
+                    Boolean(editingGroup)
+                  }
+                  className="h-9 sm:h-10 w-full rounded-lg border border-[#E2E8F0] bg-white px-3 text-[11px] sm:text-xs text-[#172033] outline-none focus:border-[#C87532] focus:ring-2 focus:ring-[#C87532]/10 disabled:bg-[#F8FAFC] disabled:text-[#94A3B8]"
+                />
+
+                <p className="mt-1 text-[8px] sm:text-[10px] text-[#94A3B8]">
+                  Use a unique ID like safari,
+                  stay or events.
+                </p>
+
+              </div>
+
+              {/* GROUP NAME */}
+
+              <div>
+
+                <label className="mb-1.5 block text-[10px] sm:text-xs font-medium text-[#172033]">
                   Group Name
                 </label>
 
@@ -910,12 +1281,16 @@ export default function GroupsPage() {
                   onChange={handleChange}
                   placeholder="Enter group name"
                   required
-                  className="h-11 w-full rounded-xl border border-[#E2E8F0] bg-white px-4 text-sm text-[#172033] outline-none focus:border-[#C87532] focus:ring-2 focus:ring-[#C87532]/10"
+                  className="h-9 sm:h-10 w-full rounded-lg border border-[#E2E8F0] bg-white px-3 text-[11px] sm:text-xs text-[#172033] outline-none focus:border-[#C87532] focus:ring-2 focus:ring-[#C87532]/10"
                 />
+
               </div>
 
+              {/* DESCRIPTION */}
+
               <div>
-                <label className="mb-2 block text-sm font-medium text-[#172033]">
+
+                <label className="mb-1.5 block text-[10px] sm:text-xs font-medium text-[#172033]">
                   Description
                 </label>
 
@@ -926,13 +1301,17 @@ export default function GroupsPage() {
                   }
                   onChange={handleChange}
                   placeholder="Enter group description"
-                  rows={4}
-                  className="w-full resize-none rounded-xl border border-[#E2E8F0] bg-white px-4 py-3 text-sm text-[#172033] outline-none focus:border-[#C87532] focus:ring-2 focus:ring-[#C87532]/10"
+                  rows={3}
+                  className="w-full resize-none rounded-lg border border-[#E2E8F0] bg-white px-3 py-2.5 text-[11px] sm:text-xs text-[#172033] outline-none focus:border-[#C87532] focus:ring-2 focus:ring-[#C87532]/10"
                 />
+
               </div>
 
+              {/* STATUS */}
+
               <div>
-                <label className="mb-2 block text-sm font-medium text-[#172033]">
+
+                <label className="mb-1.5 block text-[10px] sm:text-xs font-medium text-[#172033]">
                   Status
                 </label>
 
@@ -940,7 +1319,7 @@ export default function GroupsPage() {
                   name="status"
                   value={formData.status}
                   onChange={handleChange}
-                  className="h-11 w-full rounded-xl border border-[#E2E8F0] bg-white px-4 text-sm text-[#172033] outline-none focus:border-[#C87532]"
+                  className="h-9 sm:h-10 w-full rounded-lg border border-[#E2E8F0] bg-white px-3 text-[11px] sm:text-xs text-[#172033] outline-none focus:border-[#C87532]"
                 >
                   <option value="active">
                     Active
@@ -950,23 +1329,26 @@ export default function GroupsPage() {
                     Inactive
                   </option>
                 </select>
+
               </div>
 
+              {/* ERROR */}
+
               {error && (
-                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-[10px] sm:text-xs text-red-700">
                   {error}
                 </div>
               )}
 
               {/* FOOTER */}
 
-              <div className="flex flex-col-reverse gap-3 border-t border-[#E2E8F0] pt-5 sm:flex-row sm:justify-end">
+              <div className="flex flex-col-reverse gap-2 border-t border-[#E2E8F0] pt-3.5 sm:flex-row sm:justify-end">
 
                 <button
                   type="button"
                   onClick={closeModal}
                   disabled={saving}
-                  className="rounded-xl border border-[#E2E8F0] px-5 py-2.5 text-sm font-medium text-[#172033] hover:bg-[#F8FAFC] disabled:opacity-50"
+                  className="h-9 sm:h-10 rounded-lg border border-[#E2E8F0] px-4 text-[11px] sm:text-xs font-medium text-[#172033] hover:bg-[#F8FAFC] disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -975,13 +1357,15 @@ export default function GroupsPage() {
                   type="submit"
                   disabled={
                     saving ||
+                    !formData.groupId.trim() ||
                     !formData.name.trim()
                   }
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#C87532] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#B76527] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex h-9 sm:h-10 items-center justify-center gap-1.5 rounded-lg bg-[#C87532] px-4 text-[11px] sm:text-xs font-semibold text-white hover:bg-[#B96928] active:bg-[#A85F24] disabled:cursor-not-allowed disabled:opacity-50"
                 >
+
                   {saving && (
                     <RefreshCw
-                      size={16}
+                      size={13}
                       className="animate-spin"
                     />
                   )}
@@ -991,6 +1375,7 @@ export default function GroupsPage() {
                     : editingGroup
                     ? "Update Group"
                     : "Create Group"}
+
                 </button>
 
               </div>

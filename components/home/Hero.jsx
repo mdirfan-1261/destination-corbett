@@ -6,10 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { heroData } from "@/data/hero";
 import {
-  Sparkles,
   ArrowRight,
-  Star,
-  ShieldCheck,
   ChevronLeft,
   ChevronRight,
   Search,
@@ -20,244 +17,520 @@ import {
 export default function Hero() {
   const router = useRouter();
 
-  // Slideshow State
+  // Slideshow
   const [currentImage, setCurrentImage] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
 
-  // Exact Search States
+  // Search
   const [searchQuery, setSearchQuery] = useState("");
   const [travelDate, setTravelDate] = useState("");
   const [guests, setGuests] = useState("3 Guests");
 
-  // Auto Slideshow
+  // ================= AUTOMATIC SLIDESHOW =================
   useEffect(() => {
-    if (isPaused) return;
+    if (!heroData.images || heroData.images.length <= 1) return;
+
     const interval = setInterval(() => {
-      setCurrentImage((prev) => (prev + 1) % heroData.images.length);
+      setCurrentImage((prev) => {
+        return (prev + 1) % heroData.images.length;
+      });
     }, 6000);
+
     return () => clearInterval(interval);
-  }, [isPaused]);
+  }, []);
+
+  // ================= SLIDE CONTROLS =================
 
   const nextSlide = () => {
-    setCurrentImage((prev) => (prev + 1) % heroData.images.length);
+    setCurrentImage(
+      (prev) => (prev + 1) % heroData.images.length
+    );
   };
 
   const prevSlide = () => {
     setCurrentImage(
-      (prev) => (prev - 1 + heroData.images.length) % heroData.images.length
+      (prev) =>
+        (prev - 1 + heroData.images.length) %
+        heroData.images.length
     );
   };
 
-  // Search Action
+  // ================= SEARCH =================
+
   const handleSearchSubmit = (e) => {
     e.preventDefault();
+
     const query = searchQuery.trim();
 
-    // Direct Exact Redirect according to input
-    if (query.toLowerCase().includes("safari") || query.toLowerCase().includes("zone")) {
-      router.push(`/safari?search=${encodeURIComponent(query)}&date=${travelDate}`);
+    if (
+      query.toLowerCase().includes("safari") ||
+      query.toLowerCase().includes("zone")
+    ) {
+      router.push(
+        `/safari?search=${encodeURIComponent(
+          query
+        )}&date=${travelDate}`
+      );
     } else if (query) {
-      router.push(`/search?q=${encodeURIComponent(query)}&date=${travelDate}&guests=${guests}`);
+      router.push(
+        `/search?q=${encodeURIComponent(
+          query
+        )}&date=${travelDate}&guests=${guests}`
+      );
     } else {
-      router.push(`/packages?date=${travelDate}&guests=${guests}`);
+      router.push(
+        `/packages?date=${travelDate}&guests=${guests}`
+      );
     }
   };
 
   return (
-    <section
-      className="relative min-h-[480px] md:min-h-[540px] lg:min-h-[580px] overflow-hidden bg-[#172033]"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-    >
-      {/* ================= HERO SLIDESHOW IMAGES ================= */}
-      {heroData.images.map((image, index) => (
-        <Image
-          key={image}
-          src={image}
-          alt="Jim Corbett National Park"
-          fill
-          sizes="100vw"
-          priority={index === 0}
-          loading={index === 0 ? "eager" : "lazy"}
-          className={`object-cover object-center transition-all duration-1000 ease-in-out ${
-            currentImage === index
-              ? "opacity-100 scale-100"
-              : "opacity-0 scale-105 pointer-events-none"
-          }`}
-        />
-      ))}
+    <section className="overflow-visible bg-[#F7F5F0] px-1.5 py-1.5 sm:px-4 sm:py-4 md:px-6 md:py-5">
 
-      {/* ================= LUXURY OVERLAYS ================= */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/40 to-transparent" />
-      <div className="absolute inset-0 bg-gradient-to-t from-[#172033]/90 via-transparent to-black/20" />
+      {/* =====================================================
+          HERO
+      ====================================================== */}
 
-      {/* ================= HERO CONTENT ================= */}
-      <div className="relative z-10 max-w-7xl mx-auto px-6 pt-10 pb-20 md:pt-16 md:pb-28 min-h-[480px] md:min-h-[540px] flex flex-col justify-center">
-        <div className="max-w-xl text-white">
+      <div className="relative mx-auto min-h-[285px] max-w-[1440px] overflow-hidden rounded-xl bg-[#172033] text-white sm:min-h-[420px] sm:rounded-[24px] md:min-h-[470px] md:rounded-[28px] lg:min-h-[560px]">
 
-          {/* 👆 TOP STRIP: EYEBROW + TRUST BADGES UPAR */}
-       
+        {/* ================= SLIDESHOW IMAGES ================= */}
 
-          {/* COMPACT & SLEEK TITLE (NO HEAVY BOLD) */}
-          <h1 className="text-2xl sm:text-4xl md:text-5xl font-semibold leading-tight tracking-tight mb-3 text-white">
-            {heroData.title}
-          </h1>
+        {heroData.images.map((image, index) => (
+          <Image
+            key={image}
+            src={image}
+            alt="Jim Corbett National Park"
+            fill
+            sizes="100vw"
+            priority={index === 0}
+            className={`
+              object-cover
+              object-center
+              transition-all
+              duration-1000
+              ease-in-out
+              ${
+                currentImage === index
+                  ? "scale-100 opacity-100"
+                  : "pointer-events-none scale-105 opacity-0"
+              }
+            `}
+          />
+        ))}
 
-          {/* COMPACT DESCRIPTION */}
-          <p className="text-xs sm:text-sm text-white/80 leading-relaxed mb-6 max-w-lg font-normal">
-            {heroData.description}
-          </p>
+        {/* ================= OVERLAYS ================= */}
 
-          {/* COMPACT BUTTONS ROW */}
-          <div className="flex flex-wrap items-center gap-2.5">
-            {heroData.buttons.map((button, index) => {
-              const isPrimary = index === 0;
-              return (
-                <Link
-                  key={button.text}
-                  href={button.href}
-                  className={`
-                    group inline-flex items-center justify-center gap-1.5
-                    px-5 py-2 rounded-full text-xs font-semibold tracking-wide
-                    transition-all duration-200 shadow-sm
-                    ${
-                      isPrimary
-                        ? "bg-[#C87532] text-white hover:bg-[#b96928] hover:shadow-md"
-                        : "bg-white/10 text-white border border-white/30 backdrop-blur-xl hover:bg-white/20"
-                    }
-                  `}
-                >
-                  <span>{button.text}</span>
-                  <ArrowRight
-                    size={13}
-                    className="transition-transform duration-200 group-hover:translate-x-1"
-                  />
-                </Link>
-              );
-            })}
+        <div className="absolute inset-0 bg-black/5" />
+
+        <div className="absolute inset-0 bg-gradient-to-r from-[#172033]/85 via-[#172033]/45 to-transparent" />
+
+        <div className="absolute inset-0 bg-gradient-to-t from-[#172033]/80 via-transparent to-black/10" />
+
+        {/* ================= HERO CONTENT ================= */}
+
+        <div className="relative z-10 flex min-h-[285px] items-center px-4 py-6 sm:min-h-[420px] sm:px-8 sm:py-10 md:min-h-[470px] md:px-10 lg:min-h-[560px] lg:px-14">
+
+          <div className="max-w-2xl">
+
+            {/* Eyebrow */}
+
+            <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.1em] text-white/85 backdrop-blur-xl sm:mb-4 sm:px-3 sm:py-1.5 sm:text-[9px] sm:tracking-[0.12em]">
+
+              <span className="h-1.5 w-1.5 rounded-full bg-[#C87532]" />
+
+              EXPLORE JIM CORBETT
+
+            </div>
+
+            {/* Heading */}
+
+            <h1 className="max-w-2xl text-[25px] font-bold leading-[1.05] tracking-tight sm:text-4xl sm:leading-[1.08] md:text-5xl lg:text-6xl">
+              {heroData.title}
+            </h1>
+
+            {/* Description */}
+
+            <p className="mt-2 max-w-xl text-[11px] leading-4 text-white/80 sm:mt-4 sm:text-sm sm:leading-6 md:text-base md:leading-7">
+              {heroData.description}
+            </p>
+
+            {/* Buttons */}
+
+            <div className="mt-3 flex flex-wrap items-center gap-1.5 sm:mt-5 sm:gap-2">
+
+              {heroData.buttons.map((button, index) => {
+                const isPrimary = index === 0;
+
+                return (
+                  <Link
+                    key={button.text}
+                    href={button.href}
+                    className={`
+                      group
+                      inline-flex
+                      items-center
+                      justify-center
+                      gap-1
+                      rounded-full
+                      px-3.5
+                      py-1.5
+                      text-[11px]
+                      font-semibold
+                      transition-all
+                      duration-200
+                      sm:gap-1.5
+                      sm:px-5
+                      sm:py-2.5
+                      sm:text-sm
+                      ${
+                        isPrimary
+                          ? "bg-[#C87532] text-white shadow-md hover:bg-[#B96928] hover:shadow-lg"
+                          : "border border-white/25 bg-white/10 text-white backdrop-blur-xl hover:bg-white/20"
+                      }
+                    `}
+                  >
+                    <span>{button.text}</span>
+
+                    <ArrowRight
+                      size={12}
+                      className="transition-transform duration-200 group-hover:translate-x-1 sm:h-4 sm:w-4"
+                    />
+                  </Link>
+                );
+              })}
+
+            </div>
+
+            {/* Highlights */}
+
+            <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-[8px] text-white/65 sm:mt-6 sm:gap-x-6 sm:gap-y-2 sm:text-xs sm:text-white/70">
+
+              <span className="flex items-center gap-1.5 sm:gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#C87532]" />
+                Safari Experiences
+              </span>
+
+              <span className="flex items-center gap-1.5 sm:gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#C87532]" />
+                Premium Stays
+              </span>
+
+              <span className="flex items-center gap-1.5 sm:gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#C87532]" />
+                Events & Weddings
+              </span>
+
+            </div>
+
+          </div>
+        </div>
+
+        {/* =====================================================
+            DESKTOP CAROUSEL CONTROLS
+        ====================================================== */}
+
+        <div className="absolute bottom-28 right-7 z-20 hidden items-center gap-2 md:flex">
+
+          <div className="mr-2 flex items-center gap-1">
+            {heroData.images.map((_, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => setCurrentImage(idx)}
+                className={`
+                  h-1.5
+                  rounded-full
+                  transition-all
+                  duration-300
+                  ${
+                    currentImage === idx
+                      ? "w-4 bg-[#C87532]"
+                      : "w-1.5 bg-white/40 hover:bg-white/70"
+                  }
+                `}
+                aria-label={`Go to slide ${idx + 1}`}
+              />
+            ))}
           </div>
 
+          <button
+            type="button"
+            onClick={prevSlide}
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-black/40 text-white backdrop-blur-md transition hover:bg-white hover:text-black"
+            aria-label="Previous Slide"
+          >
+            <ChevronLeft size={15} />
+          </button>
+
+          <button
+            type="button"
+            onClick={nextSlide}
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-black/40 text-white backdrop-blur-md transition hover:bg-white hover:text-black"
+            aria-label="Next Slide"
+          >
+            <ChevronRight size={15} />
+          </button>
+
+        </div>
+
+        {/* =====================================================
+            DESKTOP SEARCH BAR
+            HERO KE ANDAR BOTTOM
+        ====================================================== */}
+
+        <div className="absolute bottom-5 left-1/2 z-30 hidden w-[calc(100%-48px)] max-w-5xl -translate-x-1/2 md:block">
+
+          <div className="overflow-hidden rounded-xl border border-white/20 bg-white p-2 shadow-2xl">
+
+            <form
+              onSubmit={handleSearchSubmit}
+              className="grid grid-cols-[1.3fr_1fr_1fr_auto] items-center gap-1.5"
+            >
+
+              {/* Safari / Resort */}
+
+              <div className="flex items-center gap-2.5 rounded-lg border border-[#D5E6DF] bg-[#EEF5F2] px-3 py-2.5 transition focus-within:ring-1 focus-within:ring-[#C87532]">
+
+                <Search
+                  size={16}
+                  className="shrink-0 text-[#18352A]"
+                />
+
+                <div className="flex min-w-0 w-full flex-col">
+
+                  <label
+                    htmlFor="desktop-search-query"
+                    className="text-[10px] font-bold uppercase tracking-wide text-[#385247]"
+                  >
+                    Safari Zone / Resort
+                  </label>
+
+                  <input
+                    id="desktop-search-query"
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) =>
+                      setSearchQuery(e.target.value)
+                    }
+                    placeholder="Dhikala, Bijrani, Jhirna..."
+                    className="w-full bg-transparent text-sm font-semibold text-[#172033] placeholder:text-[#7B8F86] focus:outline-none"
+                  />
+
+                </div>
+              </div>
+
+              {/* Check In */}
+
+              <div className="flex items-center gap-2.5 rounded-lg border-y border-gray-200 bg-white px-3 py-2.5 transition hover:bg-gray-50">
+
+                <CalendarDays
+                  size={16}
+                  className="shrink-0 text-[#172033]"
+                />
+
+                <div className="flex min-w-0 w-full flex-col">
+
+                  <label
+                    htmlFor="desktop-search-date"
+                    className="text-[10px] font-bold uppercase tracking-wide text-gray-600"
+                  >
+                    Check In - Check Out
+                  </label>
+
+                  <input
+                    id="desktop-search-date"
+                    type="date"
+                    value={travelDate}
+                    onChange={(e) =>
+                      setTravelDate(e.target.value)
+                    }
+                    className="w-full cursor-pointer bg-transparent text-sm font-semibold text-[#172033] focus:outline-none"
+                  />
+
+                </div>
+              </div>
+
+              {/* Guests */}
+
+              <div className="flex items-center gap-2.5 rounded-lg border-r border-gray-200 bg-white px-3 py-2.5 transition hover:bg-gray-50">
+
+                <Users2
+                  size={16}
+                  className="shrink-0 text-[#172033]"
+                />
+
+                <div className="flex min-w-0 w-full flex-col">
+
+                  <label
+                    htmlFor="desktop-search-guests"
+                    className="text-[10px] font-bold uppercase tracking-wide text-gray-600"
+                  >
+                    Guests & Rooms
+                  </label>
+
+                  <select
+                    id="desktop-search-guests"
+                    value={guests}
+                    onChange={(e) =>
+                      setGuests(e.target.value)
+                    }
+                    className="w-full cursor-pointer bg-transparent text-sm font-semibold text-[#172033] focus:outline-none"
+                  >
+                    <option value="1 Guest">1 Guest</option>
+                    <option value="2 Guests">2 Guests</option>
+                    <option value="3 Guests">3 Guests</option>
+                    <option value="4 Guests">4 Guests</option>
+                    <option value="5+ Guests">
+                      5+ Guests (Family/Group)
+                    </option>
+                  </select>
+
+                </div>
+              </div>
+
+              {/* Search Button */}
+
+              <button
+                type="submit"
+                className="flex shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-[#C87532] px-5 py-2.5 text-xs font-bold text-white shadow-sm transition hover:scale-[1.01] hover:bg-[#B96928] hover:shadow-md"
+              >
+                <Search size={15} />
+                <span>Search</span>
+              </button>
+
+            </form>
+          </div>
         </div>
       </div>
 
-      {/* ================= CAROUSEL CONTROLS & SLIDE DOTS ================= */}
-      <div className="absolute right-5 bottom-20 md:bottom-16 z-20 hidden sm:flex items-center gap-2">
-        <div className="flex items-center gap-1 mr-2">
-          {heroData.images.map((_, idx) => (
-            <button
-              key={idx}
-              type="button"
-              onClick={() => setCurrentImage(idx)}
-              className={`h-1.5 rounded-full transition-all duration-300 ${
-                currentImage === idx
-                  ? "w-4 bg-[#C87532]"
-                  : "w-1.5 bg-white/40 hover:bg-white/70"
-              }`}
-              aria-label={`Go to slide ${idx + 1}`}
-            />
-          ))}
-        </div>
+      {/* =====================================================
+          MOBILE SEARCH BAR
+      ====================================================== */}
 
-        <button
-          type="button"
-          onClick={prevSlide}
-          className="flex h-7 w-7 items-center justify-center rounded-full border border-white/20 bg-black/40 text-white backdrop-blur-md transition hover:bg-white hover:text-black"
-          aria-label="Previous Slide"
-        >
-          <ChevronLeft size={14} />
-        </button>
+      <div className="relative z-30 mx-auto -mt-10 max-w-5xl px-3 md:hidden">
 
-        <button
-          type="button"
-          onClick={nextSlide}
-          className="flex h-7 w-7 items-center justify-center rounded-full border border-white/20 bg-black/40 text-white backdrop-blur-md transition hover:bg-white hover:text-black"
-          aria-label="Next Slide"
-        >
-          <ChevronRight size={14} />
-        </button>
-      </div>
+        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white p-1.5 shadow-xl">
 
-      {/* ================= EXACT COMPACT SEARCH BAR ================= */}
-      <div className="relative z-30 max-w-5xl mx-auto px-4 -mt-10 md:-mt-12 pb-6">
-        <div className="rounded-lg bg-white border border-gray-200 shadow-lg overflow-hidden p-1.5 sm:p-2">
           <form
             onSubmit={handleSearchSubmit}
-            className="grid grid-cols-1 md:grid-cols-[1.3fr_1fr_1fr_auto] items-center gap-1.5"
+            className="grid grid-cols-1 gap-1"
           >
-            {/* 1. SAFARI ZONE / RESORT SEARCH INPUT */}
-            <div className="flex items-center gap-2.5 px-3 py-2 rounded-md bg-[#EEF5F2] border border-[#D5E6DF] focus-within:ring-1 focus-within:ring-[#C87532] transition">
-              <Search size={16} className="text-[#18352A] shrink-0" />
-              <div className="flex flex-col min-w-0 w-full">
+
+            {/* Safari / Resort */}
+
+            <div className="flex items-center gap-2 rounded-lg border border-[#D5E6DF] bg-[#EEF5F2] px-2.5 py-1.5">
+
+              <Search
+                size={14}
+                className="shrink-0 text-[#18352A]"
+              />
+
+              <div className="flex min-w-0 w-full flex-col">
+
                 <label
-                  htmlFor="search-query"
-                  className="text-[9px] font-bold uppercase tracking-wider text-[#4B6358]"
+                  htmlFor="mobile-search-query"
+                  className="text-[8px] font-bold uppercase tracking-wide text-[#385247]"
                 >
                   Safari Zone / Resort
                 </label>
+
                 <input
-                  id="search-query"
+                  id="mobile-search-query"
                   type="text"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) =>
+                    setSearchQuery(e.target.value)
+                  }
                   placeholder="Dhikala, Bijrani, Jhirna..."
-                  className="bg-transparent text-xs font-medium text-[#172033] focus:outline-none placeholder:text-[#8AA398] w-full"
+                  className="w-full bg-transparent text-[12px] font-semibold text-[#172033] placeholder:text-[#7B8F86] focus:outline-none"
                 />
+
               </div>
             </div>
 
-            {/* 2. CHECK IN - CHECK OUT DATE PICKER */}
-            <div className="flex items-center gap-2.5 px-3 py-2 rounded-md bg-white hover:bg-gray-50 border-y sm:border-y-0 sm:border-r border-gray-200 transition">
-              <CalendarDays size={16} className="text-[#172033] shrink-0" />
-              <div className="flex flex-col min-w-0 w-full">
-                <label
-                  htmlFor="search-date"
-                  className="text-[9px] font-bold uppercase tracking-wider text-gray-500"
-                >
-                  Check In - Check Out
-                </label>
-                <input
-                  id="search-date"
-                  type="date"
-                  value={travelDate}
-                  onChange={(e) => setTravelDate(e.target.value)}
-                  className="bg-transparent text-xs font-medium text-[#172033] focus:outline-none cursor-pointer w-full"
+            {/* Date + Guests Row */}
+
+            <div className="grid grid-cols-2 gap-1">
+
+              {/* Date */}
+
+              <div className="flex min-w-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5">
+
+                <CalendarDays
+                  size={14}
+                  className="shrink-0 text-[#172033]"
                 />
+
+                <div className="flex min-w-0 w-full flex-col">
+
+                  <label
+                    htmlFor="mobile-search-date"
+                    className="text-[8px] font-bold uppercase tracking-wide text-gray-600"
+                  >
+                    Check In - Out
+                  </label>
+
+                  <input
+                    id="mobile-search-date"
+                    type="date"
+                    value={travelDate}
+                    onChange={(e) =>
+                      setTravelDate(e.target.value)
+                    }
+                    className="w-full min-w-0 bg-transparent text-[11px] font-semibold text-[#172033] focus:outline-none"
+                  />
+
+                </div>
+              </div>
+
+              {/* Guests */}
+
+              <div className="flex min-w-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5">
+
+                <Users2
+                  size={14}
+                  className="shrink-0 text-[#172033]"
+                />
+
+                <div className="flex min-w-0 w-full flex-col">
+
+                  <label
+                    htmlFor="mobile-search-guests"
+                    className="text-[8px] font-bold uppercase tracking-wide text-gray-600"
+                  >
+                    Guests
+                  </label>
+
+                  <select
+                    id="mobile-search-guests"
+                    value={guests}
+                    onChange={(e) =>
+                      setGuests(e.target.value)
+                    }
+                    className="w-full min-w-0 bg-transparent text-[11px] font-semibold text-[#172033] focus:outline-none"
+                  >
+                    <option value="1 Guest">1 Guest</option>
+                    <option value="2 Guests">2 Guests</option>
+                    <option value="3 Guests">3 Guests</option>
+                    <option value="4 Guests">4 Guests</option>
+                    <option value="5+ Guests">
+                      5+ Guests
+                    </option>
+                  </select>
+
+                </div>
               </div>
             </div>
 
-            {/* 3. GUESTS & ROOMS SELECTOR */}
-            <div className="flex items-center gap-2.5 px-3 py-2 rounded-md bg-white hover:bg-gray-50 border-r border-gray-200 transition">
-              <Users2 size={16} className="text-[#172033] shrink-0" />
-              <div className="flex flex-col min-w-0 w-full">
-                <label
-                  htmlFor="search-guests"
-                  className="text-[9px] font-bold uppercase tracking-wider text-gray-500"
-                >
-                  Guests & Rooms
-                </label>
-                <select
-                  id="search-guests"
-                  value={guests}
-                  onChange={(e) => setGuests(e.target.value)}
-                  className="bg-transparent text-xs font-medium text-[#172033] focus:outline-none cursor-pointer w-full"
-                >
-                  <option value="1 Guest">1 Guest</option>
-                  <option value="2 Guests">2 Guests</option>
-                  <option value="3 Guests">3 Guests</option>
-                  <option value="4 Guests">4 Guests</option>
-                  <option value="5+ Guests">5+ Guests (Family/Group)</option>
-                </select>
-              </div>
-            </div>
+            {/* Search */}
 
-            {/* 4. EXACT MATCHING GOLD SEARCH BUTTON */}
             <button
               type="submit"
-              className="flex items-center justify-center gap-1.5 rounded-md bg-[#D97706] hover:bg-[#B45309] px-5 py-2.5 text-xs font-bold text-white shadow transition hover:scale-[1.01] cursor-pointer shrink-0"
+              className="flex h-8 items-center justify-center gap-1.5 rounded-lg bg-[#C87532] text-[11px] font-bold text-white transition hover:bg-[#B96928]"
             >
-              <Search size={15} />
-              <span>Search</span>
+              <Search size={13} />
+              Search
             </button>
+
           </form>
         </div>
       </div>

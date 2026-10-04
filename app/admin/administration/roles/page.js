@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ShieldCheck,
   Users,
@@ -12,704 +11,886 @@ import {
   Loader2,
   AlertCircle,
   Save,
+  UserRound,
+  Building2,
+  X,
 } from "lucide-react";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-export default function RolesPage() {
+const ROLE_ORDER = ["admin", "manager", "staff"];
+
+const ROLE_LABELS = {
+  admin: "Admin",
+  manager: "Manager",
+  staff: "Staff",
+};
+
+const ROLE_COLORS = {
+  admin: "bg-orange-50 text-orange-700 border-orange-200",
+  manager: "bg-blue-50 text-blue-700 border-blue-200",
+  staff: "bg-green-50 text-green-700 border-green-200",
+};
+
+const ROLE_DESCRIPTIONS = {
+  admin: "Department administrator",
+  manager: "Team manager",
+  staff: "Team member",
+};
+
+const formatDate = (date) => {
+  if (!date) return "—";
+
+  const parsedDate = new Date(date);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return "—";
+  }
+
+  return parsedDate.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+};
+
+const formatPermission = (permission) => {
+  return permission
+    .split(".")
+    .map(
+      (word) =>
+        word.charAt(0).toUpperCase() + word.slice(1)
+    )
+    .join(" ");
+};
+
+export default function RolesPermissionsPage() {
+  const [groups, setGroups] = useState([]);
+  const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
   const [availablePermissions, setAvailablePermissions] = useState([]);
-  const [openRole, setOpenRole] = useState(null);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const [savingRole, setSavingRole] = useState(null);
+  const [openGroups, setOpenGroups] = useState({});
+  const [openRoles, setOpenRoles] = useState({});
+
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [userPermissions, setUserPermissions] = useState([]);
+  const [permissionsLoading, setPermissionsLoading] = useState(false);
+  const [savingPermissions, setSavingPermissions] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
 
+  const getToken = () => {
+    if (typeof window === "undefined") return "";
+
+    return (
+      localStorage.getItem("adminToken") ||
+      sessionStorage.getItem("adminToken") ||
+      ""
+    );
+  };
+
+  const authHeaders = () => ({
+    Authorization: `Bearer ${getToken()}`,
+    "Content-Type": "application/json",
+  });
+
   useEffect(() => {
-    fetchRoles();
+    loadData();
   }, []);
 
-  // =====================================================
-  // FETCH ROLES
-  // =====================================================
-
-  const fetchRoles = async () => {
+  const loadData = async () => {
     try {
       setLoading(true);
       setError("");
-      setSaveMessage("");
 
-      const token = localStorage.getItem("adminToken");
+      const [groupsResponse, usersResponse, rolesResponse] =
+        await Promise.all([
+          fetch(`${API_URL}/api/admin/groups`, {
+            headers: authHeaders(),
+          }),
+          fetch(`${API_URL}/api/admin/users`, {
+            headers: authHeaders(),
+          }),
+          fetch(`${API_URL}/api/admin/roles`, {
+            headers: authHeaders(),
+          }),
+        ]);
 
-      if (!token) {
-        throw new Error("Admin authentication token not found.");
-      }
+      const groupsData = await groupsResponse.json();
+      const usersData = await usersResponse.json();
+      const rolesData = await rolesResponse.json();
 
-      const response = await fetch(
-        `${API_URL}/api/admin/roles`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          cache: "no-store",
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok || !data?.success) {
+      if (!groupsResponse.ok) {
         throw new Error(
-          data?.message ||
-            "Failed to fetch roles and permissions."
+          groupsData.message || "Failed to load departments."
         );
       }
 
-      const fetchedRoles = Array.isArray(data.roles)
-        ? data.roles
-        : [];
-
-      const fetchedPermissions = Array.isArray(
-        data.availablePermissions
-      )
-        ? [...new Set(data.availablePermissions)]
-        : [];
-
-      setRoles(fetchedRoles);
-      setAvailablePermissions(fetchedPermissions);
-
-      if (fetchedRoles.length > 0) {
-        setOpenRole(fetchedRoles[0].id);
+      if (!usersResponse.ok) {
+        throw new Error(
+          usersData.message || "Failed to load users."
+        );
       }
-    } catch (error) {
-      console.error("Roles fetch error:", error);
 
-      setRoles([]);
-      setAvailablePermissions([]);
+      if (!rolesResponse.ok) {
+        throw new Error(
+          rolesData.message || "Failed to load permissions."
+        );
+      }
 
-      setError(
-        error?.message ||
-          "Something went wrong while loading roles."
+      setGroups(
+        Array.isArray(groupsData.groups)
+          ? groupsData.groups
+          : []
       );
+
+      setUsers(
+        Array.isArray(usersData.users)
+          ? usersData.users
+          : []
+      );
+
+      setRoles(
+        Array.isArray(rolesData.roles)
+          ? rolesData.roles
+          : []
+      );
+
+      setAvailablePermissions(
+        Array.isArray(rolesData.availablePermissions)
+          ? rolesData.availablePermissions
+          : []
+      );
+    } catch (err) {
+      console.error("Role & Permissions load error:", err);
+      setError(err.message || "Something went wrong.");
     } finally {
       setLoading(false);
     }
   };
 
-  // =====================================================
-  // TOGGLE ROLE
-  // =====================================================
+  const groupedData = useMemo(() => {
+    return groups.map((group) => {
+      const groupUsers = users.filter(
+        (user) =>
+          String(user.group || "").toLowerCase() ===
+          String(group.groupId || "").toLowerCase()
+      );
 
-  const toggleRole = (roleId) => {
-    setOpenRole((current) =>
-      current === roleId ? null : roleId
-    );
+      return {
+        ...group,
+        users: groupUsers,
+      };
+    });
+  }, [groups, users]);
 
-    setSaveMessage("");
-  };
+  const activeGroups = groups.filter(
+    (group) => group.status === "active"
+  ).length;
 
-  // =====================================================
-  // TOGGLE PERMISSION
-  // =====================================================
+  const inactiveGroups = groups.length - activeGroups;
 
-  const togglePermission = (roleId, permission) => {
-    setSaveMessage("");
-
-    setRoles((currentRoles) =>
-      currentRoles.map((role) => {
-        if (role.id !== roleId) {
-          return role;
-        }
-
-        const currentPermissions = Array.isArray(
-          role.permissions
-        )
-          ? role.permissions
-          : [];
-
-        const hasPermission =
-          currentPermissions.includes(permission);
-
-        return {
-          ...role,
-          permissions: hasPermission
-            ? currentPermissions.filter(
-                (item) => item !== permission
-              )
-            : [...currentPermissions, permission],
-        };
-      })
+  const getRoleUsers = (groupUsers, role) => {
+    return groupUsers.filter(
+      (user) =>
+        String(user.role || "").toLowerCase() === role
     );
   };
 
-  // =====================================================
-  // SAVE PERMISSIONS
-  // =====================================================
+  const getRolePermissionCount = (role) => {
+    const roleData = roles.find(
+      (item) =>
+        String(item.roleId || "").toLowerCase() === role
+    );
 
-  const saveRolePermissions = async (role) => {
+    return Array.isArray(roleData?.permissions)
+      ? roleData.permissions.length
+      : 0;
+  };
+
+  const toggleGroup = (groupId) => {
+    setOpenGroups((prev) => ({
+      ...prev,
+      [groupId]: !prev[groupId],
+    }));
+  };
+
+  const toggleRole = (groupId, role) => {
+    const key = `${groupId}-${role}`;
+
+    setOpenRoles((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
+  const openUserPermissions = async (user) => {
     try {
-      setSavingRole(role.id);
+      setSelectedUser(user);
+      setPermissionsLoading(true);
       setSaveMessage("");
-      setError("");
 
-      const token = localStorage.getItem("adminToken");
+      const response = await fetch(
+        `${API_URL}/api/admin/users/${user._id}/permissions`,
+        {
+          headers: authHeaders(),
+        }
+      );
 
-      if (!token) {
+      const data = await response.json();
+
+      if (!response.ok) {
         throw new Error(
-          "Admin authentication token not found."
+          data.message || "Failed to load user permissions."
         );
       }
 
-      let permissions = Array.isArray(role.permissions)
-        ? [...new Set(role.permissions)]
-        : [];
+      setUserPermissions(
+        Array.isArray(data.permissions)
+          ? data.permissions
+          : []
+      );
+    } catch (err) {
+      console.error("User permissions error:", err);
 
-      // Super Admin must always retain this permission
-      if (
-        role.id === "super_admin" &&
-        !permissions.includes("roles.manage")
-      ) {
-        permissions.push("roles.manage");
-      }
+      setSaveMessage(
+        err.message || "Failed to load permissions."
+      );
+    } finally {
+      setPermissionsLoading(false);
+    }
+  };
+
+  const togglePermission = (permission) => {
+    setUserPermissions((current) =>
+      current.includes(permission)
+        ? current.filter((item) => item !== permission)
+        : [...current, permission]
+    );
+
+    setSaveMessage("");
+  };
+
+  const saveUserPermissions = async () => {
+    if (!selectedUser) return;
+
+    try {
+      setSavingPermissions(true);
+      setSaveMessage("");
 
       const response = await fetch(
-        `${API_URL}/api/admin/roles/${role.id}/permissions`,
+        `${API_URL}/api/admin/users/${selectedUser._id}/permissions`,
         {
           method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
+          headers: authHeaders(),
           body: JSON.stringify({
-            permissions,
+            permissions: userPermissions,
           }),
         }
       );
 
       const data = await response.json();
 
-      if (!response.ok || !data?.success) {
+      if (!response.ok) {
         throw new Error(
-          data?.message ||
-            "Failed to update role permissions."
-        );
-      }
-
-      if (data.role) {
-        setRoles((currentRoles) =>
-          currentRoles.map((item) =>
-            item.id === role.id
-              ? {
-                  ...item,
-                  permissions:
-                    data.role.permissions || [],
-                  permissionCount:
-                    data.role.permissionCount ??
-                    data.role.permissions?.length ??
-                    0,
-                }
-              : item
-          )
+          data.message || "Failed to save permissions."
         );
       }
 
       setSaveMessage(
-        `${role.name || role.id} permissions saved successfully.`
-      );
-    } catch (error) {
-      console.error(
-        "Save role permissions error:",
-        error
+        "Permissions updated successfully."
       );
 
+      setUsers((currentUsers) =>
+        currentUsers.map((user) =>
+          user._id === selectedUser._id
+            ? {
+                ...user,
+                permissions: userPermissions,
+              }
+            : user
+        )
+      );
+
+      setSelectedUser((current) =>
+        current
+          ? {
+              ...current,
+              permissions: userPermissions,
+            }
+          : current
+      );
+    } catch (err) {
+      console.error("Save permissions error:", err);
+
       setSaveMessage(
-        error?.message ||
-          "Failed to save role permissions."
+        err.message || "Failed to save permissions."
       );
     } finally {
-      setSavingRole(null);
+      setSavingPermissions(false);
     }
   };
 
-  // =====================================================
-  // HELPERS
-  // =====================================================
-
-  const getRoleColor = (roleId) => {
-    if (roleId === "super_admin") {
-      return "bg-[#18352A]";
-    }
-
-    if (roleId === "admin") {
-      return "bg-[#C87532]";
-    }
-
-    return "bg-[#64748B]";
+  const closePermissions = () => {
+    setSelectedUser(null);
+    setUserPermissions([]);
+    setSaveMessage("");
   };
-
-  const getRoleDescription = (roleId) => {
-    const descriptions = {
-      super_admin:
-        "Full access to administration and all system modules.",
-
-      admin:
-        "Manage day-to-day operations, users and business modules.",
-
-      staff:
-        "Limited operational access for day-to-day staff activities.",
-    };
-
-    return (
-      descriptions[roleId] ||
-      "Access permissions configured for this role."
-    );
-  };
-
-  const formatPermission = (permission) => {
-    if (!permission) return "";
-
-    return permission
-      .split(".")
-      .map((word) =>
-        word
-          .replace(/_/g, " ")
-          .replace(/\b\w/g, (char) =>
-            char.toUpperCase()
-          )
-      )
-      .join(" ");
-  };
-
-  // =====================================================
-  // LOADING
-  // =====================================================
 
   if (loading) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center bg-[#F7F5F0]">
-        <div className="flex items-center gap-2 text-sm text-gray-500">
-          <Loader2
-            size={18}
-            className="animate-spin"
-          />
-          Loading roles and permissions...
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="flex items-center gap-2 text-gray-500 text-sm">
+          <Loader2 className="w-5 h-5 animate-spin" />
+          Loading roles & permissions...
         </div>
       </div>
     );
   }
-
-  // =====================================================
-  // ERROR
-  // =====================================================
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#F7F5F0] p-4 sm:p-6">
-        <div className="rounded-xl border border-red-200 bg-white p-5">
-          <div className="flex items-start gap-3">
-            <AlertCircle
-              size={20}
-              className="mt-0.5 shrink-0 text-red-500"
-            />
+      <div className="p-3 sm:p-4 lg:p-6">
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
 
-            <div>
-              <h2 className="text-sm font-semibold text-[#172033]">
-                Unable to load roles
-              </h2>
+          <div>
+            <h3 className="font-semibold text-red-800 text-sm">
+              Unable to load roles & permissions
+            </h3>
 
-              <p className="mt-1 text-sm text-gray-500">
-                {error}
-              </p>
+            <p className="text-xs text-red-700 mt-1">
+              {error}
+            </p>
 
-              <button
-                type="button"
-                onClick={fetchRoles}
-                className="mt-4 rounded-lg bg-[#18352A] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
-              >
-                Try Again
-              </button>
-            </div>
+            <button
+              onClick={loadData}
+              className="mt-3 px-4 py-2 rounded-lg bg-[#C87532] hover:bg-[#B96928] text-white text-xs font-medium"
+            >
+              Try Again
+            </button>
           </div>
         </div>
       </div>
     );
   }
 
-  // =====================================================
-  // PAGE
-  // =====================================================
-
   return (
-    <div className="min-h-screen bg-[#F7F5F0] p-4 sm:p-6">
+    <>
+      <div className="w-full min-w-0 px-2 sm:px-4 lg:px-6 py-4 sm:py-5 lg:py-6">
 
-      {/* PAGE HEADER */}
+        {/* HEADER */}
 
-      <div className="mb-7">
-        <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#18352A] text-white shadow-sm">
-            <ShieldCheck size={22} />
-          </div>
+        <div className="mb-5">
+          <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
 
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-[#172033]">
-              Roles & Permissions
-            </h1>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#18352A] flex items-center justify-center shadow-sm">
+                <ShieldCheck className="w-5 h-5 text-white" />
+              </div>
 
-            <p className="mt-1 text-sm text-gray-500">
-              Control what each role can access across the admin panel.
-            </p>
+              <div>
+                <h1 className="text-xl lg:text-2xl font-bold text-[#172033]">
+                  Role & Permissions
+                </h1>
+
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Manage roles and permissions by department.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full xl:w-auto">
+
+              <div className="bg-white border border-gray-200 rounded-xl px-4 py-2.5 shadow-sm">
+                <p className="text-[10px] text-gray-500">
+                  Departments
+                </p>
+                <p className="text-lg font-bold text-[#172033]">
+                  {groups.length}
+                </p>
+              </div>
+
+              <div className="bg-white border border-gray-200 rounded-xl px-4 py-2.5 shadow-sm">
+                <p className="text-[10px] text-gray-500">
+                  Users
+                </p>
+                <p className="text-lg font-bold text-[#172033]">
+                  {users.length}
+                </p>
+              </div>
+
+              <div className="bg-green-50 border border-green-100 rounded-xl px-4 py-2.5">
+                <p className="text-[10px] text-gray-500">
+                  Active
+                </p>
+                <p className="text-lg font-bold text-green-700">
+                  {activeGroups}
+                </p>
+              </div>
+
+              <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5">
+                <p className="text-[10px] text-gray-500">
+                  Inactive
+                </p>
+                <p className="text-lg font-bold text-gray-600">
+                  {inactiveGroups}
+                </p>
+              </div>
+
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* INFO CARD */}
+        {/* DEPARTMENTS */}
 
-      <div className="mb-6 rounded-xl border border-[#E6DED5] bg-white p-4 shadow-sm">
-        <div className="flex items-start gap-3">
-          <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#F3E8DD] text-[#C87532]">
-            <Lock size={17} />
-          </div>
+        <div className="space-y-3">
+          {groupedData.length === 0 ? (
+            <div className="bg-white border border-gray-200 rounded-2xl p-10 text-center shadow-sm">
+              <Building2 className="w-9 h-9 mx-auto text-gray-300" />
 
-          <div>
-            <p className="text-sm font-semibold text-[#172033]">
-              Role based access control
-            </p>
+              <h3 className="mt-3 font-semibold text-gray-800 text-sm">
+                No departments found
+              </h3>
 
-            <p className="mt-1 text-sm leading-6 text-gray-500">
-              Enable or disable individual permissions for each
-              role. Changes are saved directly to the RBAC
-              configuration.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* SAVE MESSAGE */}
-
-      {saveMessage && (
-        <div
-          className={`mb-5 flex items-center gap-2 rounded-xl border px-4 py-3 text-sm ${
-            saveMessage
-              .toLowerCase()
-              .includes("successfully")
-              ? "border-green-200 bg-green-50 text-green-700"
-              : "border-red-200 bg-red-50 text-red-700"
-          }`}
-        >
-          {saveMessage
-            .toLowerCase()
-            .includes("successfully") ? (
-            <Check size={17} />
+              <p className="text-xs text-gray-500 mt-1">
+                Create a department from Group Management.
+              </p>
+            </div>
           ) : (
-            <AlertCircle size={17} />
-          )}
+            groupedData.map((group) => {
+              const isGroupOpen =
+                openGroups[group.groupId];
 
-          <span>{saveMessage}</span>
-        </div>
-      )}
-
-      {/* ROLES */}
-
-      {roles.length === 0 ? (
-        <div className="rounded-xl border border-gray-200 bg-white p-10 text-center shadow-sm">
-          <ShieldCheck
-            size={30}
-            className="mx-auto text-gray-400"
-          />
-
-          <h2 className="mt-3 text-sm font-semibold text-[#172033]">
-            No roles found
-          </h2>
-
-          <p className="mt-1 text-sm text-gray-500">
-            No roles are currently configured in the backend.
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {roles.map((role) => {
-            const isOpen = openRole === role.id;
-
-            const rolePermissions = Array.isArray(
-              role.permissions
-            )
-              ? role.permissions
-              : [];
-
-            const isSaving = savingRole === role.id;
-
-            return (
-              <div
-                key={role.id}
-                className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm"
-              >
-                {/* ROLE HEADER */}
-
-                <button
-                  type="button"
-                  onClick={() => toggleRole(role.id)}
-                  className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition hover:bg-gray-50"
+              return (
+                <div
+                  key={group.groupId}
+                  className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
                 >
-                  <div className="flex min-w-0 items-center gap-4">
-                    <div
-                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${getRoleColor(
-                        role.id
-                      )} text-white`}
-                    >
-                      <Users size={18} />
-                    </div>
+                  {/* DEPARTMENT */}
 
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h2 className="text-sm font-bold text-[#172033]">
-                          {role.name || role.id}
-                        </h2>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      toggleGroup(group.groupId)
+                    }
+                    className="w-full px-3 sm:px-5 py-3.5 flex items-center justify-between gap-3 hover:bg-[#FCFBF8] transition text-left"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
 
-                        <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-gray-500">
-                          {role.id.replace("_", " ")}
-                        </span>
+                      <div className="w-10 h-10 rounded-xl bg-[#F7F5F0] flex items-center justify-center shrink-0">
+                        <Building2 className="w-5 h-5 text-[#C87532]" />
                       </div>
 
-                      <p className="mt-1 text-xs text-gray-500">
-                        {getRoleDescription(role.id)}
-                      </p>
-                    </div>
-                  </div>
+                      <div className="min-w-0">
 
-                  <div className="flex shrink-0 items-center gap-3">
-                    <span className="hidden rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-medium text-gray-600 sm:inline-flex">
-                      {rolePermissions.length} permissions
-                    </span>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h2 className="text-sm sm:text-base font-bold text-[#172033] truncate">
+                            {group.name}
+                          </h2>
 
-                    {isOpen ? (
-                      <ChevronUp
-                        size={19}
-                        className="text-gray-400"
-                      />
-                    ) : (
-                      <ChevronDown
-                        size={19}
-                        className="text-gray-400"
-                      />
-                    )}
-                  </div>
-                </button>
-
-                {/* OPEN ROLE */}
-
-                {isOpen && (
-                  <div className="border-t border-gray-100 bg-[#FAFAF8]">
-
-                    {/* ACCESS HEADER */}
-
-                    <div className="flex flex-col gap-4 border-b border-gray-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-                      <div>
-                        <h3 className="text-sm font-semibold text-[#172033]">
-                          Module Access
-                        </h3>
-
-                        <p className="mt-1 text-xs text-gray-500">
-                          Click a permission to turn access on or off.
-                        </p>
-                      </div>
-
-                      <div className="flex items-center gap-3">
-                        <span className="rounded-full bg-green-50 px-3 py-1.5 text-xs font-medium text-green-700">
-                          {rolePermissions.length} active
-                        </span>
-
-                        <button
-                          type="button"
-                          onClick={() =>
-                            saveRolePermissions(role)
-                          }
-                          disabled={isSaving}
-                          className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#18352A] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#214535] disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                          {isSaving ? (
-                            <>
-                              <Loader2
-                                size={16}
-                                className="animate-spin"
-                              />
-                              Saving...
-                            </>
-                          ) : (
-                            <>
-                              <Save size={16} />
-                              Save Changes
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* PERMISSIONS */}
-
-                    <div className="p-5">
-                      {availablePermissions.length === 0 ? (
-                        <div className="rounded-xl border border-gray-200 bg-white p-6 text-center text-sm text-gray-500">
-                          No permissions configured.
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[9px] font-semibold border ${
+                              group.status === "active"
+                                ? "bg-green-50 text-green-700 border-green-200"
+                                : "bg-gray-100 text-gray-600 border-gray-200"
+                            }`}
+                          >
+                            {group.status === "active"
+                              ? "Active"
+                              : "Inactive"}
+                          </span>
                         </div>
+
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-1">
+                          <span className="text-[10px] text-gray-500">
+                            {group.users.length}{" "}
+                            {group.users.length === 1
+                              ? "user"
+                              : "users"}
+                          </span>
+
+                          <span className="hidden sm:block text-gray-300">
+                            •
+                          </span>
+
+                          <span className="text-[10px] text-gray-400">
+                            Created {formatDate(group.createdAt)}
+                          </span>
+                        </div>
+
+                      </div>
+                    </div>
+
+                    <div className="w-8 h-8 rounded-lg border border-gray-200 bg-white flex items-center justify-center shrink-0">
+                      {isGroupOpen ? (
+                        <ChevronUp className="w-4 h-4 text-gray-500" />
                       ) : (
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                          {availablePermissions.map(
-                            (permission) => {
-                              const hasPermission =
-                                rolePermissions.includes(
-                                  permission
-                                );
-
-                              const isProtected =
-                                role.id === "super_admin" &&
-                                permission === "roles.manage";
-
-                              return (
-                                <button
-                                  type="button"
-                                  key={`${role.id}-${permission}`}
-                                  onClick={() => {
-                                    if (!isProtected) {
-                                      togglePermission(
-                                        role.id,
-                                        permission
-                                      );
-                                    }
-                                  }}
-                                  disabled={
-                                    isProtected || isSaving
-                                  }
-                                  className={`group flex w-full items-center justify-between gap-3 rounded-xl border p-4 text-left transition ${
-                                    hasPermission
-                                      ? "border-green-200 bg-white shadow-sm"
-                                      : "border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm"
-                                  } ${
-                                    isProtected
-                                      ? "cursor-not-allowed"
-                                      : "cursor-pointer"
-                                  }`}
-                                >
-                                  <div className="flex min-w-0 items-center gap-3">
-                                    {/* ICON */}
-
-                                    <div
-                                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
-                                        hasPermission
-                                          ? "bg-green-50 text-green-600"
-                                          : "bg-gray-100 text-gray-400"
-                                      }`}
-                                    >
-                                      {hasPermission ? (
-                                        <Check size={17} />
-                                      ) : (
-                                        <span className="text-sm">
-                                          —
-                                        </span>
-                                      )}
-                                    </div>
-
-                                    {/* TEXT */}
-
-                                    <div className="min-w-0">
-                                      <p
-                                        className={`truncate text-sm font-medium ${
-                                          hasPermission
-                                            ? "text-[#172033]"
-                                            : "text-gray-500"
-                                        }`}
-                                      >
-                                        {formatPermission(
-                                          permission
-                                        )}
-                                      </p>
-
-                                      <p
-                                        className={`mt-0.5 text-[11px] ${
-                                          hasPermission
-                                            ? "text-green-600"
-                                            : "text-gray-400"
-                                        }`}
-                                      >
-                                        {isProtected
-                                          ? "Required permission"
-                                          : hasPermission
-                                          ? "Access enabled"
-                                          : "Access disabled"}
-                                      </p>
-                                    </div>
-                                  </div>
-
-                                  {/* TOGGLE */}
-
-                                  <div
-                                    className={`relative h-5 w-9 shrink-0 rounded-full transition ${
-                                      hasPermission
-                                        ? "bg-[#18352A]"
-                                        : "bg-gray-300"
-                                    }`}
-                                  >
-                                    <div
-                                      className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition ${
-                                        hasPermission
-                                          ? "left-[18px]"
-                                          : "left-0.5"
-                                      }`}
-                                    />
-                                  </div>
-                                </button>
-                              );
-                            }
-                          )}
-                        </div>
+                        <ChevronDown className="w-4 h-4 text-gray-500" />
                       )}
                     </div>
+                  </button>
 
-                    {/* FOOTER */}
+                  {/* ROLES */}
 
-                    <div className="border-t border-gray-200 bg-white px-5 py-3">
-                      <div className="flex items-center justify-between">
-                        <p className="text-xs text-gray-400">
-                          Changes are not applied until you save.
-                        </p>
+                  {isGroupOpen && (
+                    <div className="border-t border-gray-100 bg-[#FAFAF8] p-2.5 sm:p-4 space-y-2.5">
 
-                        <span className="text-xs font-medium text-gray-500">
-                          {availablePermissions.length} total permissions
-                        </span>
-                      </div>
+                      {ROLE_ORDER.map((role) => {
+                        const roleUsers = getRoleUsers(
+                          group.users,
+                          role
+                        );
+
+                        const roleKey =
+                          `${group.groupId}-${role}`;
+
+                        const isRoleOpen =
+                          openRoles[roleKey];
+
+                        return (
+                          <div
+                            key={roleKey}
+                            className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.03)]"
+                          >
+                            <button
+                              type="button"
+                              onClick={() =>
+                                toggleRole(
+                                  group.groupId,
+                                  role
+                                )
+                              }
+                              className="w-full px-3 sm:px-4 py-3 flex items-center justify-between gap-3 hover:bg-gray-50 transition text-left"
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0">
+
+                                <div
+                                  className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                                    role === "admin"
+                                      ? "bg-orange-50"
+                                      : role === "manager"
+                                      ? "bg-blue-50"
+                                      : "bg-green-50"
+                                  }`}
+                                >
+                                  <ShieldCheck
+                                    className={`w-4 h-4 ${
+                                      role === "admin"
+                                        ? "text-orange-600"
+                                        : role === "manager"
+                                        ? "text-blue-600"
+                                        : "text-green-600"
+                                    }`}
+                                  />
+                                </div>
+
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <span
+                                      className={`px-2 py-0.5 rounded-md border text-[10px] font-semibold ${ROLE_COLORS[role]}`}
+                                    >
+                                      {ROLE_LABELS[role]}
+                                    </span>
+
+                                    <span className="hidden sm:block text-[10px] text-gray-400">
+                                      {ROLE_DESCRIPTIONS[role]}
+                                    </span>
+                                  </div>
+
+                                  <p className="text-[10px] text-gray-500 mt-1">
+                                    {roleUsers.length}{" "}
+                                    {roleUsers.length === 1
+                                      ? "user"
+                                      : "users"}{" "}
+                                    ·{" "}
+                                    {getRolePermissionCount(
+                                      role
+                                    )}{" "}
+                                    permissions
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0">
+                                {isRoleOpen ? (
+                                  <ChevronUp className="w-4 h-4 text-gray-400" />
+                                ) : (
+                                  <ChevronDown className="w-4 h-4 text-gray-400" />
+                                )}
+                              </div>
+                            </button>
+
+                            {isRoleOpen && (
+                              <div className="border-t border-gray-100 bg-[#FAFAF8] p-2 sm:p-3">
+
+                                {roleUsers.length === 0 ? (
+                                  <div className="py-6 text-center">
+                                    <Users className="w-6 h-6 mx-auto text-gray-300" />
+
+                                    <p className="text-[11px] text-gray-500 mt-2">
+                                      No{" "}
+                                      {ROLE_LABELS[
+                                        role
+                                      ].toLowerCase()}{" "}
+                                      users.
+                                    </p>
+                                  </div>
+                                ) : (
+                                  <div className="space-y-2">
+                                    {roleUsers.map(
+                                      (user) => {
+                                        const selected =
+                                          selectedUser?._id ===
+                                          user._id;
+
+                                        return (
+                                          <div
+                                            key={
+                                              user._id
+                                            }
+                                            className={`bg-white border rounded-xl px-3 py-2.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 ${
+                                              selected
+                                                ? "border-[#C87532] ring-1 ring-[#C87532]/20"
+                                                : "border-gray-200"
+                                            }`}
+                                          >
+                                            <div className="flex items-center gap-2.5 min-w-0">
+                                              <div className="w-8 h-8 rounded-full bg-[#18352A] flex items-center justify-center shrink-0">
+                                                <UserRound className="w-4 h-4 text-white" />
+                                              </div>
+
+                                              <div className="min-w-0">
+                                                <p className="text-xs font-semibold text-gray-800 truncate">
+                                                  {user.name}
+                                                </p>
+
+                                                <p className="text-[10px] text-gray-500 truncate">
+                                                  {user.email}
+                                                </p>
+                                              </div>
+                                            </div>
+
+                                            <div className="flex items-center justify-between sm:justify-end gap-2">
+                                              <span
+                                                className={`px-2 py-1 rounded-full text-[9px] font-medium ${
+                                                  user.status ===
+                                                  "active"
+                                                    ? "bg-green-50 text-green-700"
+                                                    : "bg-gray-100 text-gray-600"
+                                                }`}
+                                              >
+                                                {user.status ||
+                                                  "active"}
+                                              </span>
+
+                                              <button
+                                                type="button"
+                                                onClick={() =>
+                                                  openUserPermissions(
+                                                    user
+                                                  )
+                                                }
+                                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#C87532] hover:bg-[#B96928] text-white text-[10px] font-medium transition"
+                                              >
+                                                <Lock className="w-3.5 h-3.5" />
+                                                Permissions
+                                              </button>
+                                            </div>
+                                          </div>
+                                        );
+                                      }
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* BOTTOM INFO */}
-
-      <div className="mt-6 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-        <div className="flex items-start gap-3">
-          <ShieldCheck
-            size={18}
-            className="mt-0.5 shrink-0 text-[#18352A]"
-          />
-
-          <div>
-            <p className="text-sm font-semibold text-[#172033]">
-              RBAC configuration
-            </p>
-
-            <p className="mt-1 text-xs leading-5 text-gray-500">
-              Permissions are loaded from the backend configuration.
-              Only authorized administrators can update role access.
-            </p>
-          </div>
+                  )}
+                </div>
+              );
+            })
+          )}
         </div>
       </div>
-    </div>
+
+      {/* PERMISSIONS */}
+
+      {selectedUser && (
+        <div className="fixed inset-0 z-50 bg-black/45 flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="w-full sm:max-w-3xl h-[94vh] sm:h-auto sm:max-h-[90vh] bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+
+            <div className="px-4 sm:px-5 py-3.5 border-b border-gray-200 flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <h2 className="text-base font-bold text-[#172033] truncate">
+                  {selectedUser.name}
+                </h2>
+
+                <p className="text-[10px] text-gray-500 mt-0.5 truncate">
+                  {groupedData.find(
+                    (group) =>
+                      group.groupId === selectedUser.group
+                  )?.name || selectedUser.group}
+                  {" · "}
+                  {ROLE_LABELS[selectedUser.role] ||
+                    selectedUser.role}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={closePermissions}
+                className="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-500"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-3 sm:p-5">
+              {permissionsLoading ? (
+                <div className="py-16 flex justify-center">
+                  <div className="flex items-center gap-2 text-gray-500 text-sm">
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Loading permissions...
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="mb-4">
+                    <p className="text-sm font-semibold text-gray-800">
+                      Permissions
+                    </p>
+
+                    <p className="text-[10px] text-gray-500 mt-0.5">
+                      {userPermissions.length} selected
+                    </p>
+                  </div>
+
+                  {availablePermissions.length === 0 ? (
+                    <div className="rounded-xl border border-gray-200 p-6 text-center text-xs text-gray-500">
+                      No permissions available.
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {availablePermissions.map(
+                        (permission) => {
+                          const checked =
+                            userPermissions.includes(
+                              permission
+                            );
+
+                          return (
+                            <button
+                              key={permission}
+                              type="button"
+                              onClick={() =>
+                                togglePermission(
+                                  permission
+                                )
+                              }
+                              className={`text-left border rounded-xl p-3 transition ${
+                                checked
+                                  ? "border-[#18352A] bg-[#18352A]/5"
+                                  : "border-gray-200 bg-white hover:bg-gray-50"
+                              }`}
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="min-w-0">
+                                  <p className="text-xs font-semibold text-gray-800 truncate">
+                                    {formatPermission(
+                                      permission
+                                    )}
+                                  </p>
+
+                                  <p className="text-[9px] text-gray-400 mt-0.5 truncate">
+                                    {permission}
+                                  </p>
+                                </div>
+
+                                <div
+                                  className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
+                                    checked
+                                      ? "bg-[#18352A] border-[#18352A]"
+                                      : "bg-white border-gray-300"
+                                  }`}
+                                >
+                                  {checked && (
+                                    <Check className="w-2.5 h-2.5 text-white stroke-[3]" />
+                                  )}
+                                </div>
+                              </div>
+                            </button>
+                          );
+                        }
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            <div className="px-4 sm:px-5 py-3.5 border-t border-gray-200 bg-gray-50">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+
+                <div className="min-h-[18px]">
+                  {saveMessage && (
+                    <p
+                      className={`text-[10px] sm:text-xs ${
+                        saveMessage.includes(
+                          "successfully"
+                        )
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }`}
+                    >
+                      {saveMessage}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={closePermissions}
+                    className="px-3.5 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 text-xs font-medium hover:bg-gray-100"
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={saveUserPermissions}
+                    disabled={
+                      permissionsLoading ||
+                      savingPermissions
+                    }
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[#C87532] hover:bg-[#B96928] text-white text-xs font-medium disabled:opacity-50"
+                  >
+                    {savingPermissions ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Save className="w-3.5 h-3.5" />
+                    )}
+
+                    {savingPermissions
+                      ? "Saving..."
+                      : "Save"}
+                  </button>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+    </>
   );
 }

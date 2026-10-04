@@ -9,7 +9,7 @@ export default function StaySection() {
 
         {/* Heading */}
         <div className="max-w-2xl mb-8 md:mb-10">
-          <p className="text-[11px] md:text-xs font-semibold tracking-[3px] text-[#C88A3D] mb-3 md:mb-4">
+          <p className="text-[11px] md:text-xs font-semibold tracking-[3px] text-[#C87532] mb-3 md:mb-4">
             {stayData.eyebrow}
           </p>
 
@@ -60,7 +60,7 @@ export default function StaySection() {
                   </div>
 
                   {/* Arrow */}
-                  <div className="shrink-0 w-9 h-9 md:w-10 md:h-10 rounded-full bg-white/95 text-[#172033] flex items-center justify-center shadow-lg transition-all duration-300 group-hover:bg-[#C88A3D] group-hover:text-white group-hover:rotate-45">
+                  <div className="shrink-0 w-9 h-9 md:w-10 md:h-10 rounded-full bg-white/95 text-[#172033] flex items-center justify-center shadow-lg transition-all duration-300 group-hover:bg-[#C87532] group-hover:text-white group-hover:rotate-45">
                     <ArrowUpRight size={17} />
                   </div>
 
@@ -76,7 +76,7 @@ export default function StaySection() {
         <div className="mt-7 md:mt-9 text-center">
           <Link
             href="/stay"
-            className="inline-flex items-center justify-center gap-2 bg-[#172033] text-white px-6 py-3 rounded-full text-sm md:text-[15px] font-semibold hover:bg-[#C88A3D] transition-all duration-300"
+            className="inline-flex items-center justify-center gap-2 bg-[#172033] text-white px-6 py-3 rounded-full text-sm md:text-[15px] font-semibold hover:bg-[#C87532] transition-all duration-300"
           >
             Explore All Stays
             <ArrowUpRight size={17} />

@@ -68,23 +68,23 @@ export const navigation = [
     dropdown: [
       {
         name: "Corporate Meetings",
-        href: "/mice/meetings",
+        href: "/events/meetings",
       },
       {
         name: "Conferences",
-        href: "/mice/conferences",
+        href: "/events/conferences",
       },
       {
         name: "Team Outings",
-        href: "/mice/team-outings",
+        href: "/events/team-outings",
       },
       {
         name: "Corporate Retreats",
-        href: "/mice/retreats",
+        href: "/events/retreats",
       },
       {
         name: "Dealer Meets",
-        href: "/mice/dealer-meets",
+        href: "/events/dealer-meets",
       },
       {
         name: "Event Production",

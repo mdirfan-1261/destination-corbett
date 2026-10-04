@@ -21,7 +21,7 @@ export default function MICESection() {
           {/* Content */}
           <div className="max-w-xl">
 
-            <p className="text-[11px] md:text-xs font-semibold tracking-[3px] text-[#C88A3D] mb-3 md:mb-4">
+            <p className="text-[11px] md:text-xs font-semibold tracking-[3px] text-[#C87532] mb-3 md:mb-4">
               EVENTS & EXPERIENCES
             </p>
 
@@ -41,7 +41,25 @@ export default function MICESection() {
 
             <Link
               href="/events"
-              className="inline-flex items-center justify-center gap-2 mt-6 md:mt-7 bg-[#172033] text-white px-6 py-3 rounded-full text-sm md:text-[15px] font-semibold hover:bg-[#C88A3D] transition-all duration-300"
+              className="
+                inline-flex
+                items-center
+                justify-center
+                gap-2
+                mt-6
+                md:mt-7
+                bg-[#172033]
+                text-white
+                px-6
+                py-3
+                rounded-full
+                text-sm
+                md:text-[15px]
+                font-semibold
+                hover:bg-[#C87532]
+                transition-all
+                duration-300
+              "
             >
               Explore Events
               <ArrowRight size={17} />

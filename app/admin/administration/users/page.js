@@ -18,16 +18,14 @@ import {
   ChevronDown,
   Eye,
   EyeOff,
-  Mail,
-  CalendarDays,
+  KeyRound,
+  Check,
+  Save,
+  RefreshCw,
 } from "lucide-react";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-
-/* =====================================================
-   DEFAULT FORM
-===================================================== */
 
 const emptyForm = {
   name: "",
@@ -43,6 +41,8 @@ const emptyForm = {
 
 const getCurrentRoleFromToken = () => {
   try {
+    if (typeof window === "undefined") return "";
+
     const token = localStorage.getItem("adminToken");
 
     if (!token) return "";
@@ -71,10 +71,46 @@ const getCurrentRoleFromToken = () => {
 };
 
 /* =====================================================
+   PERMISSION HELPERS
+===================================================== */
+
+const getPermissionLabel = (permission) => {
+  if (!permission) return "";
+
+  const [module, action] = permission.split(".");
+
+  const format = (value) =>
+    value
+      ? value.charAt(0).toUpperCase() +
+        value.slice(1).replace(/_/g, " ")
+      : "";
+
+  return `${format(module)} ${format(action)}`;
+};
+
+const getPermissionGroups = (permissions = []) => {
+  const groups = {};
+
+  permissions.forEach((permission) => {
+    const module = permission?.split(".")?.[0];
+
+    if (!module) return;
+
+    if (!groups[module]) {
+      groups[module] = [];
+    }
+
+    groups[module].push(permission);
+  });
+
+  return groups;
+};
+
+/* =====================================================
    PAGE
 ===================================================== */
 
-export default function UsersPage() {
+export default function UserManagementPage() {
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
   const [groups, setGroups] = useState([]);
@@ -96,24 +132,44 @@ export default function UsersPage() {
   const [showModal, setShowModal] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
 
-  const [formData, setFormData] =
-    useState(emptyForm);
+  const [formData, setFormData] = useState(emptyForm);
+  const [showPassword, setShowPassword] = useState(false);
 
-  const [showPassword, setShowPassword] =
+  const [openActionId, setOpenActionId] = useState(null);
+
+  const [showPermissionModal, setShowPermissionModal] =
     useState(false);
 
-  const [openActionId, setOpenActionId] =
+  const [permissionUser, setPermissionUser] =
     useState(null);
+
+  const [permissionOptions, setPermissionOptions] =
+    useState([]);
+
+  const [selectedPermissions, setSelectedPermissions] =
+    useState([]);
+
+  const [permissionsLoading, setPermissionsLoading] =
+    useState(false);
+
+  const [permissionsSaving, setPermissionsSaving] =
+    useState(false);
+
+  /* =====================================================
+     ASSIGNMENT ACTIVITY
+  ===================================================== */
+
+  const [assignmentActivity, setAssignmentActivity] =
+    useState([]);
+
+  const [assignmentLoading, setAssignmentLoading] =
+    useState(false);
 
   /* =====================================================
      PERMISSION CHECK
   ===================================================== */
 
   const hasPermission = (permission) => {
-    /*
-      Super Admin backend par bhi unrestricted hai.
-    */
-
     if (currentRole === "super_admin") {
       return true;
     }
@@ -134,9 +190,8 @@ export default function UsersPage() {
         localStorage.getItem("adminToken");
 
       if (!token) {
-        throw new Error(
-          "Authentication required. Please login again."
-        );
+        setError("Admin session not found.");
+        return;
       }
 
       const response = await fetch(
@@ -151,47 +206,26 @@ export default function UsersPage() {
         }
       );
 
-      let data;
-
-      try {
-        data = await response.json();
-      } catch {
-        throw new Error(
-          "Invalid response received from users API."
-        );
-      }
+      const data = await response.json();
 
       if (!response.ok) {
         throw new Error(
-          data?.message ||
-            "Failed to fetch users."
-        );
-      }
-
-      if (
-        !data?.success &&
-        !Array.isArray(data?.users)
-      ) {
-        throw new Error(
-          data?.message ||
-            "Failed to fetch users."
+          data?.message || "Failed to fetch users."
         );
       }
 
       setUsers(
-        Array.isArray(data.users)
+        Array.isArray(data?.users)
           ? data.users
+          : Array.isArray(data)
+          ? data
           : []
       );
     } catch (err) {
-      console.error(
-        "Fetch users error:",
-        err
-      );
+      console.error("Fetch users error:", err);
 
       setError(
-        err?.message ||
-          "Failed to load users."
+        err.message || "Failed to fetch users."
       );
     } finally {
       setLoading(false);
@@ -199,154 +233,64 @@ export default function UsersPage() {
   };
 
   /* =====================================================
-     FETCH ROLES + CURRENT ROLE PERMISSIONS
+     FETCH ROLES
   ===================================================== */
 
   const fetchRoles = async () => {
-    try {
-      setRolesLoading(true);
+  try {
+    setRolesLoading(true);
 
-      const token =
-        localStorage.getItem("adminToken");
+    const token =
+      localStorage.getItem("adminToken");
 
-      if (!token) {
-        throw new Error(
-          "Authentication required. Please login again."
-        );
+    if (!token) return;
+
+    const response = await fetch(
+      `${API_URL}/api/admin/roles`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        cache: "no-store",
       }
+    );
 
-      const roleFromToken =
-        getCurrentRoleFromToken();
-
-      setCurrentRole(roleFromToken);
-
-      const response = await fetch(
-        `${API_URL}/api/admin/roles`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          cache: "no-store",
-        }
-      );
-
-      let data;
-
-      try {
-        data = await response.json();
-      } catch {
-        throw new Error(
-          "Invalid response received from roles API."
-        );
-      }
-
-      /*
-        Agar current user ke paas roles.view
-        permission nahi hai.
-      */
-
-      if (response.status === 403) {
-        setRoles([]);
-        setCurrentPermissions([]);
-        return;
-      }
-
-      if (!response.ok) {
-        throw new Error(
-          data?.message ||
-            "Failed to fetch roles."
-        );
-      }
-
-      if (!data?.success) {
-        throw new Error(
-          data?.message ||
-            "Failed to fetch roles."
-        );
-      }
-
-      const fetchedRoles =
-        Array.isArray(data.roles)
-          ? data.roles
-          : [];
-
-      setRoles(fetchedRoles);
-
-      /*
-        IMPORTANT:
-        Current logged-in user's permissions
-        MongoDB Role document se aa rahi hain.
-      */
-
-      const currentRoleData =
-        fetchedRoles.find(
-          (role) =>
-            role.id === roleFromToken
-        );
-
-      if (
-        roleFromToken ===
-        "super_admin"
-      ) {
-        setCurrentPermissions(
-          Array.isArray(
-            currentRoleData?.permissions
-          )
-            ? currentRoleData.permissions
-            : []
-        );
-      } else {
-        setCurrentPermissions(
-          Array.isArray(
-            currentRoleData?.permissions
-          )
-            ? currentRoleData.permissions
-            : []
-        );
-      }
-
-      /*
-        Default role for Add User
-      */
-
-      if (fetchedRoles.length > 0) {
-        const staffRole =
-          fetchedRoles.find(
-            (role) =>
-              role.id === "staff"
-          );
-
-        setFormData((prev) => ({
-          ...prev,
-          role:
-            prev.role ||
-            staffRole?.id ||
-            fetchedRoles[0].id,
-        }));
-      }
-
-      console.log(
-        "CURRENT RBAC:",
-        {
-          role: roleFromToken,
-          permissions:
-            currentRoleData?.permissions || [],
-        }
-      );
-    } catch (err) {
-      console.error(
-        "Fetch roles error:",
-        err
-      );
-
+    if (response.status === 403) {
       setRoles([]);
       setCurrentPermissions([]);
-    } finally {
-      setRolesLoading(false);
+      return;
     }
-  };
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data?.message || "Failed to fetch roles."
+      );
+    }
+
+    setRoles(
+      Array.isArray(data?.roles)
+        ? data.roles
+        : []
+    );
+
+    if (
+      Array.isArray(data?.availablePermissions)
+    ) {
+      setCurrentPermissions(
+        data.availablePermissions
+      );
+    }
+  } catch (err) {
+    console.error("Fetch roles error:", err);
+    setRoles([]);
+  } finally {
+    setRolesLoading(false);
+  }
+};
 
   /* =====================================================
      FETCH GROUPS
@@ -357,11 +301,7 @@ export default function UsersPage() {
       const token =
         localStorage.getItem("adminToken");
 
-      if (!token) {
-        throw new Error(
-          "Authentication required. Please login again."
-        );
-      }
+      if (!token) return;
 
       const response = await fetch(
         `${API_URL}/api/admin/groups`,
@@ -375,48 +315,76 @@ export default function UsersPage() {
         }
       );
 
-      let data;
-
-      try {
-        data = await response.json();
-      } catch {
-        throw new Error(
-          "Invalid response received from groups API."
-        );
-      }
-
-      console.log(
-        "GROUP API RESPONSE:",
-        data
-      );
+      const data = await response.json();
 
       if (!response.ok) {
         throw new Error(
-          data?.message ||
-            "Failed to fetch departments."
+          data?.message || "Failed to fetch groups."
         );
       }
 
-      if (!data?.success) {
-        throw new Error(
-          data?.message ||
-            "Failed to fetch departments."
-        );
-      }
-
-      const fetchedGroups =
-        Array.isArray(data.groups)
+      setGroups(
+        Array.isArray(data?.groups)
           ? data.groups
-          : [];
+          : Array.isArray(data)
+          ? data
+          : []
+      );
+    } catch (err) {
+      console.error("Fetch groups error:", err);
+      setGroups([]);
+    }
+  };
 
-      setGroups(fetchedGroups);
+  /* =====================================================
+     FETCH ASSIGNMENT ACTIVITY
+  ===================================================== */
+
+  const fetchAssignmentActivity = async () => {
+    try {
+      setAssignmentLoading(true);
+
+      const token =
+        localStorage.getItem("adminToken");
+
+      if (!token) {
+        setAssignmentActivity([]);
+        return;
+      }
+
+      const response = await fetch(
+        `${API_URL}/api/admin/assignments/recent`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          cache: "no-store",
+        }
+      );
+
+      if (!response.ok) {
+        setAssignmentActivity([]);
+        return;
+      }
+
+      const data = await response.json();
+
+      setAssignmentActivity(
+        Array.isArray(data?.assignments)
+          ? data.assignments
+          : []
+      );
     } catch (err) {
       console.error(
-        "Fetch groups error:",
+        "Fetch assignment activity error:",
         err
       );
 
-      setGroups([]);
+      setAssignmentActivity([]);
+    } finally {
+      setAssignmentLoading(false);
     }
   };
 
@@ -433,114 +401,145 @@ export default function UsersPage() {
     fetchUsers();
     fetchRoles();
     fetchGroups();
+    fetchAssignmentActivity();
   }, []);
 
   /* =====================================================
-     ROLE LABEL
+     HELPERS
   ===================================================== */
 
   const getRoleLabel = (roleId) => {
     const role = roles.find(
-      (item) =>
-        item.id === roleId
+      (item) => item.roleId === roleId
     );
 
-    if (role?.name) {
-      return role.name;
-    }
+    if (role?.name) return role.name;
 
-    if (!roleId) return "-";
+    const labels = {
+      super_admin: "Super Admin",
+      admin: "Admin",
+      manager: "Manager",
+      staff: "Staff",
+    };
 
-    return roleId
-      .split("_")
-      .map(
-        (word) =>
-          word.charAt(0).toUpperCase() +
-          word.slice(1)
-      )
-      .join(" ");
+    return (
+      labels[roleId] ||
+      roleId ||
+      "—"
+    );
   };
 
-  /* =====================================================
-     GROUP LABEL
-  ===================================================== */
-
   const getGroupLabel = (groupId) => {
+    if (!groupId) return "—";
+
+    if (typeof groupId === "object") {
+      return (
+        groupId.name ||
+        groupId.groupId ||
+        "—"
+      );
+    }
+
     const group = groups.find(
       (item) =>
-        item.id === groupId
+        item._id === groupId ||
+        item.groupId === groupId
     );
 
     return (
       group?.name ||
-      groupId ||
-      "-"
+      group?.groupId ||
+      groupId
     );
   };
 
   /* =====================================================
      ROLE STYLE
+     Object format is used by mobile badges.
   ===================================================== */
 
   const getRoleStyle = (role) => {
-    if (role === "super_admin") {
-      return {
-        badge:
-          "border-violet-200 bg-violet-50 text-violet-700",
-        dot: "bg-violet-500",
-      };
-    }
+    switch (role) {
+      case "super_admin":
+        return {
+          badge:
+            "bg-purple-50 text-purple-700 border-purple-200",
+          dot: "bg-purple-500",
+        };
 
-    if (role === "admin") {
-      return {
-        badge:
-          "border-blue-200 bg-blue-50 text-blue-700",
-        dot: "bg-blue-500",
-      };
-    }
+      case "admin":
+        return {
+          badge:
+            "bg-orange-50 text-orange-700 border-orange-200",
+          dot: "bg-orange-500",
+        };
 
-    if (role === "manager") {
-      return {
-        badge:
-          "border-orange-200 bg-orange-50 text-orange-700",
-        dot: "bg-orange-500",
-      };
-    }
+      case "manager":
+        return {
+          badge:
+            "bg-blue-50 text-blue-700 border-blue-200",
+          dot: "bg-blue-500",
+        };
 
-    return {
-      badge:
-        "border-slate-200 bg-slate-50 text-slate-600",
-      dot: "bg-slate-400",
-    };
+      case "staff":
+        return {
+          badge:
+            "bg-green-50 text-green-700 border-green-200",
+          dot: "bg-green-500",
+        };
+
+      default:
+        return {
+          badge:
+            "bg-gray-50 text-gray-600 border-gray-200",
+          dot: "bg-gray-400",
+        };
+    }
+  };
+
+  const getStatusStyle = (status) => {
+    return status === "active"
+      ? "bg-green-50 text-green-700 border-green-200"
+      : "bg-gray-100 text-gray-500 border-gray-200";
   };
 
   /* =====================================================
-     FILTER USERS
+     FILTERED USERS
   ===================================================== */
 
   const filteredUsers = useMemo(() => {
-    const value =
+    const query =
       search.trim().toLowerCase();
 
     return users.filter((user) => {
+      const role =
+        user.role || "";
+
+      const group =
+        typeof user.group === "object"
+          ? user.group?.name ||
+            user.group?.groupId ||
+            ""
+          : user.group || "";
+
       const matchesSearch =
-        !value ||
+        !query ||
         user.name
           ?.toLowerCase()
-          .includes(value) ||
+          .includes(query) ||
         user.email
           ?.toLowerCase()
-          .includes(value) ||
-        user.role
-          ?.toLowerCase()
-          .includes(value) ||
-        user.group
-          ?.toLowerCase()
-          .includes(value);
+          .includes(query) ||
+        role
+          .toLowerCase()
+          .includes(query) ||
+        group
+          .toLowerCase()
+          .includes(query);
 
       const matchesRole =
         roleFilter === "all" ||
-        user.role === roleFilter;
+        role === roleFilter;
 
       return (
         matchesSearch &&
@@ -563,8 +562,7 @@ export default function UsersPage() {
   const superAdmins =
     users.filter(
       (user) =>
-        user.role ===
-        "super_admin"
+        user.role === "super_admin"
     ).length;
 
   const admins =
@@ -579,13 +577,6 @@ export default function UsersPage() {
         user.role === "manager"
     ).length;
 
-  const activeManagers =
-    users.filter(
-      (user) =>
-        user.role === "manager" &&
-        user.status !== "inactive"
-    ).length;
-
   const staff =
     users.filter(
       (user) =>
@@ -597,69 +588,52 @@ export default function UsersPage() {
   ===================================================== */
 
   const handleAddUser = () => {
-    if (
-      !hasPermission(
-        "team.create"
-      )
-    ) {
-      setError(
-        "You do not have permission to create users."
-      );
+  if (!hasPermission("team.create")) {
+    setError(
+      "You do not have permission to create users."
+    );
+    return;
+  }
 
-      return;
-    }
+  setEditingUser(null);
 
-    const defaultRole =
-      roles.find(
-        (role) =>
-          role.id === "staff"
-      ) || roles[0];
+  setFormData({
+    ...emptyForm,
+    role: "staff",
+    group: "",
+  });
 
-    setEditingUser(null);
-
-    setFormData({
-      ...emptyForm,
-      role:
-        defaultRole?.id || "",
-      group: "",
-    });
-
-    setShowPassword(false);
-    setError("");
-    setSuccess("");
-    setOpenActionId(null);
-    setShowModal(true);
-  };
+  setShowPassword(false);
+  setError("");
+  setSuccess("");
+  setShowModal(true);
+};
 
   /* =====================================================
      EDIT USER
   ===================================================== */
 
   const handleEditUser = (user) => {
-    if (
-      !hasPermission(
-        "team.update"
-      )
-    ) {
+    if (!hasPermission("team.update")) {
       setError(
-        "You do not have permission to edit users."
+        "You do not have permission to update users."
       );
-
       return;
     }
 
     setEditingUser(user);
 
     setFormData({
-      name:
-        user.name || "",
-      email:
-        user.email || "",
+      name: user.name || "",
+      email: user.email || "",
       password: "",
-      role:
-        user.role || "",
+      role: user.role || "",
       group:
-        user.group || "",
+        typeof user.group === "object"
+          ? user.group?._id ||
+            user.group?.groupId ||
+            ""
+          : user.group || "",
     });
 
     setShowPassword(false);
@@ -673,24 +647,73 @@ export default function UsersPage() {
      FORM CHANGE
   ===================================================== */
 
-  const handleChange = (e) => {
-    const {
-      name,
-      value,
-    } = e.target;
-
+  const handleFormChange = (
+    field,
+    value
+  ) => {
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [field]: value,
     }));
   };
 
   /* =====================================================
-     SAVE USER
+     CREATE / UPDATE USER
   ===================================================== */
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    const requiredPermission =
+      editingUser
+        ? "team.update"
+        : "team.create";
+
+    if (
+      !hasPermission(
+        requiredPermission
+      )
+    ) {
+      setError(
+        "You do not have permission for this action."
+      );
+      return;
+    }
+
+    if (!formData.name.trim()) {
+      setError("Please enter full name.");
+      return;
+    }
+
+    if (!formData.email.trim()) {
+      setError("Please enter email.");
+      return;
+    }
+
+    if (!formData.role) {
+      setError("Please select a role.");
+      return;
+    }
+
+    if (
+      formData.role !== "super_admin" &&
+      !formData.group
+    ) {
+      setError(
+        "Please select a department."
+      );
+      return;
+    }
+
+    if (
+      !editingUser &&
+      !formData.password
+    ) {
+      setError(
+        "Please enter password."
+      );
+      return;
+    }
 
     try {
       setSaving(true);
@@ -698,136 +721,40 @@ export default function UsersPage() {
       setSuccess("");
 
       const token =
-        localStorage.getItem(
-          "adminToken"
-        );
-
-      if (!token) {
-        throw new Error(
-          "Authentication required. Please login again."
-        );
-      }
-
-      if (editingUser) {
-        if (
-          !hasPermission(
-            "team.update"
-          )
-        ) {
-          throw new Error(
-            "You do not have permission to update users."
-          );
-        }
-      } else {
-        if (
-          !hasPermission(
-            "team.create"
-          )
-        ) {
-          throw new Error(
-            "You do not have permission to create users."
-          );
-        }
-      }
-
-      if (
-        !formData.name.trim()
-      ) {
-        throw new Error(
-          "Name is required."
-        );
-      }
-
-      if (
-        !formData.email.trim()
-      ) {
-        throw new Error(
-          "Email is required."
-        );
-      }
-
-      if (!formData.role) {
-        throw new Error(
-          "Please select a role."
-        );
-      }
-
-      if (!formData.group) {
-        throw new Error(
-          "Please select a department."
-        );
-      }
-
-      if (
-        !editingUser &&
-        !formData.password.trim()
-      ) {
-        throw new Error(
-          "Password is required."
-        );
-      }
-
-      const url =
-        editingUser
-          ? `${API_URL}/api/admin/users/${editingUser._id}`
-          : `${API_URL}/api/admin/users`;
-
-      const method =
-        editingUser
-          ? "PUT"
-          : "POST";
+        localStorage.getItem("adminToken");
 
       const body = {
-        name:
-          formData.name.trim(),
-
-        email:
-          formData.email.trim(),
-
-        role:
-          formData.role,
-
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        role: formData.role,
         group:
-          formData.group || null,
+          formData.role === "super_admin"
+            ? null
+            : formData.group,
       };
 
-      if (
-        !editingUser ||
-        formData.password.trim()
-      ) {
+      if (formData.password.trim()) {
         body.password =
-          formData.password;
+          formData.password.trim();
       }
 
-      const response =
-        await fetch(
-          url,
-          {
-            method,
+      const url = editingUser
+        ? `${API_URL}/api/admin/users/${editingUser._id}`
+        : `${API_URL}/api/admin/users`;
 
-            headers: {
-              "Content-Type":
-                "application/json",
+      const response = await fetch(url, {
+        method: editingUser
+          ? "PUT"
+          : "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
 
-              Authorization:
-                `Bearer ${token}`,
-            },
-
-            body:
-              JSON.stringify(body),
-          }
-        );
-
-      let data;
-
-      try {
-        data =
-          await response.json();
-      } catch {
-        throw new Error(
-          "Invalid response received from server."
-        );
-      }
+      const data =
+        await response.json();
 
       if (!response.ok) {
         throw new Error(
@@ -843,22 +770,14 @@ export default function UsersPage() {
       );
 
       setShowModal(false);
-
-      setFormData({
-        ...emptyForm,
-        role:
-          roles.find(
-            (role) =>
-              role.id === "staff"
-          )?.id ||
-          roles[0]?.id ||
-          "",
-        group: "",
-      });
-
       setEditingUser(null);
+      setFormData(emptyForm);
 
       await fetchUsers();
+
+      setTimeout(() => {
+        setSuccess("");
+      }, 3000);
     } catch (err) {
       console.error(
         "Save user error:",
@@ -866,7 +785,7 @@ export default function UsersPage() {
       );
 
       setError(
-        err?.message ||
+        err.message ||
           "Failed to save user."
       );
     } finally {
@@ -875,186 +794,122 @@ export default function UsersPage() {
   };
 
   /* =====================================================
-     TOGGLE USER STATUS
+     TOGGLE STATUS
   ===================================================== */
 
-  const handleToggleStatus =
-    async (user) => {
-      if (
-        !hasPermission(
-          "team.update"
-        )
-      ) {
-        setError(
-          "You do not have permission to change user status."
-        );
-
-        return;
-      }
-
-      const newStatus =
-        user.status ===
-        "inactive"
-          ? "active"
-          : "inactive";
-
-      try {
-        setError("");
-        setSuccess("");
-        setOpenActionId(null);
-
-        const token =
-          localStorage.getItem(
-            "adminToken"
-          );
-
-        if (!token) {
-          throw new Error(
-            "Authentication required. Please login again."
-          );
-        }
-
-        const response =
-          await fetch(
-            `${API_URL}/api/admin/users/${user._id}`,
-            {
-              method: "PUT",
-
-              headers: {
-                "Content-Type":
-                  "application/json",
-
-                Authorization:
-                  `Bearer ${token}`,
-              },
-
-              body: JSON.stringify({
-                status:
-                  newStatus,
-              }),
-            }
-          );
-
-        let data;
-
-        try {
-          data =
-            await response.json();
-        } catch {
-          throw new Error(
-            "Invalid response received from server."
-          );
-        }
-
-        if (!response.ok) {
-          throw new Error(
-            data?.message ||
-              "Failed to update user status."
-          );
-        }
-
-        setSuccess(
-          newStatus ===
-            "inactive"
-            ? "User deactivated successfully."
-            : "User activated successfully."
-        );
-
-        await fetchUsers();
-      } catch (err) {
-        console.error(
-          "Toggle user status error:",
-          err
-        );
-
-        setError(
-          err?.message ||
-            "Failed to update user status."
-        );
-      }
-    };
-
-  /* =====================================================
-     DELETE USER
-  ===================================================== */
-
-  const handleDelete = async (
+  const handleToggleStatus = async (
     user
   ) => {
-    /*
-      IMPORTANT:
-      Frontend permission check.
-      Actual security backend middleware
-      se enforce hoti hai.
-    */
-
-    if (
-      !hasPermission(
-        "team.delete"
-      )
-    ) {
+    if (!hasPermission("team.update")) {
       setError(
-        "You do not have permission to delete users."
+        "You do not have permission to update users."
       );
-
-      return;
-    }
-
-    const confirmed =
-      window.confirm(
-        `Are you sure you want to delete ${user.name}?`
-      );
-
-    if (!confirmed) {
       return;
     }
 
     try {
       setError("");
       setSuccess("");
-      setOpenActionId(null);
 
       const token =
-        localStorage.getItem(
-          "adminToken"
-        );
+        localStorage.getItem("adminToken");
 
-      if (!token) {
+      const newStatus =
+        user.status === "active"
+          ? "inactive"
+          : "active";
+
+      const response = await fetch(
+        `${API_URL}/api/admin/users/${user._id}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            status: newStatus,
+          }),
+        }
+      );
+
+      const data =
+        await response.json();
+
+      if (!response.ok) {
         throw new Error(
-          "Authentication required. Please login again."
+          data?.message ||
+            "Failed to update status."
         );
       }
 
-      const response =
-        await fetch(
-          `${API_URL}/api/admin/users/${user._id}`,
-          {
-            method: "DELETE",
+      setSuccess(
+        newStatus === "active"
+          ? "User activated successfully."
+          : "User deactivated successfully."
+      );
 
-            headers: {
-              Authorization:
-                `Bearer ${token}`,
+      setOpenActionId(null);
 
-              "Content-Type":
-                "application/json",
-            },
-          }
-        );
+      await fetchUsers();
 
-      let data;
+      setTimeout(() => {
+        setSuccess("");
+      }, 3000);
+    } catch (err) {
+      console.error(
+        "Toggle status error:",
+        err
+      );
 
-      try {
-        data =
-          await response.json();
-      } catch {
-        throw new Error(
-          "Invalid response received from server."
-        );
-      }
+      setError(
+        err.message ||
+          "Failed to update status."
+      );
+    }
+  };
 
-      /*
-        Backend 403 yahin catch hoga.
-      */
+  /* =====================================================
+     DELETE USER
+  ===================================================== */
+
+  const handleDeleteUser = async (
+    user
+  ) => {
+    if (!hasPermission("team.delete")) {
+      setError(
+        "You do not have permission to delete users."
+      );
+      return;
+    }
+
+    const confirmed =
+      window.confirm(
+        `Delete ${user.name}?`
+      );
+
+    if (!confirmed) return;
+
+    try {
+      setError("");
+      setSuccess("");
+
+      const token =
+        localStorage.getItem("adminToken");
+
+      const response = await fetch(
+        `${API_URL}/api/admin/users/${user._id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const data =
+        await response.json();
 
       if (!response.ok) {
         throw new Error(
@@ -1067,7 +922,13 @@ export default function UsersPage() {
         "User deleted successfully."
       );
 
+      setOpenActionId(null);
+
       await fetchUsers();
+
+      setTimeout(() => {
+        setSuccess("");
+      }, 3000);
     } catch (err) {
       console.error(
         "Delete user error:",
@@ -1075,136 +936,466 @@ export default function UsersPage() {
       );
 
       setError(
-        err?.message ||
+        err.message ||
           "Failed to delete user."
       );
     }
   };
 
   /* =====================================================
-     CLOSE MODAL
+     MANAGE PERMISSIONS
   ===================================================== */
 
-  const closeModal = () => {
+  const handleManagePermissions = async (
+    user
+  ) => {
+    if (!hasPermission("team.view")) {
+      setError(
+        "You do not have permission to view permissions."
+      );
+      return;
+    }
+
+    try {
+      setPermissionsLoading(true);
+      setError("");
+
+      const token =
+        localStorage.getItem("adminToken");
+
+      const response = await fetch(
+        `${API_URL}/api/admin/users/${user._id}/permissions`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          cache: "no-store",
+        }
+      );
+
+      const data =
+        await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data?.message ||
+            "Failed to fetch permissions."
+        );
+      }
+
+      setPermissionUser(user);
+
+      setPermissionOptions(
+        Array.isArray(
+          data?.availablePermissions
+        )
+          ? data.availablePermissions
+          : []
+      );
+
+      setSelectedPermissions(
+        Array.isArray(data?.permissions)
+          ? data.permissions
+          : []
+      );
+
+      setOpenActionId(null);
+      setShowPermissionModal(true);
+    } catch (err) {
+      console.error(
+        "Manage permissions error:",
+        err
+      );
+
+      setError(
+        err.message ||
+          "Failed to fetch permissions."
+      );
+    } finally {
+      setPermissionsLoading(false);
+    }
+  };
+
+  /* =====================================================
+     SAVE PERMISSIONS
+  ===================================================== */
+
+  const handleSavePermissions = async () => {
+    if (!permissionUser) return;
+
+    if (!hasPermission("team.update")) {
+      setError(
+        "You do not have permission to update permissions."
+      );
+      return;
+    }
+
+    try {
+      setPermissionsSaving(true);
+      setError("");
+      setSuccess("");
+
+      const token =
+        localStorage.getItem("adminToken");
+
+      const response = await fetch(
+        `${API_URL}/api/admin/users/${permissionUser._id}/permissions`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            permissions:
+              selectedPermissions,
+          }),
+        }
+      );
+
+      const data =
+        await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data?.message ||
+            "Failed to save permissions."
+        );
+      }
+
+      setSuccess(
+        "Permissions updated successfully."
+      );
+
+      setShowPermissionModal(false);
+      setPermissionUser(null);
+
+      await fetchUsers();
+
+      setTimeout(() => {
+        setSuccess("");
+      }, 3000);
+    } catch (err) {
+      console.error(
+        "Save permissions error:",
+        err
+      );
+
+      setError(
+        err.message ||
+          "Failed to save permissions."
+      );
+    } finally {
+      setPermissionsSaving(false);
+    }
+  };
+
+  /* =====================================================
+     PERMISSION SELECT
+  ===================================================== */
+
+  const togglePermission = (
+    permission
+  ) => {
+    setSelectedPermissions(
+      (prev) =>
+        prev.includes(permission)
+          ? prev.filter(
+              (item) =>
+                item !== permission
+            )
+          : [
+              ...prev,
+              permission,
+            ]
+    );
+  };
+
+  const selectAllPermissions = () => {
+    setSelectedPermissions([
+      ...permissionOptions,
+    ]);
+  };
+
+  const clearAllPermissions = () => {
+    setSelectedPermissions([]);
+  };
+
+  /* =====================================================
+     CLOSE MODALS
+  ===================================================== */
+
+  const closeUserModal = () => {
     if (saving) return;
 
     setShowModal(false);
     setEditingUser(null);
+    setFormData(emptyForm);
     setShowPassword(false);
+  };
 
-    setFormData({
-      ...emptyForm,
+  const closePermissionModal = () => {
+    if (permissionsSaving) return;
 
-      role:
-        roles.find(
-          (role) =>
-            role.id === "staff"
-        )?.id ||
-        roles[0]?.id ||
-        "",
-
-      group: "",
-    });
+    setShowPermissionModal(false);
+    setPermissionUser(null);
+    setPermissionOptions([]);
+    setSelectedPermissions([]);
   };
 
   /* =====================================================
-     CURRENT USER PERMISSIONS
+     ASSIGNMENT FORMAT
   ===================================================== */
 
-  const canCreateUser =
-    hasPermission(
-      "team.create"
-    );
+  const getAssignmentName = (
+    value
+  ) => {
+    if (!value) return "—";
 
-  const canEditUser =
-    hasPermission(
-      "team.update"
-    );
+    if (typeof value === "object") {
+      return (
+        value.name ||
+        value.email ||
+        value._id ||
+        "—"
+      );
+    }
 
-  const canDeleteUser =
-    hasPermission(
-      "team.delete"
+    return value;
+  };
+
+  const formatAssignmentDate = (
+    value
+  ) => {
+    if (!value) return "—";
+
+    const date =
+      new Date(value);
+
+    if (
+      Number.isNaN(
+        date.getTime()
+      )
+    ) {
+      return "—";
+    }
+
+    return date.toLocaleString(
+      "en-GB",
+      {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }
     );
+  };
 
   /* =====================================================
-     UI
+     RENDER
   ===================================================== */
 
   return (
-    <div
-      className="min-h-screen bg-[#F7F5F0] p-3 sm:p-4 lg:p-5 xl:p-6"
-      onClick={() =>
-        setOpenActionId(null)
-      }
-    >
-      <div className="mx-auto w-full max-w-[1600px]">
+    <div className="min-h-screen bg-[#F7F5F0] text-[#172033]">
+
+      <div className="p-3 sm:p-4 lg:p-5">
 
         {/* =================================================
             HEADER
         ================================================= */}
 
-        <div className="mb-4 flex flex-col gap-3 sm:mb-5 lg:flex-row lg:items-center lg:justify-between">
-          <div className="min-w-0">
-            <div className="mb-1 flex items-center gap-2">
-              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#C87532]" />
+        <div className="mb-4">
 
-              <span className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#C87532] sm:text-[10px]">
-                Administration
-              </span>
+          <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3">
+
+            {/* TITLE */}
+
+            <div className="min-w-0">
+
+              <div className="flex items-center gap-2">
+
+                <div className="w-9 h-9 rounded-xl bg-[#18352A] flex items-center justify-center shrink-0">
+
+                  <Users className="w-4.5 h-4.5 text-white" />
+
+                </div>
+
+                <div className="min-w-0">
+
+                  <p className="text-[10px] text-[#C87532] font-semibold uppercase tracking-wide">
+                    Administration
+                  </p>
+
+                  <h1 className="text-lg sm:text-xl font-bold text-[#172033] truncate">
+                    User Management
+                  </h1>
+
+                  <p className="text-[10px] sm:text-[11px] text-gray-500">
+                    Manage users, roles and department access.
+                  </p>
+
+                </div>
+
+              </div>
+
             </div>
 
-            <h1 className="text-xl font-bold tracking-tight text-[#172033] sm:text-2xl">
-              User Management
-            </h1>
+            {/* ASSIGNMENT */}
 
-            <p className="mt-1 max-w-xl text-xs leading-5 text-slate-500 sm:text-[13px]">
-              Manage admin users, roles and
-              access across your Destination
-              Corbett workspace.
-            </p>
-          </div>
+            <div className="w-full xl:w-auto xl:min-w-[330px]">
 
-          <div className="flex w-full items-center gap-2 sm:w-auto">
-            {currentRole && (
-              <div className="hidden items-center gap-2 rounded-lg border border-[#E5E0D8] bg-white px-2.5 py-2 shadow-sm sm:flex">
-                <div className="flex h-7 w-7 items-center justify-center rounded-md bg-[#EDF3EE]">
-                  <ShieldCheck
-                    size={14}
-                    className="text-[#18352A]"
-                  />
-                </div>
+              <div className="bg-white border border-gray-200 rounded-xl shadow-sm px-3 py-2.5">
 
-                <div>
-                  <p className="text-[9px] font-medium uppercase tracking-wide text-slate-400">
-                    Signed in as
+                <div className="flex items-center justify-between gap-2 mb-1.5">
+
+                  <p className="text-[10px] sm:text-[11px] font-semibold text-[#172033]">
+                    Assignment
                   </p>
 
-                  <p className="text-[11px] font-bold text-[#172033]">
-                    {getRoleLabel(
-                      currentRole
-                    )}
-                  </p>
+                  {assignmentActivity.length > 0 && (
+                    <span className="text-[8px] text-gray-400">
+                      Recent
+                    </span>
+                  )}
+
                 </div>
+
+                {assignmentLoading ? (
+
+                  <div className="flex items-center gap-1.5 text-[9px] text-gray-400">
+
+                    <Loader2 className="w-3 h-3 animate-spin" />
+
+                    Loading...
+
+                  </div>
+
+                ) : assignmentActivity.length === 0 ? (
+
+                  <p className="text-[9px] text-gray-400">
+                    No recent assignment
+                  </p>
+
+                ) : (
+
+                  <div className="space-y-2">
+
+                    {assignmentActivity
+                      .slice(0, 2)
+                      .map(
+                        (
+                          activity,
+                          index
+                        ) => (
+
+                          <div
+                            key={
+                              activity._id ||
+                              activity.id ||
+                              index
+                            }
+                            className={
+                              index > 0
+                                ? "pt-2 border-t border-gray-100"
+                                : ""
+                            }
+                          >
+
+                            <p className="text-[10px] sm:text-[11px] font-semibold text-gray-800 truncate">
+
+                              {getAssignmentName(
+                                activity.assignedBy
+                              )}
+
+                              <span className="mx-1.5 text-[#C87532]">
+                                →
+                              </span>
+
+                              {getAssignmentName(
+                                activity.assignedTo
+                              )}
+
+                            </p>
+
+                            <p className="text-[8px] sm:text-[9px] text-gray-400 mt-0.5 truncate">
+
+                              {getGroupLabel(
+                                activity.group
+                              )}
+
+                              {" • "}
+
+                              {getRoleLabel(
+                                typeof activity.role ===
+                                "object"
+                                  ? activity.role?.roleId
+                                  : activity.role
+                              )}
+
+                              {" • "}
+
+                              {formatAssignmentDate(
+                                activity.assignedAt
+                              )}
+
+                            </p>
+
+                          </div>
+
+                        )
+                      )}
+
+                  </div>
+
+                )}
+
               </div>
-            )}
 
-            {canCreateUser && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleAddUser();
-                }}
-                disabled={
-                  rolesLoading ||
-                  roles.length === 0
-                }
-                className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg bg-[#C87532] px-3 text-xs font-semibold text-white shadow-[0_5px_15px_rgba(200,117,50,0.18)] transition hover:bg-[#B76527] disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
-              >
-                <Plus size={15} />
-                Add User
-              </button>
-            )}
+            </div>
+
           </div>
+
+        </div>
+
+        {/* =================================================
+            SUMMARY
+        ================================================= */}
+
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-4">
+
+          <SummaryCard
+            icon={Users}
+            label="Total Users"
+            value={totalUsers}
+          />
+
+          <SummaryCard
+            icon={ShieldCheck}
+            label="Super Admin"
+            value={superAdmins}
+          />
+
+          <SummaryCard
+            icon={UserCog}
+            label="Admin"
+            value={admins}
+          />
+
+          <SummaryCard
+            icon={UserRoundCheck}
+            label="Managers"
+            value={managers}
+          />
+
+          <SummaryCard
+            icon={Users}
+            label="Staff"
+            value={staff}
+          />
+
         </div>
 
         {/* =================================================
@@ -1212,671 +1403,927 @@ export default function UsersPage() {
         ================================================= */}
 
         {error && (
-          <div
-            className="mb-3 flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-xs text-red-700 shadow-sm"
-            onClick={(e) =>
-              e.stopPropagation()
-            }
-          >
-            <AlertCircle
-              size={16}
-              className="mt-0.5 shrink-0"
-            />
 
-            <span className="leading-5">
+          <div className="mb-3 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-red-700">
+
+            <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+
+            <p className="text-[11px]">
               {error}
-            </span>
+            </p>
 
             <button
               onClick={() =>
                 setError("")
               }
-              className="ml-auto shrink-0 rounded-md p-0.5 hover:bg-red-100"
+              className="ml-auto"
             >
-              <X size={14} />
+              <X className="w-3.5 h-3.5" />
             </button>
+
           </div>
+
         )}
 
         {success && (
-          <div
-            className="mb-3 flex items-center gap-2.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-xs font-medium text-emerald-700 shadow-sm"
-            onClick={(e) =>
-              e.stopPropagation()
-            }
-          >
-            <UserRoundCheck size={16} />
 
-            <span>{success}</span>
+          <div className="mb-3 flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 px-3 py-2.5 text-green-700">
 
-            <button
-              onClick={() =>
-                setSuccess("")
-              }
-              className="ml-auto rounded-md p-0.5 hover:bg-emerald-100"
-            >
-              <X size={14} />
-            </button>
+            <Check className="w-4 h-4" />
+
+            <p className="text-[11px]">
+              {success}
+            </p>
+
           </div>
+
         )}
 
         {/* =================================================
-            SUMMARY CARDS
+            TOOLBAR
+            Mobile fixed compact pixel layout
         ================================================= */}
 
-        <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
-          <SummaryCard
-            icon={Users}
-            label="Total Users"
-            value={totalUsers}
-            description="All admin accounts"
-            iconClass="bg-[#EEF3F0] text-[#18352A]"
-          />
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-2.5 sm:p-3 mb-3">
 
-          <SummaryCard
-            icon={ShieldCheck}
-            label="Super Admins"
-            value={superAdmins}
-            description="Full system access"
-            iconClass="bg-violet-50 text-violet-600"
-          />
+          <div className="flex flex-col md:flex-row gap-2">
 
-          <SummaryCard
-            icon={UserCog}
-            label="Admins"
-            value={admins}
-            description="Management access"
-            iconClass="bg-blue-50 text-blue-600"
-          />
+            {/* SEARCH */}
 
-          <SummaryCard
-            icon={UserCog}
-            label="Managers"
-            value={managers}
-            description="Management access"
-            iconClass="bg-orange-50 text-orange-600"
-          />
+            <div className="relative flex-1">
 
-          <SummaryCard
-            icon={ShieldCheck}
-            label="Department Managers"
-            value={activeManagers}
-            description="Active department managers"
-            iconClass="bg-amber-50 text-amber-600"
-          />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-[14px] h-[14px] text-gray-400" />
 
-          <SummaryCard
-            icon={UserRoundCheck}
-            label="Staff"
-            value={staff}
-            description="Operational access"
-            iconClass="bg-emerald-50 text-emerald-600"
-          />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) =>
+                  setSearch(
+                    e.target.value
+                  )
+                }
+                placeholder="Search users..."
+                className="w-full h-[34px] sm:h-9 rounded-lg border border-gray-200 bg-gray-50 pl-[32px] pr-2.5 text-[10px] sm:text-[11px] outline-none focus:border-[#C87532] focus:bg-white"
+              />
+
+            </div>
+
+            {/* ROLE FILTER */}
+
+            <div className="relative w-full md:w-[170px]">
+
+              <select
+                value={roleFilter}
+                onChange={(e) =>
+                  setRoleFilter(
+                    e.target.value
+                  )
+                }
+                className="w-full h-[34px] sm:h-9 appearance-none rounded-lg border border-gray-200 bg-gray-50 px-2.5 pr-7 text-[10px] sm:text-[11px] outline-none focus:border-[#C87532] focus:bg-white"
+              >
+
+                <option value="all">
+                  All Roles
+                </option>
+
+                <option value="super_admin">
+                  Super Admin
+                </option>
+
+                <option value="admin">
+                  Admin
+                </option>
+
+                <option value="manager">
+                  Manager
+                </option>
+
+                <option value="staff">
+                  Staff
+                </option>
+
+              </select>
+
+              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-[13px] h-[13px] text-gray-400 pointer-events-none" />
+
+            </div>
+
+            {/* MOBILE BUTTON ROW */}
+
+            <div className="flex items-center gap-[6px]">
+
+              {/* REFRESH */}
+
+              <button
+                onClick={() => {
+                  fetchUsers();
+                  fetchGroups();
+                  fetchAssignmentActivity();
+                }}
+                className="h-[34px] sm:h-9 flex-1 md:flex-none md:px-3 px-2.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 flex items-center justify-center gap-[5px] text-[9px] sm:text-[10px] font-medium whitespace-nowrap"
+              >
+
+                <RefreshCw className="w-[13px] h-[13px]" />
+
+                <span>
+                  Refresh
+                </span>
+
+              </button>
+
+              {/* ADD USER */}
+
+              <button
+                onClick={handleAddUser}
+                disabled={
+                  !hasPermission(
+                    "team.create"
+                  )
+                }
+                className="h-[34px] sm:h-9 flex-1 md:flex-none px-2.5 sm:px-3.5 rounded-lg bg-[#C87532] hover:bg-[#B96928] disabled:opacity-40 disabled:cursor-not-allowed text-white flex items-center justify-center gap-[5px] text-[9px] sm:text-[10px] font-semibold whitespace-nowrap"
+              >
+
+                <Plus className="w-[13px] h-[13px]" />
+
+                <span>
+                  Add User
+                </span>
+
+              </button>
+
+            </div>
+
+          </div>
+
         </div>
 
         {/* =================================================
-            MAIN CARD
+            DESKTOP TABLE
         ================================================= */}
 
-        <div
-          className="overflow-hidden rounded-xl border border-[#E5E0D8] bg-white shadow-[0_5px_24px_rgba(23,32,51,0.04)] sm:rounded-2xl"
-          onClick={(e) =>
-            e.stopPropagation()
-          }
-        >
-          {/* TOOLBAR */}
+        <div className="hidden md:block bg-white border border-gray-200 rounded-xl shadow-sm overflow-visible">
 
-          <div className="border-b border-[#EEEAE3] px-3 py-3 sm:px-4 sm:py-3.5">
-            <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <h2 className="text-sm font-bold text-[#172033]">
-                  Team Members
-                </h2>
+          <div className="overflow-x-auto">
 
-                <p className="mt-0.5 text-[10px] text-slate-400 sm:text-[11px]">
-                  {filteredUsers.length} of{" "}
-                  {users.length} users displayed
-                </p>
-              </div>
+            <table className="w-full">
 
-              <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto">
-                {/* SEARCH */}
+              <thead>
 
-                <div className="relative min-w-0 flex-1 sm:w-[250px] sm:flex-none">
-                  <Search
-                    size={15}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                  />
+                <tr className="border-b border-gray-100 bg-gray-50/70">
 
-                  <input
-                    type="text"
-                    placeholder="Search name, email..."
-                    value={search}
-                    onChange={(e) =>
-                      setSearch(
-                        e.target.value
-                      )
-                    }
-                    className="h-9 w-full rounded-lg border border-[#E4E0D8] bg-[#FBFAF8] pl-9 pr-3 text-xs text-[#172033] outline-none transition placeholder:text-slate-400 focus:border-[#C87532] focus:bg-white focus:ring-2 focus:ring-[#C87532]/10"
-                  />
-                </div>
+                  <th className="text-left px-4 py-3 text-[10px] font-semibold text-gray-500 uppercase">
+                    User
+                  </th>
 
-                {/* ROLE FILTER */}
+                  <th className="text-left px-4 py-3 text-[10px] font-semibold text-gray-500 uppercase">
+                    Role
+                  </th>
 
-                <div className="relative sm:w-[145px]">
-                  <select
-                    value={roleFilter}
-                    onChange={(e) =>
-                      setRoleFilter(
-                        e.target.value
-                      )
-                    }
-                    className="h-9 w-full appearance-none rounded-lg border border-[#E4E0D8] bg-[#FBFAF8] pl-3 pr-8 text-xs font-medium text-slate-600 outline-none transition focus:border-[#C87532] focus:bg-white focus:ring-2 focus:ring-[#C87532]/10"
-                  >
-                    <option value="all">
-                      All roles
-                    </option>
+                  <th className="text-left px-4 py-3 text-[10px] font-semibold text-gray-500 uppercase">
+                    Department
+                  </th>
 
-                    {roles.map(
-                      (role) => (
-                        <option
-                          key={role.id}
-                          value={role.id}
-                        >
-                          {role.name ||
-                            getRoleLabel(
-                              role.id
+                  <th className="text-left px-4 py-3 text-[10px] font-semibold text-gray-500 uppercase">
+                    Status
+                  </th>
+
+                  <th className="text-left px-4 py-3 text-[10px] font-semibold text-gray-500 uppercase">
+                    Created
+                  </th>
+
+                  <th className="text-right px-4 py-3 text-[10px] font-semibold text-gray-500 uppercase">
+                    Action
+                  </th>
+
+                </tr>
+
+              </thead>
+
+              <tbody>
+
+                {loading ? (
+
+                  <tr>
+
+                    <td
+                      colSpan={6}
+                      className="py-12 text-center"
+                    >
+
+                      <Loader2 className="w-5 h-5 animate-spin text-[#C87532] mx-auto" />
+
+                    </td>
+
+                  </tr>
+
+                ) : filteredUsers.length === 0 ? (
+
+                  <tr>
+
+                    <td
+                      colSpan={6}
+                      className="py-12 text-center text-[11px] text-gray-400"
+                    >
+                      No users found.
+                    </td>
+
+                  </tr>
+
+                ) : (
+
+                  filteredUsers.map(
+                    (user) => (
+
+                      <tr
+                        key={user._id}
+                        className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50/60"
+                      >
+
+                        <td className="px-4 py-3">
+
+                          <div className="flex items-center gap-2.5">
+
+                            <div className="w-8 h-8 rounded-full bg-[#18352A] text-white flex items-center justify-center text-[10px] font-bold shrink-0">
+
+                              {(
+                                user.name ||
+                                "U"
+                              )
+                                .charAt(0)
+                                .toUpperCase()}
+
+                            </div>
+
+                            <div className="min-w-0">
+
+                              <p className="text-[11px] font-semibold text-gray-800 truncate max-w-[180px]">
+                                {user.name ||
+                                  "—"}
+                              </p>
+
+                              <p className="text-[9px] text-gray-400 truncate max-w-[200px]">
+                                {user.email ||
+                                  "—"}
+                              </p>
+
+                            </div>
+
+                          </div>
+
+                        </td>
+
+                        <td className="px-4 py-3">
+
+                          <span
+                            className={`inline-flex items-center rounded-full border px-2 py-1 text-[9px] font-medium ${
+                              getRoleStyle(
+                                user.role
+                              ).badge
+                            }`}
+                          >
+                            {getRoleLabel(
+                              user.role
                             )}
-                        </option>
-                      )
-                    )}
-                  </select>
+                          </span>
 
-                  <ChevronDown
-                    size={14}
-                    className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400"
-                  />
-                </div>
-              </div>
-            </div>
+                        </td>
+
+                        <td className="px-4 py-3 text-[10px] text-gray-600">
+
+                          {getGroupLabel(
+                            user.group
+                          )}
+
+                        </td>
+
+                        <td className="px-4 py-3">
+
+                          <span
+                            className={`inline-flex items-center rounded-full border px-2 py-1 text-[9px] font-medium ${getStatusStyle(
+                              user.status
+                            )}`}
+                          >
+
+                            {user.status ===
+                            "active"
+                              ? "Active"
+                              : "Inactive"}
+
+                          </span>
+
+                        </td>
+
+                        <td className="px-4 py-3 text-[9px] text-gray-400">
+
+                          {user.createdAt
+                            ? new Date(
+                                user.createdAt
+                              ).toLocaleDateString(
+                                "en-GB"
+                              )
+                            : "—"}
+
+                        </td>
+
+                        <td className="px-4 py-3 text-right">
+
+                          <ActionMenu
+                            user={user}
+                            openActionId={
+                              openActionId
+                            }
+                            setOpenActionId={
+                              setOpenActionId
+                            }
+                            onEdit={
+                              handleEditUser
+                            }
+                            onPermissions={
+                              handleManagePermissions
+                            }
+                            onToggleStatus={
+                              handleToggleStatus
+                            }
+                            onDelete={
+                              handleDeleteUser
+                            }
+                            canEdit={hasPermission(
+                              "team.update"
+                            )}
+                            canDelete={hasPermission(
+                              "team.delete"
+                            )}
+                            canViewPermissions={hasPermission(
+                              "team.view"
+                            )}
+                          />
+
+                        </td>
+
+                      </tr>
+
+                    )
+                  )
+
+                )}
+
+              </tbody>
+
+            </table>
+
           </div>
 
-          {/* TABLE */}
+        </div>
+
+        {/* =================================================
+            MOBILE USERS
+            Fixed pixel compact responsive layout
+        ================================================= */}
+
+        <div className="md:hidden space-y-[6px]">
 
           {loading ? (
-            <div className="flex min-h-[260px] items-center justify-center sm:min-h-[300px]">
-              <div className="flex flex-col items-center">
-                <div className="mb-2.5 flex h-9 w-9 items-center justify-center rounded-lg bg-[#F3F6F4]">
-                  <Loader2
-                    size={18}
-                    className="animate-spin text-[#18352A]"
-                  />
-                </div>
 
-                <p className="text-xs font-medium text-slate-600">
-                  Loading users...
-                </p>
+            /* MOBILE LOADING */
 
-                <p className="mt-0.5 text-[10px] text-slate-400">
-                  Please wait a moment
-                </p>
-              </div>
+            <div className="h-[110px] bg-white border border-gray-200 rounded-xl shadow-sm flex items-center justify-center">
+
+              <Loader2 className="w-5 h-5 animate-spin text-[#C87532]" />
+
             </div>
-          ) : filteredUsers.length ===
-            0 ? (
-            <div className="flex min-h-[260px] flex-col items-center justify-center px-4 text-center sm:min-h-[300px]">
-              <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-[#F3F5F3]">
-                <UserX
-                  size={21}
-                  className="text-[#7B8A7E]"
-                />
-              </div>
 
-              <h3 className="text-sm font-bold text-[#172033]">
+          ) : filteredUsers.length === 0 ? (
+
+            /* MOBILE EMPTY STATE */
+
+            <div className="h-[120px] bg-white border border-gray-200 rounded-xl shadow-sm flex flex-col items-center justify-center px-4">
+
+              <Users className="w-6 h-6 text-gray-300" />
+
+              <p className="text-[11px] font-medium text-gray-700 mt-1.5">
                 No users found
-              </h3>
-
-              <p className="mt-1 max-w-sm text-xs text-slate-400">
-                {search ||
-                roleFilter !== "all"
-                  ? "Try changing your search or role filter."
-                  : "No admin users have been created yet."}
               </p>
 
-              {canCreateUser &&
-                !search &&
-                roleFilter === "all" && (
-                  <button
-                    onClick={
-                      handleAddUser
-                    }
-                    className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-[#18352A] px-3.5 py-2 text-xs font-semibold text-white hover:bg-[#10291F]"
-                  >
-                    <Plus size={14} />
-                    Create first user
-                  </button>
-                )}
+              <p className="text-[9px] text-gray-400 mt-0.5 text-center">
+                Try changing your search or filter.
+              </p>
+
             </div>
+
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[900px]">
-                <thead>
-                  <tr className="border-b border-[#EEEAE3] bg-[#FCFBF9]">
-                    <th className="px-4 py-2.5 text-left text-[9px] font-bold uppercase tracking-[0.11em] text-slate-400 sm:px-4">
-                      User
-                    </th>
 
-                    <th className="px-3 py-2.5 text-left text-[9px] font-bold uppercase tracking-[0.11em] text-slate-400">
-                      Role
-                    </th>
+            /* MOBILE USER LIST */
 
-                    <th className="px-3 py-2.5 text-left text-[9px] font-bold uppercase tracking-[0.11em] text-slate-400">
-                      Department
-                    </th>
+            filteredUsers.map(
+              (user) => {
 
-                    <th className="px-3 py-2.5 text-left text-[9px] font-bold uppercase tracking-[0.11em] text-slate-400">
-                      Status
-                    </th>
+                const roleStyle =
+                  getRoleStyle(
+                    user.role
+                  );
 
-                    <th className="px-3 py-2.5 text-left text-[9px] font-bold uppercase tracking-[0.11em] text-slate-400">
-                      Created
-                    </th>
+                const userAssignment =
+                  assignmentActivity
+                    .filter(
+                      (activity) => {
 
-                    <th className="px-4 py-2.5 text-right text-[9px] font-bold uppercase tracking-[0.11em] text-slate-400">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
+                        const assignedTo =
+                          typeof activity.assignedTo ===
+                          "object"
+                            ? activity.assignedTo?._id
+                            : activity.assignedTo;
 
-                <tbody>
-                  {filteredUsers.map(
-                    (user) => {
-                      const roleStyle =
-                        getRoleStyle(
-                          user.role
+                        return (
+                          !assignedTo ||
+                          assignedTo ===
+                            user._id
                         );
+                      }
+                    )
+                    .slice(0, 1);
 
-                      return (
-                        <tr
-                          key={user._id}
-                          className="group border-b border-[#F0ECE6] last:border-0 hover:bg-[#FCFBF9]"
+                return (
+
+                  <div
+                    key={user._id}
+                    className="bg-white border border-gray-200 rounded-xl p-[10px] shadow-sm"
+                  >
+
+                    {/* =====================================
+                        MOBILE USER HEADER
+                    ===================================== */}
+
+                    <div className="h-[36px] flex items-center justify-between gap-2">
+
+                      {/* USER INFO */}
+
+                      <div className="flex items-center gap-[8px] min-w-0">
+
+                        {/* AVATAR */}
+
+                        <div className="w-[34px] h-[34px] rounded-full bg-[#18352A] flex items-center justify-center shrink-0">
+
+                          <UserRoundCheck className="w-[14px] h-[14px] text-white" />
+
+                        </div>
+
+                        {/* NAME + EMAIL */}
+
+                        <div className="min-w-0">
+
+                          <p className="text-[10px] font-semibold text-gray-800 truncate leading-[13px]">
+
+                            {user.name ||
+                              "—"}
+
+                          </p>
+
+                          <p className="text-[8px] text-gray-500 truncate max-w-[190px] leading-[11px] mt-[1px]">
+
+                            {user.email ||
+                              "—"}
+
+                          </p>
+
+                        </div>
+
+                      </div>
+
+                      {/* MOBILE ACTION MENU */}
+
+                      <div className="relative shrink-0">
+
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+
+                            setOpenActionId(
+                              openActionId ===
+                                user._id
+                                ? null
+                                : user._id
+                            );
+                          }}
+                          className="w-[28px] h-[28px] rounded-lg border border-gray-200 bg-white flex items-center justify-center text-gray-500 hover:bg-gray-50"
                         >
-                          {/* USER */}
 
-                          <td className="px-4 py-2.5">
-                            <div className="flex items-center gap-2.5">
-                              <div className="relative shrink-0">
-                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#18352A] text-xs font-bold text-white shadow-sm">
-                                  {user.name
-                                    ?.charAt(
-                                      0
-                                    )
-                                    ?.toUpperCase() ||
-                                    "U"}
-                                </div>
+                          <MoreHorizontal className="w-[14px] h-[14px]" />
 
-                                <span
-                                  className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-white ${
-                                    user.status ===
-                                    "inactive"
-                                      ? "bg-slate-400"
-                                      : "bg-emerald-500"
-                                  }`}
-                                />
-                              </div>
+                        </button>
 
-                              <div className="min-w-0">
-                                <p className="max-w-[220px] truncate text-xs font-semibold text-[#172033]">
-                                  {user.name ||
-                                    "Unnamed User"}
-                                </p>
+                        {openActionId ===
+                          user._id && (
 
-                                <div className="mt-0.5 flex items-center gap-1">
-                                  <Mail
-                                    size={10}
-                                    className="shrink-0 text-slate-400"
-                                  />
+                          <>
 
-                                  <p className="max-w-[230px] truncate text-[10px] text-slate-400">
-                                    {user.email}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          </td>
+                            <div
+                              className="fixed inset-0 z-20"
+                              onClick={() =>
+                                setOpenActionId(
+                                  null
+                                )
+                              }
+                            />
 
-                          {/* ROLE */}
-
-                          <td className="px-3 py-2.5">
-                            <span
-                              className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[10px] font-bold ${roleStyle.badge}`}
+                            <div
+                              onClick={(e) =>
+                                e.stopPropagation()
+                              }
+                              className="absolute right-0 top-[32px] z-30 w-[174px] bg-white border border-gray-200 rounded-xl shadow-xl p-[5px]"
                             >
-                              <span
-                                className={`h-1.5 w-1.5 rounded-full ${roleStyle.dot}`}
-                              />
 
-                              {getRoleLabel(
-                                user.role
-                              )}
-                            </span>
-                          </td>
+                              {/* EDIT */}
 
-                          {/* DEPARTMENT */}
-
-                          <td className="px-3 py-2.5">
-                            {user.group ? (
-                              <span className="inline-flex max-w-[150px] truncate rounded-md border border-[#E5E0D8] bg-[#FBFAF8] px-2 py-1 text-[10px] font-semibold text-slate-600">
-                                {getGroupLabel(
-                                  user.group
-                                )}
-                              </span>
-                            ) : (
-                              <span className="text-[11px] text-slate-400">
-                                —
-                              </span>
-                            )}
-                          </td>
-
-                          {/* STATUS */}
-
-                          <td className="px-3 py-2.5">
-                            {user.status ===
-                            "inactive" ? (
-                              <span className="inline-flex items-center gap-1.5 text-[10px] font-medium text-slate-500">
-                                <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
-                                Inactive
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center gap-1.5 text-[10px] font-medium text-emerald-600">
-                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                                Active
-                              </span>
-                            )}
-                          </td>
-
-                          {/* CREATED */}
-
-                          <td className="px-3 py-2.5">
-                            <div className="flex items-center gap-1.5 whitespace-nowrap text-[10px] text-slate-500">
-                              <CalendarDays
-                                size={12}
-                                className="text-slate-400"
-                              />
-
-                              {user.createdAt
-                                ? new Date(
-                                    user.createdAt
-                                  ).toLocaleDateString(
-                                    "en-IN",
-                                    {
-                                      day: "2-digit",
-                                      month:
-                                        "short",
-                                      year: "numeric",
-                                    }
-                                  )
-                                : "-"}
-                            </div>
-                          </td>
-
-                          {/* ACTIONS */}
-
-                          <td className="relative px-4 py-2.5">
-                            <div className="flex justify-end">
                               <button
                                 type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-
-                                  setOpenActionId(
-                                    openActionId ===
-                                      user._id
-                                      ? null
-                                      : user._id
-                                  );
-                                }}
-                                className="flex h-7 w-7 items-center justify-center rounded-md border border-transparent text-slate-400 transition hover:border-[#E5E0D8] hover:bg-white hover:text-[#172033]"
+                                onClick={() =>
+                                  handleEditUser(
+                                    user
+                                  )
+                                }
+                                disabled={
+                                  !hasPermission(
+                                    "team.update"
+                                  )
+                                }
+                                className="w-full h-[34px] flex items-center gap-2 px-2.5 rounded-lg text-[10px] text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
                               >
-                                <MoreHorizontal
-                                  size={16}
-                                />
+
+                                <Pencil className="w-[13px] h-[13px]" />
+
+                                Edit User
+
                               </button>
+
+                              {/* PERMISSIONS */}
+
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleManagePermissions(
+                                    user
+                                  )
+                                }
+                                disabled={
+                                  !hasPermission(
+                                    "team.view"
+                                  )
+                                }
+                                className="w-full h-[34px] flex items-center gap-2 px-2.5 rounded-lg text-[10px] text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                              >
+
+                                <KeyRound className="w-[13px] h-[13px]" />
+
+                                Permissions
+
+                              </button>
+
+                              {/* STATUS */}
+
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleToggleStatus(
+                                    user
+                                  )
+                                }
+                                disabled={
+                                  !hasPermission(
+                                    "team.update"
+                                  )
+                                }
+                                className="w-full h-[34px] flex items-center gap-2 px-2.5 rounded-lg text-[10px] text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                              >
+
+                                <UserX className="w-[13px] h-[13px]" />
+
+                                {user.status ===
+                                "inactive"
+                                  ? "Activate"
+                                  : "Deactivate"}
+
+                              </button>
+
+                              <div className="my-[4px] border-t border-gray-100" />
+
+                              {/* DELETE */}
+
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleDeleteUser(
+                                    user
+                                  )
+                                }
+                                disabled={
+                                  !hasPermission(
+                                    "team.delete"
+                                  )
+                                }
+                                className="w-full h-[34px] flex items-center gap-2 px-2.5 rounded-lg text-[10px] text-red-600 hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                              >
+
+                                <Trash2 className="w-[13px] h-[13px]" />
+
+                                Delete User
+
+                              </button>
+
                             </div>
 
-                            {openActionId ===
-                              user._id && (
-                              <div
-                                onClick={(e) =>
-                                  e.stopPropagation()
-                                }
-                                className="absolute right-4 top-10 z-30 w-40 overflow-hidden rounded-lg border border-[#E5E0D8] bg-white p-1 shadow-[0_12px_35px_rgba(23,32,51,0.14)]"
-                              >
-                                {canEditUser && (
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      handleEditUser(
-                                        user
-                                      )
-                                    }
-                                    className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-[11px] font-medium text-slate-600 hover:bg-[#F7F5F0] hover:text-[#172033]"
-                                  >
-                                    <Pencil
-                                      size={14}
-                                    />
-                                    Edit user
-                                  </button>
+                          </>
+
+                        )}
+
+                      </div>
+
+                    </div>
+
+                    {/* =====================================
+                        MOBILE BADGES
+                    ===================================== */}
+
+                    <div className="mt-[8px] flex flex-wrap items-center gap-[5px]">
+
+                      {/* ROLE */}
+
+                      <span
+                        className={`inline-flex items-center gap-[4px] h-[22px] px-[7px] rounded-lg border text-[8px] font-semibold ${roleStyle.badge}`}
+                      >
+
+                        <span
+                          className={`w-[5px] h-[5px] rounded-full ${roleStyle.dot}`}
+                        />
+
+                        {getRoleLabel(
+                          user.role
+                        )}
+
+                      </span>
+
+                      {/* DEPARTMENT */}
+
+                      <span className="h-[22px] inline-flex items-center px-[7px] rounded-lg bg-gray-50 border border-gray-200 text-[8px] text-gray-600">
+
+                        {getGroupLabel(
+                          user.group
+                        )}
+
+                      </span>
+
+                      {/* STATUS */}
+
+                      <span
+                        className={`h-[22px] inline-flex items-center px-[7px] rounded-lg text-[8px] font-semibold ${
+                          user.status ===
+                          "inactive"
+                            ? "bg-gray-100 text-gray-600"
+                            : "bg-green-50 text-green-700"
+                        }`}
+                      >
+
+                        {user.status ===
+                        "inactive"
+                          ? "Inactive"
+                          : "Active"}
+
+                      </span>
+
+                    </div>
+
+                    {/* =====================================
+                        MOBILE CREATED DATE
+                    ===================================== */}
+
+                    <div className="mt-[6px] px-[7px] py-[5px] rounded-lg bg-gray-50 border border-gray-100">
+
+                      <p className="text-[7px] text-gray-400 uppercase tracking-wide">
+                        Created
+                      </p>
+
+                      <p className="text-[8px] text-gray-600 mt-[1px]">
+                        {user.createdAt
+                          ? new Date(
+                              user.createdAt
+                            ).toLocaleDateString(
+                              "en-GB"
+                            )
+                          : "—"}
+                      </p>
+
+                    </div>
+
+                    {/* =====================================
+                        MOBILE ASSIGNMENT ACTIVITY
+                        CRM STYLE
+                        No Assigned By / Assigned To
+                    ===================================== */}
+
+                    {userAssignment.length >
+                      0 && (
+
+                      <div className="mt-[6px] px-[7px] py-[6px] rounded-lg bg-[#F7F5F0] border border-gray-100">
+
+                        {userAssignment.map(
+                          (
+                            activity,
+                            index
+                          ) => (
+
+                            <div
+                              key={
+                                activity._id ||
+                                activity.id ||
+                                index
+                              }
+                            >
+
+                              <p className="text-[9px] font-semibold text-gray-800 truncate">
+
+                                {getAssignmentName(
+                                  activity.assignedBy
                                 )}
 
-                                {canEditUser && (
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      handleToggleStatus(
-                                        user
-                                      )
-                                    }
-                                    className={`flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-[11px] font-medium ${
-                                      user.status ===
-                                      "inactive"
-                                        ? "text-emerald-600 hover:bg-emerald-50"
-                                        : "text-amber-600 hover:bg-amber-50"
-                                    }`}
-                                  >
-                                    <UserRoundCheck
-                                      size={14}
-                                    />
+                                <span className="mx-[5px] text-[#C87532]">
+                                  →
+                                </span>
 
-                                    {user.status ===
-                                    "inactive"
-                                      ? "Activate user"
-                                      : "Deactivate user"}
-                                  </button>
+                                {getAssignmentName(
+                                  activity.assignedTo
                                 )}
 
-                                {canDeleteUser && (
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      handleDelete(
-                                        user
-                                      )
-                                    }
-                                    className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-[11px] font-medium text-red-600 hover:bg-red-50"
-                                  >
-                                    <Trash2
-                                      size={14}
-                                    />
-                                    Delete user
-                                  </button>
+                              </p>
+
+                              <p className="text-[7px] text-gray-400 mt-[2px] truncate">
+
+                                {getGroupLabel(
+                                  activity.group
                                 )}
 
-                                {!canEditUser &&
-                                  !canDeleteUser && (
-                                    <div className="px-2.5 py-2 text-[11px] text-slate-400">
-                                      No actions
-                                      available
-                                    </div>
-                                  )}
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    }
-                  )}
-                </tbody>
-              </table>
-            </div>
+                                {" • "}
+
+                                {getRoleLabel(
+                                  typeof activity.role ===
+                                  "object"
+                                    ? activity.role?.roleId
+                                    : activity.role
+                                )}
+
+                                {" • "}
+
+                                {formatAssignmentDate(
+                                  activity.assignedAt
+                                )}
+
+                              </p>
+
+                            </div>
+
+                          )
+                        )}
+
+                      </div>
+
+                    )}
+
+                  </div>
+
+                );
+
+              }
+            )
+
           )}
 
-          {/* FOOTER */}
-
-          {!loading &&
-            filteredUsers.length > 0 && (
-              <div className="border-t border-[#EEEAE3] bg-[#FCFBF9] px-4 py-2.5">
-                <p className="text-[10px] text-slate-400 sm:text-[11px]">
-                  Showing{" "}
-                  <span className="font-semibold text-slate-600">
-                    {filteredUsers.length}
-                  </span>{" "}
-                  of{" "}
-                  <span className="font-semibold text-slate-600">
-                    {users.length}
-                  </span>{" "}
-                  users
-                </p>
-              </div>
-            )}
         </div>
+
       </div>
 
       {/* =================================================
-          ADD / EDIT MODAL
+          ADD / EDIT USER MODAL
       ================================================= */}
 
       {showModal && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-[#101713]/50 p-3 backdrop-blur-[3px] sm:p-4"
-          onClick={closeModal}
-        >
-          <div
-            className="my-auto max-h-[94vh] w-full max-w-[500px] overflow-y-auto rounded-xl border border-white/70 bg-white shadow-[0_25px_80px_rgba(0,0,0,0.20)] sm:rounded-2xl"
-            onClick={(e) =>
-              e.stopPropagation()
-            }
-          >
-            {/* MODAL HEADER */}
 
-            <div className="border-b border-[#EEEAE3] bg-[#FCFBF9] px-4 py-3.5 sm:px-5 sm:py-4">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#18352A] text-white shadow-sm">
-                    {editingUser ? (
-                      <Pencil size={15} />
-                    ) : (
-                      <Users size={15} />
-                    )}
-                  </div>
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-3">
 
-                  <div className="min-w-0">
-                    <h2 className="text-sm font-bold text-[#172033]">
-                      {editingUser
-                        ? "Edit User"
-                        : "Add User"}
-                    </h2>
+          <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden">
 
-                    <p className="mt-0.5 text-[10px] leading-4 text-slate-400 sm:text-[11px]">
-                      {editingUser
-                        ? "Update account details and access role."
-                        : "Create a new admin account."}
-                    </p>
-                  </div>
-                </div>
+            <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
 
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  disabled={saving}
-                  className="shrink-0 rounded-md p-1.5 text-slate-400 transition hover:bg-white hover:text-slate-700 disabled:opacity-50"
-                >
-                  <X size={17} />
-                </button>
+              <div>
+
+                <h2 className="text-sm font-bold text-[#172033]">
+
+                  {editingUser
+                    ? "Edit User"
+                    : "Add User"}
+
+                </h2>
+
+                <p className="text-[9px] text-gray-400 mt-0.5">
+                  Create user access and assign department.
+                </p>
+
               </div>
-            </div>
 
-            {/* FORM */}
+              <button
+                onClick={
+                  closeUserModal
+                }
+                className="w-7 h-7 rounded-lg hover:bg-gray-100 flex items-center justify-center"
+              >
+
+                <X className="w-4 h-4 text-gray-500" />
+
+              </button>
+
+            </div>
 
             <form
               onSubmit={handleSubmit}
-              className="space-y-3.5 p-4 sm:space-y-4 sm:p-5"
+              className="p-4 space-y-3"
             >
+
               {/* NAME */}
 
               <div>
-                <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-slate-500">
+
+                <label className="block text-[10px] font-semibold text-gray-600 mb-1">
                   Full Name
                 </label>
 
                 <input
-                  type="text"
-                  name="name"
                   value={formData.name}
-                  onChange={handleChange}
-                  required
-                  placeholder="e.g. Rahul Sharma"
-                  className="h-9 w-full rounded-lg border border-[#E2DED6] bg-white px-3 text-xs text-[#172033] outline-none transition placeholder:text-slate-300 focus:border-[#C87532] focus:ring-2 focus:ring-[#C87532]/10"
+                  onChange={(e) =>
+                    handleFormChange(
+                      "name",
+                      e.target.value
+                    )
+                  }
+                  placeholder="Enter full name"
+                  className="w-full h-9 rounded-lg border border-gray-200 px-3 text-[11px] outline-none focus:border-[#C87532]"
                 />
+
               </div>
 
               {/* EMAIL */}
 
               <div>
-                <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-slate-500">
-                  Email Address
+
+                <label className="block text-[10px] font-semibold text-gray-600 mb-1">
+                  Email
                 </label>
 
                 <input
                   type="email"
-                  name="email"
                   value={formData.email}
-                  onChange={handleChange}
-                  required
-                  placeholder="name@company.com"
-                  className="h-9 w-full rounded-lg border border-[#E2DED6] bg-white px-3 text-xs text-[#172033] outline-none transition placeholder:text-slate-300 focus:border-[#C87532] focus:ring-2 focus:ring-[#C87532]/10"
+                  onChange={(e) =>
+                    handleFormChange(
+                      "email",
+                      e.target.value
+                    )
+                  }
+                  placeholder="Enter email"
+                  className="w-full h-9 rounded-lg border border-gray-200 px-3 text-[11px] outline-none focus:border-[#C87532]"
                 />
+
               </div>
 
               {/* PASSWORD */}
 
               <div>
-                <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-slate-500">
+
+                <label className="block text-[10px] font-semibold text-gray-600 mb-1">
                   Password
                 </label>
 
                 <div className="relative">
+
+                  <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+
                   <input
                     type={
                       showPassword
                         ? "text"
                         : "password"
                     }
-                    name="password"
                     value={
                       formData.password
                     }
-                    onChange={
-                      handleChange
-                    }
-                    required={
-                      !editingUser
+                    onChange={(e) =>
+                      handleFormChange(
+                        "password",
+                        e.target.value
+                      )
                     }
                     placeholder={
                       editingUser
                         ? "Leave blank to keep current password"
-                        : "Enter a secure password"
+                        : "Enter password"
                     }
-                    className="h-9 w-full rounded-lg border border-[#E2DED6] bg-white px-3 pr-10 text-xs text-[#172033] outline-none transition placeholder:text-slate-300 focus:border-[#C87532] focus:ring-2 focus:ring-[#C87532]/10"
+                    className="w-full h-9 rounded-lg border border-gray-200 pl-9 pr-9 text-[11px] outline-none focus:border-[#C87532]"
                   />
 
                   <button
@@ -1887,185 +2334,430 @@ export default function UsersPage() {
                           !prev
                       )
                     }
-                    className="absolute right-1.5 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-slate-400 hover:bg-slate-50 hover:text-slate-700"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
                   >
+
                     {showPassword ? (
-                      <EyeOff
-                        size={15}
-                      />
+                      <EyeOff className="w-3.5 h-3.5" />
                     ) : (
-                      <Eye
-                        size={15}
-                      />
+                      <Eye className="w-3.5 h-3.5" />
                     )}
+
                   </button>
+
                 </div>
 
-                {editingUser && (
-                  <p className="mt-1 text-[10px] text-slate-400">
-                    Leave blank if you do not
-                    want to change the password.
-                  </p>
-                )}
               </div>
 
-              {/* ROLE */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
-              <div>
-                <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-slate-500">
-                  Access Role
-                </label>
+                {/* ROLE */}
 
-                <div className="relative">
-                  <select
-                    name="role"
-                    value={
-                      formData.role
-                    }
-                    onChange={
-                      handleChange
-                    }
-                    required
-                    disabled={
-                      rolesLoading ||
-                      roles.length === 0
-                    }
-                    className="h-9 w-full appearance-none rounded-lg border border-[#E2DED6] bg-white px-3 pr-9 text-xs font-medium text-[#172033] outline-none transition focus:border-[#C87532] focus:ring-2 focus:ring-[#C87532]/10 disabled:bg-slate-50 disabled:text-slate-400"
-                  >
-                    {rolesLoading ? (
+                {/* ROLE */}
+
+<div>
+
+  <label className="block text-[10px] font-semibold text-gray-600 mb-1">
+    Role
+  </label>
+
+  <div className="relative">
+
+    <select
+      value={formData.role}
+      onChange={(e) =>
+        handleFormChange(
+          "role",
+          e.target.value
+        )
+      }
+      className="w-full h-9 appearance-none rounded-lg border border-gray-200 px-3 pr-8 text-[11px] outline-none focus:border-[#C87532]"
+    >
+
+      <option value="">
+        Select role
+      </option>
+
+      <option value="admin">
+        Admin
+      </option>
+
+      <option value="manager">
+        Manager
+      </option>
+
+      <option value="staff">
+        Staff
+      </option>
+
+      {currentRole === "super_admin" && (
+        <option value="super_admin">
+          Super Admin
+        </option>
+      )}
+
+    </select>
+
+    <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+
+  </div>
+
+</div>
+
+                {/* GROUP */}
+
+                <div>
+
+                  <label className="block text-[10px] font-semibold text-gray-600 mb-1">
+                    Department
+                  </label>
+
+                  <div className="relative">
+
+                    <select
+                      value={
+                        formData.group
+                      }
+                      onChange={(e) =>
+                        handleFormChange(
+                          "group",
+                          e.target.value
+                        )
+                      }
+                      disabled={
+                        formData.role ===
+                        "super_admin"
+                      }
+                      className="w-full h-9 appearance-none rounded-lg border border-gray-200 px-3 pr-8 text-[11px] outline-none focus:border-[#C87532] disabled:bg-gray-100 disabled:text-gray-400"
+                    >
+
                       <option value="">
-                        Loading roles...
+                        Select department
                       </option>
-                    ) : roles.length ===
-                      0 ? (
-                      <option value="">
-                        No roles available
-                      </option>
-                    ) : (
-                      roles.map(
-                        (role) => (
+
+                      {groups.map(
+                        (group) => (
+
                           <option
                             key={
-                              role.id
+                              group._id ||
+                              group.groupId
                             }
                             value={
-                              role.id
+                              group._id ||
+                              group.groupId
                             }
                           >
-                            {role.name ||
-                              getRoleLabel(
-                                role.id
-                              )}
+                            {group.name ||
+                              group.groupId}
                           </option>
+
                         )
-                      )
-                    )}
-                  </select>
+                      )}
 
-                  <ChevronDown
-                    size={14}
-                    className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400"
-                  />
+                    </select>
+
+                    <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+
+                  </div>
+
                 </div>
 
-                <p className="mt-1 text-[10px] leading-4 text-slate-400">
-                  Role determines what this
-                  user can access in the admin
-                  panel.
-                </p>
               </div>
 
-              {/* DEPARTMENT */}
+              {/* ACTIONS */}
 
-              <div>
-                <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-slate-500">
-                  Department / Group
-                </label>
+              <div className="pt-2 flex items-center justify-end gap-2">
 
-                <div className="relative">
-                  <select
-                    name="group"
-                    value={
-                      formData.group
-                    }
-                    onChange={
-                      handleChange
-                    }
-                    required
-                    disabled={
-                      groups.length === 0
-                    }
-                    className="h-9 w-full appearance-none rounded-lg border border-[#E2DED6] bg-white px-3 pr-9 text-xs font-medium text-[#172033] outline-none transition focus:border-[#C87532] focus:ring-2 focus:ring-[#C87532]/10 disabled:bg-slate-50 disabled:text-slate-400"
-                  >
-                    <option value="">
-                      {groups.length ===
-                      0
-                        ? "Loading departments..."
-                        : "Select department"}
-                    </option>
-
-                    {groups.map(
-                      (group) => (
-                        <option
-                          key={group.id}
-                          value={group.id}
-                        >
-                          {group.name}
-                        </option>
-                      )
-                    )}
-                  </select>
-
-                  <ChevronDown
-                    size={14}
-                    className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400"
-                  />
-                </div>
-
-                <p className="mt-1 text-[10px] leading-4 text-slate-400">
-                  Select the department this
-                  user belongs to.
-                </p>
-              </div>
-
-              {/* BUTTONS */}
-
-              <div className="flex flex-col-reverse gap-2 border-t border-[#EEEAE3] pt-3.5 sm:flex-row sm:justify-end">
                 <button
                   type="button"
-                  onClick={closeModal}
-                  disabled={saving}
-                  className="h-9 rounded-lg border border-[#DEDAD2] px-4 text-xs font-semibold text-slate-600 transition hover:bg-[#F7F5F0] disabled:opacity-50"
+                  onClick={
+                    closeUserModal
+                  }
+                  className="h-9 px-4 rounded-lg border border-gray-200 text-[10px] font-medium text-gray-600 hover:bg-gray-50"
                 >
                   Cancel
                 </button>
 
                 <button
                   type="submit"
-                  disabled={
-                    saving ||
-                    rolesLoading ||
-                    roles.length === 0 ||
-                    groups.length === 0
-                  }
-                  className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-[#18352A] px-4 text-xs font-semibold text-white shadow-sm transition hover:bg-[#10291F] disabled:cursor-not-allowed disabled:opacity-60"
+                  disabled={saving}
+                  className="h-9 px-4 rounded-lg bg-[#C87532] hover:bg-[#B96928] disabled:opacity-50 text-white text-[10px] font-semibold flex items-center gap-1.5"
                 >
-                  {saving && (
-                    <Loader2
-                      size={14}
-                      className="animate-spin"
-                    />
+
+                  {saving ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Save className="w-3.5 h-3.5" />
                   )}
 
                   {editingUser
-                    ? "Save Changes"
+                    ? "Update User"
                     : "Create User"}
+
                 </button>
+
               </div>
+
             </form>
+
           </div>
+
         </div>
+
       )}
+
+      {/* =================================================
+          PERMISSION MODAL
+      ================================================= */}
+
+      {showPermissionModal && (
+
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-3">
+
+          <div className="w-full max-w-2xl max-h-[90vh] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+
+            <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between shrink-0">
+
+              <div>
+
+                <h2 className="text-sm font-bold text-[#172033]">
+                  Manage Permissions
+                </h2>
+
+                <p className="text-[9px] text-gray-400 mt-0.5">
+
+                  {permissionUser?.name ||
+                    "User"}
+
+                  {" • "}
+
+                  {getRoleLabel(
+                    permissionUser?.role
+                  )}
+
+                  {" • "}
+
+                  {getGroupLabel(
+                    permissionUser?.group
+                  )}
+
+                </p>
+
+              </div>
+
+              <button
+                onClick={
+                  closePermissionModal
+                }
+                className="w-7 h-7 rounded-lg hover:bg-gray-100 flex items-center justify-center"
+              >
+
+                <X className="w-4 h-4 text-gray-500" />
+
+              </button>
+
+            </div>
+
+            <div className="p-4 overflow-y-auto">
+
+              <div className="flex items-center justify-between gap-3 mb-3">
+
+                <div>
+
+                  <p className="text-[11px] font-semibold text-gray-800">
+                    Available Permissions
+                  </p>
+
+                  <p className="text-[9px] text-gray-400">
+                    Only permissions available to you can be delegated.
+                  </p>
+
+                </div>
+
+                <span className="text-[9px] text-[#C87532] font-semibold whitespace-nowrap">
+                  {selectedPermissions.length} selected
+                </span>
+
+              </div>
+
+              {permissionsLoading ? (
+
+                <div className="py-12 flex justify-center">
+
+                  <Loader2 className="w-5 h-5 animate-spin text-[#C87532]" />
+
+                </div>
+
+              ) : permissionOptions.length === 0 ? (
+
+                <div className="py-12 text-center text-[10px] text-gray-400">
+                  No permissions available.
+                </div>
+
+              ) : (
+
+                <>
+
+                  <div className="flex items-center gap-2 mb-3">
+
+                    <button
+                      type="button"
+                      onClick={
+                        selectAllPermissions
+                      }
+                      className="h-8 px-3 rounded-lg bg-gray-100 hover:bg-gray-200 text-[9px] font-medium text-gray-700"
+                    >
+                      Select All
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={
+                        clearAllPermissions
+                      }
+                      className="h-8 px-3 rounded-lg border border-gray-200 hover:bg-gray-50 text-[9px] font-medium text-gray-600"
+                    >
+                      Clear
+                    </button>
+
+                  </div>
+
+                  <div className="space-y-3">
+
+                    {Object.entries(
+                      getPermissionGroups(
+                        permissionOptions
+                      )
+                    ).map(
+                      ([
+                        module,
+                        permissions,
+                      ]) => (
+
+                        <div
+                          key={module}
+                          className="border border-gray-200 rounded-xl overflow-hidden"
+                        >
+
+                          <div className="px-3 py-2 bg-gray-50 border-b border-gray-100">
+
+                            <p className="text-[10px] font-semibold text-[#172033] capitalize">
+                              {module.replace(
+                                /_/g,
+                                " "
+                              )}
+                            </p>
+
+                          </div>
+
+                          <div className="p-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+
+                            {permissions.map(
+                              (
+                                permission
+                              ) => {
+
+                                const checked =
+                                  selectedPermissions.includes(
+                                    permission
+                                  );
+
+                                return (
+
+                                  <label
+                                    key={
+                                      permission
+                                    }
+                                    className={`flex items-center gap-2 rounded-lg border px-2.5 py-2 cursor-pointer transition ${
+                                      checked
+                                        ? "border-[#C87532] bg-orange-50"
+                                        : "border-gray-200 hover:bg-gray-50"
+                                    }`}
+                                  >
+
+                                    <input
+                                      type="checkbox"
+                                      checked={
+                                        checked
+                                      }
+                                      onChange={() =>
+                                        togglePermission(
+                                          permission
+                                        )
+                                      }
+                                      className="accent-[#C87532]"
+                                    />
+
+                                    <span className="text-[10px] text-gray-700">
+                                      {getPermissionLabel(
+                                        permission
+                                      )}
+                                    </span>
+
+                                  </label>
+
+                                );
+                              }
+                            )}
+
+                          </div>
+
+                        </div>
+
+                      )
+                    )}
+
+                  </div>
+
+                </>
+
+              )}
+
+            </div>
+
+            <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-end gap-2 shrink-0">
+
+              <button
+                type="button"
+                onClick={
+                  closePermissionModal
+                }
+                className="h-9 px-4 rounded-lg border border-gray-200 text-[10px] font-medium text-gray-600 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={
+                  handleSavePermissions
+                }
+                disabled={
+                  permissionsSaving ||
+                  permissionsLoading
+                }
+                className="h-9 px-4 rounded-lg bg-[#C87532] hover:bg-[#B96928] disabled:opacity-50 text-white text-[10px] font-semibold flex items-center gap-1.5"
+              >
+
+                {permissionsSaving ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Save className="w-3.5 h-3.5" />
+                )}
+
+                Save Permissions
+
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      )}
+
     </div>
   );
 }
@@ -2078,32 +2770,167 @@ function SummaryCard({
   icon: Icon,
   label,
   value,
-  description,
-  iconClass,
 }) {
   return (
-    <div className="rounded-xl border border-[#E5E0D8] bg-white p-3 shadow-[0_4px_16px_rgba(23,32,51,0.03)] transition hover:-translate-y-0.5 hover:shadow-[0_6px_22px_rgba(23,32,51,0.055)] sm:p-3.5">
-      <div className="flex items-start justify-between gap-2">
+    <div className="bg-white border border-gray-200 rounded-xl shadow-sm px-3 py-2.5">
+
+      <div className="flex items-center gap-2">
+
+        <div className="w-7 h-7 rounded-lg bg-[#18352A]/8 flex items-center justify-center shrink-0">
+
+          <Icon className="w-3.5 h-3.5 text-[#18352A]" />
+
+        </div>
+
         <div className="min-w-0">
-          <p className="truncate text-[10px] font-medium text-slate-400 sm:text-[11px]">
+
+          <p className="text-[8px] sm:text-[9px] text-gray-400 truncate">
             {label}
           </p>
 
-          <p className="mt-1 text-xl font-bold tracking-tight text-[#172033] sm:text-[22px]">
+          <p className="text-sm sm:text-base font-bold text-[#172033]">
             {value}
           </p>
 
-          <p className="mt-0.5 truncate text-[9px] text-slate-400 sm:text-[10px]">
-            {description}
-          </p>
         </div>
 
-        <div
-          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg sm:h-9 sm:w-9 ${iconClass}`}
-        >
-          <Icon size={16} />
-        </div>
       </div>
+
+    </div>
+  );
+}
+
+/* =====================================================
+   ACTION MENU
+===================================================== */
+
+function ActionMenu({
+  user,
+  openActionId,
+  setOpenActionId,
+  onEdit,
+  onPermissions,
+  onToggleStatus,
+  onDelete,
+  canEdit,
+  canDelete,
+  canViewPermissions,
+  mobile = false,
+}) {
+  const isOpen =
+    openActionId === user._id;
+
+  return (
+    <div className="relative inline-block text-left">
+
+      <button
+        onClick={() =>
+          setOpenActionId(
+            isOpen
+              ? null
+              : user._id
+          )
+        }
+        className="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-500"
+      >
+
+        <MoreHorizontal className="w-4 h-4" />
+
+      </button>
+
+      {isOpen && (
+
+        <>
+
+          <div
+            className="fixed inset-0 z-20"
+            onClick={() =>
+              setOpenActionId(null)
+            }
+          />
+
+          <div
+            className={`absolute ${
+              mobile
+                ? "right-0"
+                : "right-0"
+            } top-9 z-30 w-44 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden`}
+          >
+
+            <button
+              disabled={!canEdit}
+              onClick={() =>
+                onEdit(user)
+              }
+              className="w-full flex items-center gap-2 px-3 py-2.5 text-left text-[10px] text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+
+              <Pencil className="w-3.5 h-3.5" />
+
+              Edit User
+
+            </button>
+
+            <button
+              disabled={
+                !canViewPermissions
+              }
+              onClick={() =>
+                onPermissions(user)
+              }
+              className="w-full flex items-center gap-2 px-3 py-2.5 text-left text-[10px] text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+
+              <ShieldCheck className="w-3.5 h-3.5" />
+
+              Permissions
+
+            </button>
+
+            <button
+              disabled={!canEdit}
+              onClick={() =>
+                onToggleStatus(user)
+              }
+              className="w-full flex items-center gap-2 px-3 py-2.5 text-left text-[10px] text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+
+              {user.status ===
+              "active" ? (
+                <UserX className="w-3.5 h-3.5" />
+              ) : (
+                <UserRoundCheck className="w-3.5 h-3.5" />
+              )}
+
+              {user.status ===
+              "active"
+                ? "Deactivate"
+                : "Activate"}
+
+            </button>
+
+            <div className="border-t border-gray-100" />
+
+            <button
+              disabled={!canDelete}
+              onClick={() =>
+                onDelete(user)
+              }
+              className="w-full flex items-center gap-2 px-3 py-2.5 text-left text-[10px] text-red-600 hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+
+              <Trash2 className="w-3.5 h-3.5" />
+
+              Delete User
+
+            </button>
+
+          </div>
+
+        </>
+
+      )}
+
     </div>
   );
 }

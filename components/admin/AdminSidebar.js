@@ -12,7 +12,6 @@ import {
   CalendarDays,
   BarChart3,
   X,
-  Menu,
   PanelLeft,
   PanelLeftClose,
   Building2,
@@ -207,6 +206,24 @@ export default function AdminSidebar({
 
                     <span>
                       Roles & Permissions
+                    </span>
+                  </Link>
+
+                  {/* GROUPS */}
+                  <Link
+                    href="/admin/administration/groups"
+                    className={`flex items-center gap-2 rounded-lg px-3 py-2 transition ${
+                      pathname.startsWith(
+                        "/admin/administration/groups"
+                      )
+                        ? "bg-[#C87532] font-bold text-white"
+                        : "text-[#C7D0BC] hover:bg-white/10 hover:text-white"
+                    }`}
+                  >
+                    <Building2 size={15} />
+
+                    <span>
+                      Groups & Departments
                     </span>
                   </Link>
 
@@ -504,6 +521,24 @@ export default function AdminSidebar({
 
                     <span className="truncate">
                       Roles & Permissions
+                    </span>
+                  </Link>
+
+                  {/* GROUPS */}
+                  <Link
+                    href="/admin/administration/groups"
+                    className={`flex items-center gap-2 rounded-lg px-2.5 py-2 transition ${
+                      pathname.startsWith(
+                        "/admin/administration/groups"
+                      )
+                        ? "bg-[#C87532] font-bold text-white shadow-md"
+                        : "text-[#C7D0BC] hover:bg-white/10 hover:text-white"
+                    }`}
+                  >
+                    <Building2 size={15} />
+
+                    <span className="truncate">
+                      Groups & Departments
                     </span>
                   </Link>
 

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useMemo, useState, Suspense } from "react";
@@ -30,7 +31,7 @@ import {
   SlidersHorizontal,
   Camera,
   Check,
-  Heart, 
+  Heart,
 } from "lucide-react";
 
 function EnquiriesContent() {
@@ -160,8 +161,11 @@ function EnquiriesContent() {
         throw new Error(data.message || "Failed to fetch enquiries");
       }
 
-
-      setEnquiries(data.enquiries || data.data || (Array.isArray(data) ? data : []));
+      setEnquiries(
+        data.enquiries ||
+          data.data ||
+          (Array.isArray(data) ? data : [])
+      );
     } catch (error) {
       console.error("Fetch enquiries error:", error);
     } finally {
@@ -230,15 +234,71 @@ function EnquiriesContent() {
   /* RESET PAGE */
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, categoryFilter, statusFilter, itemsPerPage, fromDate, toDate]);
+  }, [
+    search,
+    categoryFilter,
+    statusFilter,
+    itemsPerPage,
+    fromDate,
+    toDate,
+  ]);
 
-  /* CATEGORY HELPER (FIXED: Wedding aur Event ko pehle check karenge) */
+  /* CATEGORY HELPER */
   const getCategory = (item) => {
-    const type = (item.inquiryType || "").toLowerCase();
-    if (type.includes("wedding")) return "wedding";
-    if (type.includes("event") || type.includes("party")) return "event";
-    if (type.includes("hotel") || type.includes("stay") || item.hotel) return "hotel";
-    if (type.includes("safari") || item.safariType || item.zone) return "safari";
+    const type = String(item.inquiryType || "")
+      .toLowerCase()
+      .trim();
+
+    // WEDDING
+    if (type.includes("wedding")) {
+      return "wedding";
+    }
+
+    // EVENTS
+    if (
+      type.includes("event") ||
+      type.includes("mice") ||
+      type.includes("corporate") ||
+      type.includes("party")
+    ) {
+      return "event";
+    }
+
+    // HOTEL / STAY
+    if (
+      type.includes("hotel") ||
+      type.includes("stay")
+    ) {
+      return "hotel";
+    }
+
+    // SAFARI
+    if (type.includes("safari")) {
+      return "safari";
+    }
+
+    // PACKAGES
+    if (type.includes("package")) {
+      return "package";
+    }
+
+    // TRANSPORTATION
+    if (
+      type.includes("transport") ||
+      type.includes("transfer")
+    ) {
+      return "transportation";
+    }
+
+    // GENERAL
+    if (
+      type.includes("general") ||
+      type.includes("enquiry") ||
+      type.includes("inquiry")
+    ) {
+      return "general";
+    }
+
     return "general";
   };
 
@@ -266,7 +326,8 @@ function EnquiriesContent() {
     return `${year}-${month}-${day}`;
   };
 
-  const whatsappNumber = (phone) => (phone ? phone.replace(/\D/g, "") : "");
+  const whatsappNumber = (phone) =>
+    phone ? phone.replace(/\D/g, "") : "";
 
   const getInitials = (name) => {
     if (!name) return "G";
@@ -281,28 +342,75 @@ function EnquiriesContent() {
   const getAssigneeName = (assignedTo) => {
     if (!assignedTo) return "";
     if (typeof assignedTo === "object") {
-      return assignedTo.name || assignedTo.fullName || assignedTo.email || "";
+      return (
+        assignedTo.name ||
+        assignedTo.fullName ||
+        assignedTo.email ||
+        ""
+      );
     }
     const member = teamMembers.find(
-      (item) => String(item._id) === String(assignedTo) || String(item.id) === String(assignedTo)
+      (item) =>
+        String(item._id) === String(assignedTo) ||
+        String(item.id) === String(assignedTo)
     );
-    return member?.name || member?.fullName || member?.email || "";
+    return (
+      member?.name ||
+      member?.fullName ||
+      member?.email ||
+      ""
+    );
   };
 
   /* CATEGORY BADGE */
   const CategoryBadge = ({ item }) => {
     const config = {
-      safari: { label: "Safari", icon: TreePine, bg: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-      hotel: { label: "Hotel", icon: Hotel, bg: "bg-amber-50 text-amber-700 border-amber-200" },
-      wedding: { label: "Wedding", icon: Heart, bg: "bg-rose-50 text-rose-700 border-rose-200" },
-      event: { label: "Event", icon: PartyPopper, bg: "bg-purple-50 text-purple-700 border-purple-200" },
-      general: { label: "General", icon: Inbox, bg: "bg-blue-50 text-blue-700 border-blue-200" },
+      safari: {
+        label: "Safari",
+        icon: TreePine,
+        bg: "bg-emerald-50 text-emerald-700 border-emerald-200",
+      },
+      hotel: {
+        label: "Hotel",
+        icon: Hotel,
+        bg: "bg-amber-50 text-amber-700 border-amber-200",
+      },
+      wedding: {
+        label: "Wedding",
+        icon: Heart,
+        bg: "bg-rose-50 text-rose-700 border-rose-200",
+      },
+      event: {
+        label: "Event",
+        icon: PartyPopper,
+        bg: "bg-purple-50 text-purple-700 border-purple-200",
+      },
+      package: {
+        label: "Package",
+        icon: Layers,
+        bg: "bg-orange-50 text-orange-700 border-orange-200",
+      },
+      transportation: {
+        label: "Transportation",
+        icon: MapPin,
+        bg: "bg-cyan-50 text-cyan-700 border-cyan-200",
+      },
+      general: {
+        label: "General",
+        icon: Inbox,
+        bg: "bg-blue-50 text-blue-700 border-blue-200",
+      },
     };
-    const target = config[getCategory(item)] || config.general;
+
+    const target =
+      config[getCategory(item)] || config.general;
+
     const Icon = target.icon;
 
     return (
-      <span className={`inline-flex max-w-full items-center gap-1 rounded border px-1.5 py-0.5 text-[9.5px] font-medium ${target.bg}`}>
+      <span
+        className={`inline-flex max-w-full items-center gap-1 rounded border px-1.5 py-0.5 text-[9.5px] font-medium ${target.bg}`}
+      >
         <Icon size={9} className="shrink-0" />
         <span className="truncate">{target.label}</span>
       </span>
@@ -312,16 +420,34 @@ function EnquiriesContent() {
   /* STATUS BADGE */
   const StatusBadge = ({ status }) => {
     const value = (status || "pending").toLowerCase();
+
     const config = {
-      pending: { label: "Pending", dot: "bg-amber-500", bg: "bg-amber-50 border-amber-200 text-amber-700" },
-      contacted: { label: "Contacted", dot: "bg-blue-500", bg: "bg-blue-50 border-blue-200 text-blue-700" },
-      confirmed: { label: "Confirmed", dot: "bg-emerald-500", bg: "bg-emerald-50 border-emerald-200 text-emerald-700" },
+      pending: {
+        label: "Pending",
+        dot: "bg-amber-500",
+        bg: "bg-amber-50 border-amber-200 text-amber-700",
+      },
+      contacted: {
+        label: "Contacted",
+        dot: "bg-blue-500",
+        bg: "bg-blue-50 border-blue-200 text-blue-700",
+      },
+      confirmed: {
+        label: "Confirmed",
+        dot: "bg-emerald-500",
+        bg: "bg-emerald-50 border-emerald-200 text-emerald-700",
+      },
     };
+
     const item = config[value] || config.pending;
 
     return (
-      <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[9.5px] font-medium ${item.bg}`}>
-        <span className={`h-1.5 w-1.5 rounded-full ${item.dot}`} />
+      <span
+        className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[9.5px] font-medium ${item.bg}`}
+      >
+        <span
+          className={`h-1.5 w-1.5 rounded-full ${item.dot}`}
+        />
         {item.label}
       </span>
     );
@@ -331,7 +457,9 @@ function EnquiriesContent() {
   const exportToDocument = () => {
     const dataToExport =
       selectedIds.length > 0
-        ? enquiries.filter((item) => selectedIds.includes(item._id))
+        ? enquiries.filter((item) =>
+            selectedIds.includes(item._id)
+          )
         : filteredEnquiries;
 
     if (!dataToExport.length) {
@@ -352,7 +480,9 @@ function EnquiriesContent() {
       </head>
       <body>
         <h2>DESTINATION CORBETT - CUSTOMER ENQUIRIES REPORT</h2>
-        <p>Generated on: ${new Date().toLocaleString("en-IN")} | Total Records: ${dataToExport.length}</p>
+        <p>Generated on: ${new Date().toLocaleString(
+          "en-IN"
+        )} | Total Records: ${dataToExport.length}</p>
         <table>
           <thead>
             <tr>
@@ -376,8 +506,12 @@ function EnquiriesContent() {
                     <td>${item.phone || "N/A"}</td>
                     <td>${item.email || "N/A"}</td>
                     <td>${item.inquiryType || "General"}</td>
-                    <td>${(item.status || "pending").toUpperCase()}</td>
-                    <td>${formatDate(item.createdAt || item.safariDate)}</td>
+                    <td>${(
+                      item.status || "pending"
+                    ).toUpperCase()}</td>
+                    <td>${formatDate(
+                      item.createdAt || item.safariDate
+                    )}</td>
                     <td>${item.message || "-"}</td>
                   </tr>
                 `
@@ -389,11 +523,18 @@ function EnquiriesContent() {
       </html>
     `;
 
-    const blob = new Blob([htmlContent], { type: "application/vnd.ms-excel;charset=utf-8" });
+    const blob = new Blob([htmlContent], {
+      type: "application/vnd.ms-excel;charset=utf-8",
+    });
+
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
+
     a.href = url;
-    a.download = `Destination_Corbett_Enquiries_${new Date().toISOString().slice(0, 10)}.xls`;
+    a.download = `Destination_Corbett_Enquiries_${new Date()
+      .toISOString()
+      .slice(0, 10)}.xls`;
+
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -402,85 +543,92 @@ function EnquiriesContent() {
 
   /* MANUAL STATUS UPDATE */
   const updateStatus = async (id, status) => {
-  const allowedStatuses = ["pending", "contacted", "confirmed"];
+    const allowedStatuses = [
+      "pending",
+      "contacted",
+      "confirmed",
+    ];
 
-  if (!allowedStatuses.includes(status.toLowerCase())) {
-    alert("Invalid status");
-    return;
-  }
-
-  const token = localStorage.getItem("adminToken");
-
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/enquiries/${id}/status`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          status: status.toLowerCase(),
-        }),
-      }
-    );
-
-    const data = await response.json().catch(() => ({}));
-
-    if (!response.ok) {
-      throw new Error(
-        data.message || "Failed to update status"
-      );
+    if (!allowedStatuses.includes(status.toLowerCase())) {
+      alert("Invalid status");
+      return;
     }
-    setStatusMessage(
-  data.message || "Enquiry status updated successfully"
-);
 
-setTimeout(() => {
-  setStatusMessage("");
-}, 3000);
+    const token = localStorage.getItem("adminToken");
 
-    // Backend se jo actual message aaya hai wahi show hoga
-   // alert(data.message || "Enquiry status updated successfully");
-
-    // Update enquiry in list
-    setEnquiries((prev) =>
-      prev.map((item) =>
-        item._id === id
-          ? {
-              ...item,
-              status: status.toLowerCase(),
-              customerId: data.enquiry?.customerId || item.customerId,
-            }
-          : item
-      )
-    );
-
-    // Update currently opened enquiry modal/drawer
-    setActiveModalEnquiry((prev) =>
-      prev?._id === id
-        ? {
-            ...prev,
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/enquiries/${id}/status`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
             status: status.toLowerCase(),
-            customerId:
-              data.enquiry?.customerId || prev.customerId,
-          }
-        : prev
-    );
-  } catch (error) {
-    console.error("Update enquiry status error:", error);
+          }),
+        }
+      );
 
-    alert(
-      error.message || "Failed to update status"
-    );
-  }
-};
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Failed to update status"
+        );
+      }
+
+      setStatusMessage(
+        data.message ||
+          "Enquiry status updated successfully"
+      );
+
+      setTimeout(() => {
+        setStatusMessage("");
+      }, 3000);
+
+      setEnquiries((prev) =>
+        prev.map((item) =>
+          item._id === id
+            ? {
+                ...item,
+                status: status.toLowerCase(),
+                customerId:
+                  data.enquiry?.customerId ||
+                  item.customerId,
+              }
+            : item
+        )
+      );
+
+      setActiveModalEnquiry((prev) =>
+        prev?._id === id
+          ? {
+              ...prev,
+              status: status.toLowerCase(),
+              customerId:
+                data.enquiry?.customerId ||
+                prev.customerId,
+            }
+          : prev
+      );
+    } catch (error) {
+      console.error(
+        "Update enquiry status error:",
+        error
+      );
+
+      alert(error.message || "Failed to update status");
+    }
+  };
 
   /* DIRECT ROW STAFF ASSIGNMENT */
   const assignRowEnquiry = async (id, staffId) => {
     if (!staffId) return;
+
     const token = localStorage.getItem("adminToken");
+
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/enquiries/${id}/assign`,
@@ -490,30 +638,48 @@ setTimeout(() => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ assignedTo: staffId }),
+          body: JSON.stringify({
+            assignedTo: staffId,
+          }),
         }
       );
 
       const data = await response.json().catch(() => ({}));
+
       if (!response.ok) {
-        throw new Error(data.message || "Failed to assign staff");
+        throw new Error(
+          data.message || "Failed to assign staff"
+        );
       }
 
       setEnquiries((prev) =>
-        prev.map((item) => (item._id === id ? { ...item, assignedTo: staffId } : item))
+        prev.map((item) =>
+          item._id === id
+            ? { ...item, assignedTo: staffId }
+            : item
+        )
       );
 
       if (activeModalEnquiry?._id === id) {
-        setActiveModalEnquiry((prev) => ({ ...prev, assignedTo: staffId }));
+        setActiveModalEnquiry((prev) => ({
+          ...prev,
+          assignedTo: staffId,
+        }));
       }
     } catch (error) {
-      alert(error.message || "Failed to assign staff");
+      alert(
+        error.message || "Failed to assign staff"
+      );
     }
   };
 
   /* EDIT ENQUIRY DETAILS */
-  const updateEnquiryDetails = async (id, updatedFields) => {
+  const updateEnquiryDetails = async (
+    id,
+    updatedFields
+  ) => {
     const token = localStorage.getItem("adminToken");
+
     try {
       let response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/enquiries/${id}`,
@@ -542,30 +708,55 @@ setTimeout(() => {
       }
 
       const data = await response.json().catch(() => ({}));
-      const finalUpdated = data.enquiry || data.data || {
-        ...activeModalEnquiry,
-        ...updatedFields,
-      };
+
+      const finalUpdated =
+        data.enquiry ||
+        data.data || {
+          ...activeModalEnquiry,
+          ...updatedFields,
+        };
 
       setEnquiries((prev) =>
-        prev.map((item) => (item._id === id ? { ...item, ...finalUpdated } : item))
+        prev.map((item) =>
+          item._id === id
+            ? { ...item, ...finalUpdated }
+            : item
+        )
       );
 
       setActiveModalEnquiry((prev) =>
-        prev?._id === id ? { ...prev, ...finalUpdated } : prev
+        prev?._id === id
+          ? { ...prev, ...finalUpdated }
+          : prev
       );
 
-      alert("Customer profile & photo updated successfully!");
+      alert(
+        "Customer profile & photo updated successfully!"
+      );
+
       return true;
     } catch (error) {
-      console.error("Update enquiry error:", error);
+      console.error(
+        "Update enquiry error:",
+        error
+      );
+
       setEnquiries((prev) =>
-        prev.map((item) => (item._id === id ? { ...item, ...updatedFields } : item))
+        prev.map((item) =>
+          item._id === id
+            ? { ...item, ...updatedFields }
+            : item
+        )
       );
+
       setActiveModalEnquiry((prev) =>
-        prev?._id === id ? { ...prev, ...updatedFields } : prev
+        prev?._id === id
+          ? { ...prev, ...updatedFields }
+          : prev
       );
+
       alert("Updated profile details locally!");
+
       return true;
     }
   };
@@ -580,12 +771,14 @@ setTimeout(() => {
     }
 
     const token = localStorage.getItem("adminToken");
+
     if (!token) {
       router.push("/admin/login");
       return;
     }
 
     setIsAssigning(true);
+
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/enquiries/${activeModalEnquiry._id}/assign`,
@@ -595,24 +788,37 @@ setTimeout(() => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ assignedTo: selectedAssignee }),
+          body: JSON.stringify({
+            assignedTo: selectedAssignee,
+          }),
         }
       );
 
       const data = await response.json().catch(() => ({}));
+
       if (!response.ok) {
-        throw new Error(data.message || "Failed to assign enquiry");
+        throw new Error(
+          data.message || "Failed to assign enquiry"
+        );
       }
 
-      const updatedEnquiry = data.enquiry || data.data || {
-        ...activeModalEnquiry,
-        assignedTo: selectedAssignee,
-      };
+      const updatedEnquiry =
+        data.enquiry ||
+        data.data || {
+          ...activeModalEnquiry,
+          assignedTo: selectedAssignee,
+        };
 
       setEnquiries((prev) =>
         prev.map((item) =>
           item._id === activeModalEnquiry._id
-            ? { ...item, ...updatedEnquiry, assignedTo: updatedEnquiry.assignedTo || selectedAssignee }
+            ? {
+                ...item,
+                ...updatedEnquiry,
+                assignedTo:
+                  updatedEnquiry.assignedTo ||
+                  selectedAssignee,
+              }
             : item
         )
       );
@@ -620,12 +826,17 @@ setTimeout(() => {
       setActiveModalEnquiry((prev) => ({
         ...prev,
         ...updatedEnquiry,
-        assignedTo: updatedEnquiry.assignedTo || selectedAssignee,
+        assignedTo:
+          updatedEnquiry.assignedTo ||
+          selectedAssignee,
       }));
 
       alert("Enquiry assigned successfully.");
     } catch (error) {
-      alert(error.message || "Failed to assign enquiry");
+      alert(
+        error.message ||
+          "Failed to assign enquiry"
+      );
     } finally {
       setIsAssigning(false);
     }
@@ -633,92 +844,155 @@ setTimeout(() => {
 
   /* DELETE ENQUIRY */
   const deleteEnquiry = async (id) => {
-    if (!window.confirm("Delete this enquiry?")) return;
+    if (!window.confirm("Delete this enquiry?"))
+      return;
+
     const token = localStorage.getItem("adminToken");
 
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/enquiries/${id}`,
-        { method: "DELETE", headers: { Authorization: `Bearer ${token}` } }
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       const data = await response.json().catch(() => ({}));
+
       if (!response.ok) {
-        throw new Error(data.message || "Failed to delete enquiry");
+        throw new Error(
+          data.message || "Failed to delete enquiry"
+        );
       }
 
-      setEnquiries((prev) => prev.filter((item) => item._id !== id));
-      setSelectedIds((prev) => prev.filter((x) => x !== id));
+      setEnquiries((prev) =>
+        prev.filter((item) => item._id !== id)
+      );
+
+      setSelectedIds((prev) =>
+        prev.filter((x) => x !== id)
+      );
 
       if (activeModalEnquiry?._id === id) {
         setActiveModalEnquiry(null);
       }
     } catch (error) {
-      alert(error.message || "Failed to delete enquiry");
+      alert(
+        error.message ||
+          "Failed to delete enquiry"
+      );
     }
   };
 
   /* BULK DELETE */
   const handleBulkDelete = async () => {
     if (!selectedIds.length) return;
-    if (!window.confirm(`Delete ${selectedIds.length} selected items?`)) return;
+
+    if (
+      !window.confirm(
+        `Delete ${selectedIds.length} selected items?`
+      )
+    )
+      return;
 
     setIsBulkDeleting(true);
+
     const token = localStorage.getItem("adminToken");
 
     try {
       const responses = await Promise.all(
         selectedIds.map((id) =>
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/enquiries/${id}`, {
-            method: "DELETE",
-            headers: { Authorization: `Bearer ${token}` },
-          })
+          fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/api/enquiries/${id}`,
+            {
+              method: "DELETE",
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          )
         )
       );
 
       if (responses.some((r) => !r.ok)) {
-        throw new Error("Some enquiries could not be deleted.");
+        throw new Error(
+          "Some enquiries could not be deleted."
+        );
       }
 
-      setEnquiries((prev) => prev.filter((item) => !selectedIds.includes(item._id)));
+      setEnquiries((prev) =>
+        prev.filter(
+          (item) =>
+            !selectedIds.includes(item._id)
+        )
+      );
+
       setSelectedIds([]);
     } catch (error) {
-      alert(error.message || "Bulk delete error");
+      alert(
+        error.message ||
+          "Bulk delete error"
+      );
     } finally {
       setIsBulkDeleting(false);
     }
   };
 
   /* BULK STATUS */
-  const handleBulkStatusChange = async (newStatus) => {
+  const handleBulkStatusChange = async (
+    newStatus
+  ) => {
     if (!selectedIds.length) return;
+
     setIsBulkUpdating(true);
+
     const token = localStorage.getItem("adminToken");
 
     try {
       const responses = await Promise.all(
         selectedIds.map((id) =>
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/enquiries/${id}/status`, {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({ status: newStatus }),
-          })
+          fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/api/enquiries/${id}/status`,
+            {
+              method: "PATCH",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                status: newStatus,
+              }),
+            }
+          )
         )
       );
 
       if (responses.some((r) => !r.ok)) {
-        throw new Error("Some statuses could not be updated.");
+        throw new Error(
+          "Some statuses could not be updated."
+        );
       }
 
       setEnquiries((prev) =>
-        prev.map((item) => (selectedIds.includes(item._id) ? { ...item, status: newStatus } : item))
+        prev.map((item) =>
+          selectedIds.includes(item._id)
+            ? {
+                ...item,
+                status: newStatus,
+              }
+            : item
+        )
       );
+
       setSelectedIds([]);
     } catch (error) {
-      alert(error.message || "Bulk status update error");
+      alert(
+        error.message ||
+          "Bulk status update error"
+      );
     } finally {
       setIsBulkUpdating(false);
     }
@@ -728,11 +1002,28 @@ setTimeout(() => {
   const categoryCounts = useMemo(
     () => ({
       all: enquiries.length,
-      safari: enquiries.filter((i) => getCategory(i) === "safari").length,
-      hotel: enquiries.filter((i) => getCategory(i) === "hotel").length,
-      wedding: enquiries.filter((i) => getCategory(i) === "wedding").length,
-      event: enquiries.filter((i) => getCategory(i) === "event").length,
-      general: enquiries.filter((i) => getCategory(i) === "general").length,
+      safari: enquiries.filter(
+        (i) => getCategory(i) === "safari"
+      ).length,
+      hotel: enquiries.filter(
+        (i) => getCategory(i) === "hotel"
+      ).length,
+      wedding: enquiries.filter(
+        (i) => getCategory(i) === "wedding"
+      ).length,
+      event: enquiries.filter(
+        (i) => getCategory(i) === "event"
+      ).length,
+      package: enquiries.filter(
+        (i) => getCategory(i) === "package"
+      ).length,
+      transportation: enquiries.filter(
+        (i) =>
+          getCategory(i) === "transportation"
+      ).length,
+      general: enquiries.filter(
+        (i) => getCategory(i) === "general"
+      ).length,
     }),
     [enquiries]
   );
@@ -741,9 +1032,21 @@ setTimeout(() => {
   const statusCounts = useMemo(
     () => ({
       all: enquiries.length,
-      pending: enquiries.filter((i) => (i.status || "pending").toLowerCase() === "pending").length,
-      contacted: enquiries.filter((i) => (i.status || "pending").toLowerCase() === "contacted").length,
-      confirmed: enquiries.filter((i) => (i.status || "pending").toLowerCase() === "confirmed").length,
+      pending: enquiries.filter(
+        (i) =>
+          (i.status || "pending").toLowerCase() ===
+          "pending"
+      ).length,
+      contacted: enquiries.filter(
+        (i) =>
+          (i.status || "pending").toLowerCase() ===
+          "contacted"
+      ).length,
+      confirmed: enquiries.filter(
+        (i) =>
+          (i.status || "pending").toLowerCase() ===
+          "confirmed"
+      ).length,
     }),
     [enquiries]
   );
@@ -752,12 +1055,16 @@ setTimeout(() => {
   const filteredEnquiries = useMemo(() => {
     return enquiries.filter((item) => {
       const categoryMatch =
-        categoryFilter === "all" || getCategory(item) === categoryFilter;
+        categoryFilter === "all" ||
+        getCategory(item) === categoryFilter;
 
       const statusMatch =
-        statusFilter === "all" || (item.status || "pending").toLowerCase() === statusFilter.toLowerCase();
+        statusFilter === "all" ||
+        (item.status || "pending").toLowerCase() ===
+          statusFilter.toLowerCase();
 
       const q = search.toLowerCase().trim();
+
       const searchMatch =
         !q ||
         item.name?.toLowerCase().includes(q) ||
@@ -769,41 +1076,89 @@ setTimeout(() => {
         item.zone?.toLowerCase().includes(q) ||
         item.location?.toLowerCase().includes(q);
 
-      const enquiryDate = getDateOnly(item.createdAt);
-      let dateMatch = true;
-      if (fromDate) dateMatch = dateMatch && enquiryDate >= fromDate;
-      if (toDate) dateMatch = dateMatch && enquiryDate <= toDate;
+      const enquiryDate = getDateOnly(
+        item.createdAt
+      );
 
-      return categoryMatch && statusMatch && searchMatch && dateMatch;
+      let dateMatch = true;
+
+      if (fromDate) {
+        dateMatch =
+          dateMatch && enquiryDate >= fromDate;
+      }
+
+      if (toDate) {
+        dateMatch =
+          dateMatch && enquiryDate <= toDate;
+      }
+
+      return (
+        categoryMatch &&
+        statusMatch &&
+        searchMatch &&
+        dateMatch
+      );
     });
-  }, [enquiries, categoryFilter, statusFilter, search, fromDate, toDate]);
+  }, [
+    enquiries,
+    categoryFilter,
+    statusFilter,
+    search,
+    fromDate,
+    toDate,
+  ]);
 
   /* PAGINATION */
-  const totalPages = Math.ceil(filteredEnquiries.length / itemsPerPage) || 1;
+  const totalPages =
+    Math.ceil(
+      filteredEnquiries.length / itemsPerPage
+    ) || 1;
 
   const paginatedEnquiries = useMemo(() => {
-    const start = (currentPage - 1) * itemsPerPage;
-    return filteredEnquiries.slice(start, start + itemsPerPage);
-  }, [filteredEnquiries, currentPage, itemsPerPage]);
+    const start =
+      (currentPage - 1) * itemsPerPage;
+
+    return filteredEnquiries.slice(
+      start,
+      start + itemsPerPage
+    );
+  }, [
+    filteredEnquiries,
+    currentPage,
+    itemsPerPage,
+  ]);
 
   /* SELECT ALL */
   const isAllPaginatedSelected = useMemo(() => {
-    if (!paginatedEnquiries.length) return false;
-    return paginatedEnquiries.every((item) => selectedIds.includes(item._id));
+    if (!paginatedEnquiries.length)
+      return false;
+
+    return paginatedEnquiries.every((item) =>
+      selectedIds.includes(item._id)
+    );
   }, [paginatedEnquiries, selectedIds]);
 
   const toggleSelectAll = () => {
-    const ids = paginatedEnquiries.map((item) => item._id);
+    const ids = paginatedEnquiries.map(
+      (item) => item._id
+    );
+
     if (isAllPaginatedSelected) {
-      setSelectedIds((prev) => prev.filter((id) => !ids.includes(id)));
+      setSelectedIds((prev) =>
+        prev.filter((id) => !ids.includes(id))
+      );
     } else {
-      setSelectedIds((prev) => [...new Set([...prev, ...ids])]);
+      setSelectedIds((prev) => [
+        ...new Set([...prev, ...ids]),
+      ]);
     }
   };
 
   const toggleSelectRow = (id) => {
     setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+      prev.includes(id)
+        ? prev.filter((x) => x !== id)
+        : [...prev, id]
     );
   };
 
@@ -828,51 +1183,51 @@ setTimeout(() => {
     );
   }
 
-  const isDrawerOpen = activeModalEnquiry && isPaneOpen;
+  const isDrawerOpen =
+    activeModalEnquiry && isPaneOpen;
 
   return (
-  <div className="min-h-[calc(100vh-64px)] overflow-x-hidden px-1.5 py-2 sm:px-3 lg:px-4">
+    <div className="min-h-[calc(100vh-64px)] overflow-x-hidden px-1.5 py-2 sm:px-3 lg:px-4">
+      {statusMessage && (
+        <div className="fixed right-5 top-5 z-[9999] w-[360px] max-w-[calc(100vw-2rem)] rounded-xl border border-emerald-200 bg-white p-4 shadow-2xl">
+          <div className="flex items-start gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-lg font-bold text-emerald-600">
+              ✓
+            </div>
 
-    {statusMessage && (
-      <div className="fixed right-5 top-5 z-[9999] w-[360px] max-w-[calc(100vw-2rem)] rounded-xl border border-emerald-200 bg-white p-4 shadow-2xl">
-        <div className="flex items-start gap-3">
-          
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-lg font-bold text-emerald-600">
-            ✓
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-bold text-[#18352A]">
+                Status Updated
+              </p>
+
+              <p className="mt-1 text-xs leading-5 text-[#66734A]">
+                {statusMessage}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setStatusMessage("")}
+              className="text-gray-400 hover:text-gray-700"
+            >
+              <X size={14} />
+            </button>
           </div>
-
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-bold text-[#18352A]">
-              Status Updated
-            </p>
-
-            <p className="mt-1 text-xs leading-5 text-[#66734A]">
-              {statusMessage}
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setStatusMessage("")}
-            className="text-gray-400 hover:text-gray-700"
-          >
-            <X size={14} />
-          </button>
-
         </div>
-      </div>
-    )}
+      )}
 
-    <div className="mx-auto max-w-[1600px]">
+      <div className="mx-auto max-w-[1600px]">
         {/* TOP HEADER */}
         <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
               <Mail className="h-3.5 w-3.5 shrink-0 text-[#C87532]" />
+
               <h1 className="truncate text-base font-bold text-[#18352A] sm:text-lg">
                 Enquiries Tracker
               </h1>
-              <span className="rounded-full bg-[#FFF7EF] border border-[#C87532]/30 px-2 py-0.5 text-[9px] sm:text-xs font-semibold text-[#C87532]">
+
+              <span className="rounded-full border border-[#C87532]/30 bg-[#FFF7EF] px-2 py-0.5 text-[9px] font-semibold text-[#C87532] sm:text-xs">
                 Live: {filteredEnquiries.length} Records
               </span>
             </div>
@@ -881,7 +1236,7 @@ setTimeout(() => {
           <div className="flex items-center gap-1">
             <button
               onClick={exportToDocument}
-              className="flex items-center gap-1 rounded bg-[#C87532] px-2 py-1 text-[10px] sm:text-xs font-semibold text-white shadow-xs hover:bg-[#b06326]"
+              className="flex items-center gap-1 rounded bg-[#C87532] px-2 py-1 text-[10px] font-semibold text-white shadow-xs hover:bg-[#b06326] sm:text-xs"
             >
               <FileSpreadsheet size={11} />
               Report
@@ -892,7 +1247,7 @@ setTimeout(() => {
                 fetchEnquiries();
                 fetchTeamMembers();
               }}
-              className="flex items-center gap-1 rounded border border-[#DDE3E8] bg-white px-2 py-1 text-[10px] sm:text-xs font-medium text-[#18352A] hover:bg-[#F5F7FA]"
+              className="flex items-center gap-1 rounded border border-[#DDE3E8] bg-white px-2 py-1 text-[10px] font-medium text-[#18352A] hover:bg-[#F5F7FA] sm:text-xs"
             >
               <RefreshCw size={11} />
               Sync
@@ -900,8 +1255,10 @@ setTimeout(() => {
 
             {/* TOGGLE AUXILIARY PANE BUTTON */}
             <button
-              onClick={() => setIsPaneOpen(!isPaneOpen)}
-              className={`hidden sm:flex items-center justify-center h-6.5 w-7 rounded border transition ${
+              onClick={() =>
+                setIsPaneOpen(!isPaneOpen)
+              }
+              className={`hidden h-6.5 w-7 items-center justify-center rounded border transition sm:flex ${
                 isDrawerOpen
                   ? "border-[#C87532] bg-[#FFF7EF] text-[#C87532]"
                   : "border-[#DDE3E8] bg-white text-gray-600 hover:bg-[#F5F7FA]"
@@ -916,32 +1273,101 @@ setTimeout(() => {
         {/* STAT CARDS ROW */}
         <div className="mb-2.5 grid grid-cols-2 gap-1.5 sm:grid-cols-3 md:grid-cols-6">
           {[
-            ["all", "All Enquiries", categoryCounts.all, Layers, "bg-orange-50", "text-[#C87532]"],
-            ["safari", "Safari", categoryCounts.safari, TreePine, "bg-emerald-50", "text-emerald-600"],
-            ["hotel", "Hotels", categoryCounts.hotel, Hotel, "bg-amber-50", "text-amber-600"],
-            ["wedding", "Weddings", categoryCounts.wedding, Heart, "bg-rose-50", "text-rose-600"],
-            ["event", "Events", categoryCounts.event, PartyPopper, "bg-purple-50", "text-purple-600"],
-            ["general", "General", categoryCounts.general, Inbox, "bg-blue-50", "text-blue-600"],
-          ].map(([key, label, value, Icon, iconBg, iconColor]) => (
-            <div
-              key={key}
-              onClick={() => handleCategoryChange(key)}
-              className={`cursor-pointer rounded border p-1.5 shadow-xs transition ${
-                categoryFilter === key
-                  ? "border-[#C87532] bg-[#FFF7EF]"
-                  : "border-[#DDE3E8] bg-white hover:bg-[#F8FAFB]"
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <div className={`flex h-5 w-5 items-center justify-center rounded ${iconBg}`}>
-                  <Icon size={11} className={iconColor} />
+            [
+              "all",
+              "All Enquiries",
+              categoryCounts.all,
+              Layers,
+              "bg-orange-50",
+              "text-[#C87532]",
+            ],
+            [
+              "safari",
+              "Safari",
+              categoryCounts.safari,
+              TreePine,
+              "bg-emerald-50",
+              "text-emerald-600",
+            ],
+            [
+              "hotel",
+              "Hotels",
+              categoryCounts.hotel,
+              Hotel,
+              "bg-amber-50",
+              "text-amber-600",
+            ],
+            [
+              "wedding",
+              "Weddings",
+              categoryCounts.wedding,
+              Heart,
+              "bg-rose-50",
+              "text-rose-600",
+            ],
+            [
+              "event",
+              "Events",
+              categoryCounts.event,
+              PartyPopper,
+              "bg-purple-50",
+              "text-purple-600",
+            ],
+            ["package", "Packages", categoryCounts.package, Layers, "bg-orange-50", "text-orange-600"],
+             ["transportation", "Transportation", categoryCounts.transportation, MapPin, "bg-cyan-50", "text-cyan-600"],
+            [
+              "general",
+              "General",
+              categoryCounts.general,
+              Inbox,
+              "bg-blue-50",
+              "text-blue-600",
+            ],
+          ].map(
+            ([
+              key,
+              label,
+              value,
+              Icon,
+              iconBg,
+              iconColor,
+            ]) => (
+              <div
+                key={key}
+                onClick={() =>
+                  handleCategoryChange(key)
+                }
+                className={`cursor-pointer rounded border p-1.5 shadow-xs transition ${
+                  categoryFilter === key
+                    ? "border-[#C87532] bg-[#FFF7EF]"
+                    : "border-[#DDE3E8] bg-white hover:bg-[#F8FAFB]"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div
+                    className={`flex h-5 w-5 items-center justify-center rounded ${iconBg}`}
+                  >
+                    <Icon
+                      size={11}
+                      className={iconColor}
+                    />
+                  </div>
+
+                  <span className="text-[9px] font-medium text-[#7A8790]">
+                    {value}
+                  </span>
                 </div>
-                <span className="text-[9px] font-medium text-[#7A8790]">{value}</span>
+
+                <p className="mt-0.5 text-sm font-semibold text-[#18352A]">
+                  {value}
+                </p>
+
+                <p className="truncate text-[8.5px] text-[#66734A]">
+                  {label}
+                </p>
               </div>
-              <p className="mt-0.5 text-sm font-semibold text-[#18352A]">{value}</p>
-              <p className="truncate text-[8.5px] text-[#66734A]">{label}</p>
-            </div>
-          ))}
+            )
+          )}
         </div>
 
         {/* BULK ACTIONS BAR */}
@@ -952,11 +1378,46 @@ setTimeout(() => {
             </div>
 
             <div className="flex flex-wrap gap-1 text-[9px]">
-              <button onClick={() => handleBulkStatusChange("pending")} className="rounded bg-amber-500/20 px-1.5 py-0.5 text-amber-300">Pending</button>
-              <button onClick={() => handleBulkStatusChange("contacted")} className="rounded bg-blue-500/20 px-1.5 py-0.5 text-blue-300">Contacted</button>
-              <button onClick={() => handleBulkStatusChange("confirmed")} className="rounded bg-emerald-500/20 px-1.5 py-0.5 text-emerald-300">Confirmed</button>
-              <button onClick={handleBulkDelete} className="rounded bg-red-500/20 px-1.5 py-0.5 text-red-300"><Trash2 size={10} /></button>
-              <button onClick={() => setSelectedIds([])} className="px-1 text-[#C87532]">Clear</button>
+              <button
+                onClick={() =>
+                  handleBulkStatusChange("pending")
+                }
+                className="rounded bg-amber-500/20 px-1.5 py-0.5 text-amber-300"
+              >
+                Pending
+              </button>
+
+              <button
+                onClick={() =>
+                  handleBulkStatusChange("contacted")
+                }
+                className="rounded bg-blue-500/20 px-1.5 py-0.5 text-blue-300"
+              >
+                Contacted
+              </button>
+
+              <button
+                onClick={() =>
+                  handleBulkStatusChange("confirmed")
+                }
+                className="rounded bg-emerald-500/20 px-1.5 py-0.5 text-emerald-300"
+              >
+                Confirmed
+              </button>
+
+              <button
+                onClick={handleBulkDelete}
+                className="rounded bg-red-500/20 px-1.5 py-0.5 text-red-300"
+              >
+                <Trash2 size={10} />
+              </button>
+
+              <button
+                onClick={() => setSelectedIds([])}
+                className="px-1 text-[#C87532]"
+              >
+                Clear
+              </button>
             </div>
           </div>
         )}
@@ -964,19 +1425,41 @@ setTimeout(() => {
         {/* FILTER BAR */}
         <div className="mb-2 flex flex-col gap-1.5">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-            {/* CATEGORY PILLS (WEDDING ADDED) */}
+            {/* CATEGORY PILLS */}
             <div className="flex flex-wrap gap-1">
               {[
-                ["all", `All (${categoryCounts.all})`],
-                ["safari", `Safari (${categoryCounts.safari})`],
-                ["hotel", `Hotels (${categoryCounts.hotel})`],
-                ["wedding", `Weddings (${categoryCounts.wedding})`],
-                ["event", `Events (${categoryCounts.event})`],
-                ["general", `General (${categoryCounts.general})`],
+                [
+                  "all",
+                  `All (${categoryCounts.all})`,
+                ],
+                [
+                  "safari",
+                  `Safari (${categoryCounts.safari})`,
+                ],
+                [
+                  "hotel",
+                  `Hotels (${categoryCounts.hotel})`,
+                ],
+                [
+                  "wedding",
+                  `Weddings (${categoryCounts.wedding})`,
+                ],
+                [
+                  "event",
+                  `Events (${categoryCounts.event})`,
+                ],
+                ["package", `Packages (${categoryCounts.package})`],
+["transportation", `Transportation (${categoryCounts.transportation})`],
+                [
+                  "general",
+                  `General (${categoryCounts.general})`,
+                ],
               ].map(([value, label]) => (
                 <button
                   key={value}
-                  onClick={() => handleCategoryChange(value)}
+                  onClick={() =>
+                    handleCategoryChange(value)
+                  }
                   className={`rounded px-2 py-0.5 text-[9px] font-medium transition ${
                     categoryFilter === value
                       ? "bg-[#C87532] text-white"
@@ -991,23 +1474,44 @@ setTimeout(() => {
             {/* STATUS PILLS */}
             <div className="flex flex-wrap gap-1">
               {[
-                ["all", `All (${statusCounts.all})`, "bg-slate-900 text-white border-slate-900"],
-                ["pending", `🟡 Pending (${statusCounts.pending})`, "bg-amber-50 text-amber-700 border-amber-300"],
-                ["contacted", `🔵 Contacted (${statusCounts.contacted})`, "bg-blue-50 text-blue-700 border-blue-300"],
-                ["confirmed", `🟢 Confirmed (${statusCounts.confirmed})`, "bg-emerald-50 text-emerald-700 border-emerald-300"],
-              ].map(([val, label, bgCls]) => (
-                <button
-                  key={val}
-                  onClick={() => setStatusFilter(val)}
-                  className={`rounded-full border px-2 py-0.5 text-[8.5px] font-medium transition ${
-                    statusFilter === val
-                      ? "ring-1 ring-[#C87532] " + bgCls
-                      : "bg-white text-slate-700 border-[#DDE3E8]"
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
+                [
+                  "all",
+                  `All (${statusCounts.all})`,
+                  "bg-slate-900 text-white border-slate-900",
+                ],
+                [
+                  "pending",
+                  `🟡 Pending (${statusCounts.pending})`,
+                  "bg-amber-50 text-amber-700 border-amber-300",
+                ],
+                [
+                  "contacted",
+                  `🔵 Contacted (${statusCounts.contacted})`,
+                  "bg-blue-50 text-blue-700 border-blue-300",
+                ],
+                [
+                  "confirmed",
+                  `🟢 Confirmed (${statusCounts.confirmed})`,
+                  "bg-emerald-50 text-emerald-700 border-emerald-300",
+                ],
+              ].map(
+                ([val, label, bgCls]) => (
+                  <button
+                    key={val}
+                    onClick={() =>
+                      setStatusFilter(val)
+                    }
+                    className={`rounded-full border px-2 py-0.5 text-[8.5px] font-medium transition ${
+                      statusFilter === val
+                        ? "ring-1 ring-[#C87532] " +
+                          bgCls
+                        : "border-[#DDE3E8] bg-white text-slate-700"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                )
+              )}
             </div>
           </div>
 
@@ -1016,26 +1520,44 @@ setTimeout(() => {
             {/* FROM & TO DATE PICKERS */}
             <div className="flex flex-wrap items-center gap-1">
               <div className="flex items-center gap-1 rounded border border-[#DDE3E8] bg-white px-2 py-0.5">
-                <CalendarDays size={10} className="shrink-0 text-[#C87532]" />
-                <span className="text-[9px] font-medium text-[#66734A]">From</span>
+                <CalendarDays
+                  size={10}
+                  className="shrink-0 text-[#C87532]"
+                />
+
+                <span className="text-[9px] font-medium text-[#66734A]">
+                  From
+                </span>
+
                 <input
                   type="date"
                   value={fromDate}
                   max={toDate || undefined}
-                  onChange={(e) => setFromDate(e.target.value)}
-                  className="h-4.5 bg-transparent text-[9px] font-medium text-[#18352A] outline-none cursor-pointer"
+                  onChange={(e) =>
+                    setFromDate(e.target.value)
+                  }
+                  className="h-4.5 cursor-pointer bg-transparent text-[9px] font-medium text-[#18352A] outline-none"
                 />
               </div>
 
               <div className="flex items-center gap-1 rounded border border-[#DDE3E8] bg-white px-2 py-0.5">
-                <CalendarDays size={10} className="shrink-0 text-[#C87532]" />
-                <span className="text-[9px] font-medium text-[#66734A]">To</span>
+                <CalendarDays
+                  size={10}
+                  className="shrink-0 text-[#C87532]"
+                />
+
+                <span className="text-[9px] font-medium text-[#66734A]">
+                  To
+                </span>
+
                 <input
                   type="date"
                   value={toDate}
                   min={fromDate || undefined}
-                  onChange={(e) => setToDate(e.target.value)}
-                  className="h-4.5 bg-transparent text-[9px] font-medium text-[#18352A] outline-none cursor-pointer"
+                  onChange={(e) =>
+                    setToDate(e.target.value)
+                  }
+                  className="h-4.5 cursor-pointer bg-transparent text-[9px] font-medium text-[#18352A] outline-none"
                 />
               </div>
 
@@ -1043,7 +1565,7 @@ setTimeout(() => {
                 <button
                   type="button"
                   onClick={clearDateFilter}
-                  className="flex items-center gap-1 rounded border border-red-200 bg-red-50 px-2 py-0.5 text-[9px] font-medium text-red-700 hover:bg-red-100 transition"
+                  className="flex items-center gap-1 rounded border border-red-200 bg-red-50 px-2 py-0.5 text-[9px] font-medium text-red-700 transition hover:bg-red-100"
                 >
                   <X size={9} />
                   Clear Date
@@ -1054,30 +1576,50 @@ setTimeout(() => {
             {/* SEARCH BAR */}
             <div className="flex min-w-0 items-center gap-1.5">
               <div className="relative min-w-0 flex-1 sm:w-[190px] sm:flex-none">
-                <Search size={10} className="absolute left-2 top-1/2 -translate-y-1/2 text-[#7A8790]" />
+                <Search
+                  size={10}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 text-[#7A8790]"
+                />
+
                 <input
                   value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  onChange={(e) =>
+                    setSearch(e.target.value)
+                  }
                   placeholder="Search name, phone..."
-                  className="h-6.5 w-full rounded border border-[#DDE3E8] bg-white pl-6 pr-2 text-[9px] sm:text-[11px] outline-none focus:border-[#C87532]"
+                  className="h-6.5 w-full rounded border border-[#DDE3E8] bg-white pl-6 pr-2 text-[9px] outline-none focus:border-[#C87532] sm:text-[11px]"
                 />
               </div>
 
               <select
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="h-6.5 rounded border border-[#DDE3E8] bg-white px-1.5 text-[9px] sm:text-[11px] font-medium text-[#18352A] outline-none cursor-pointer"
+                onChange={(e) =>
+                  setStatusFilter(e.target.value)
+                }
+                className="h-6.5 cursor-pointer rounded border border-[#DDE3E8] bg-white px-1.5 text-[9px] font-medium text-[#18352A] outline-none sm:text-[11px]"
               >
-                <option value="all">All Statuses</option>
-                <option value="pending">🟡 Pending</option>
-                <option value="contacted">🔵 Contacted</option>
-                <option value="confirmed">🟢 Confirmed</option>
+                <option value="all">
+                  All Statuses
+                </option>
+                <option value="pending">
+                  🟡 Pending
+                </option>
+                <option value="contacted">
+                  🔵 Contacted
+                </option>
+                <option value="confirmed">
+                  🟢 Confirmed
+                </option>
               </select>
 
               <select
                 value={itemsPerPage}
-                onChange={(e) => setItemsPerPage(Number(e.target.value))}
-                className="h-6.5 rounded border border-[#DDE3E8] bg-white px-1 text-[9px] sm:text-[11px] cursor-pointer"
+                onChange={(e) =>
+                  setItemsPerPage(
+                    Number(e.target.value)
+                  )
+                }
+                className="h-6.5 cursor-pointer rounded border border-[#DDE3E8] bg-white px-1 text-[9px] sm:text-[11px]"
               >
                 <option value={10}>10</option>
                 <option value={15}>15</option>
@@ -1089,33 +1631,67 @@ setTimeout(() => {
         </div>
 
         {/* 3-LAYER INLINE CRM LAYOUT */}
-        <div className="flex min-w-0 flex-col gap-0 lg:flex-row select-none">
+        <div className="flex min-w-0 select-none flex-col gap-0 lg:flex-row">
           <div className="min-w-0 flex-1 overflow-hidden">
             <div className="w-full overflow-hidden rounded border border-[#DDE3E8] bg-white shadow-xs">
-              
               {/* TOP TABLE BAR */}
               <div className="flex items-center justify-between border-b border-[#EEF1F3] bg-[#F5F7FA] px-2.5 py-1.5 text-[10px] text-[#66734A]">
-                <div className="truncate font-medium flex items-center gap-2">
+                <div className="flex min-w-0 items-center gap-2 truncate font-medium">
                   <span>
-                    Showing <b className="text-[#18352A]">{filteredEnquiries.length ? (currentPage - 1) * itemsPerPage + 1 : 0}</b> - <b className="text-[#18352A]">{Math.min(currentPage * itemsPerPage, filteredEnquiries.length)}</b> of <b className="text-[#18352A]">{filteredEnquiries.length}</b> items
+                    Showing{" "}
+                    <b className="text-[#18352A]">
+                      {filteredEnquiries.length
+                        ? (currentPage - 1) *
+                            itemsPerPage +
+                          1
+                        : 0}
+                    </b>{" "}
+                    -{" "}
+                    <b className="text-[#18352A]">
+                      {Math.min(
+                        currentPage *
+                          itemsPerPage,
+                        filteredEnquiries.length
+                      )}
+                    </b>{" "}
+                    of{" "}
+                    <b className="text-[#18352A]">
+                      {filteredEnquiries.length}
+                    </b>{" "}
+                    items
                   </span>
                 </div>
 
                 <div className="flex shrink-0 items-center gap-1">
                   <button
                     disabled={currentPage === 1}
-                    onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-                    className="rounded border bg-white p-0.5 disabled:opacity-30 hover:bg-slate-50"
+                    onClick={() =>
+                      setCurrentPage((p) =>
+                        Math.max(p - 1, 1)
+                      )
+                    }
+                    className="rounded border bg-white p-0.5 hover:bg-slate-50 disabled:opacity-30"
                   >
                     <ChevronLeft size={12} />
                   </button>
+
                   <span className="px-1 font-medium text-[#18352A]">
                     {currentPage}/{totalPages}
                   </span>
+
                   <button
-                    disabled={currentPage === totalPages}
-                    onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-                    className="rounded border bg-white p-0.5 disabled:opacity-30 hover:bg-slate-50"
+                    disabled={
+                      currentPage === totalPages
+                    }
+                    onClick={() =>
+                      setCurrentPage((p) =>
+                        Math.min(
+                          p + 1,
+                          totalPages
+                        )
+                      )
+                    }
+                    className="rounded border bg-white p-0.5 hover:bg-slate-50 disabled:opacity-30"
                   >
                     <ChevronRight size={12} />
                   </button>
@@ -1129,248 +1705,435 @@ setTimeout(() => {
                     <th className="w-[28px] px-1 py-1.5 text-center">
                       <input
                         type="checkbox"
-                        checked={isAllPaginatedSelected}
+                        checked={
+                          isAllPaginatedSelected
+                        }
                         onChange={toggleSelectAll}
-                        className="h-3 w-3 accent-[#C87532] cursor-pointer"
+                        className="h-3 w-3 cursor-pointer accent-[#C87532]"
                       />
                     </th>
 
                     {visibleCols.customer && (
-                      <th className="px-2 py-1.5 truncate">CUSTOMER</th>
+                      <th className="truncate px-2 py-1.5">
+                        CUSTOMER
+                      </th>
                     )}
 
                     {visibleCols.location && (
-                      <th className="px-2 py-1.5 truncate">LOCATION</th>
+                      <th className="truncate px-2 py-1.5">
+                        LOCATION
+                      </th>
                     )}
 
                     {visibleCols.contact && (
-                      <th className="px-2 py-1.5 truncate">CONTACT</th>
+                      <th className="truncate px-2 py-1.5">
+                        CONTACT
+                      </th>
                     )}
 
                     {visibleCols.email && (
-                      <th className={`hidden ${isDrawerOpen ? "2xl:table-cell" : "xl:table-cell"} px-2 py-1.5 truncate`}>EMAIL</th>
+                      <th
+                        className={`hidden ${
+                          isDrawerOpen
+                            ? "2xl:table-cell"
+                            : "xl:table-cell"
+                        } truncate px-2 py-1.5`}
+                      >
+                        EMAIL
+                      </th>
                     )}
 
                     {visibleCols.category && (
-                      <th className="hidden lg:table-cell px-2 py-1.5 truncate">CATEGORY</th>
+                      <th className="hidden truncate px-2 py-1.5 lg:table-cell">
+                        CATEGORY
+                      </th>
                     )}
 
                     {visibleCols.enquiryDate && (
-  <th className="hidden lg:table-cell px-2 py-1.5 truncate">ENQUIRY DATE</th>
-)}
+                      <th className="hidden truncate px-2 py-1.5 lg:table-cell">
+                        ENQUIRY DATE
+                      </th>
+                    )}
 
                     {visibleCols.status && (
-                      <th className="w-[85px] px-1 py-1.5">STATUS</th>
+                      <th className="w-[85px] px-1 py-1.5">
+                        STATUS
+                      </th>
                     )}
 
                     {visibleCols.assignedTo && (
-                      <th className="w-[105px] px-1 py-1.5">ASSIGNED TO</th>
+                      <th className="w-[105px] px-1 py-1.5">
+                        ASSIGNED TO
+                      </th>
                     )}
 
                     {visibleCols.action && (
-                      <th className="w-[50px] px-1 py-1.5 text-right">ACTION</th>
+                      <th className="w-[50px] px-1 py-1.5 text-right">
+                        ACTION
+                      </th>
                     )}
                   </tr>
                 </thead>
 
                 <tbody className="divide-y divide-[#EEF1F3] text-[11px]">
-                  {paginatedEnquiries.length === 0 ? (
+                  {paginatedEnquiries.length ===
+                  0 ? (
                     <tr>
-                      <td colSpan={8} className="py-6 text-center text-xs text-[#7A8790]">
-                        No enquiries match the selected status or filter.
+                      <td
+                        colSpan={8}
+                        className="py-6 text-center text-xs text-[#7A8790]"
+                      >
+                        No enquiries match the selected
+                        status or filter.
                       </td>
                     </tr>
                   ) : (
-                    paginatedEnquiries.map((item) => {
-                      const st = (item.status || "pending").toLowerCase();
-                      const statusBgClass =
-                        st === "confirmed"
-                          ? "bg-emerald-50 text-emerald-700 border-emerald-300"
-                          : st === "contacted"
-                          ? "bg-blue-50 text-blue-700 border-blue-300"
-                          : "bg-amber-50 text-amber-700 border-amber-300";
+                    paginatedEnquiries.map(
+                      (item) => {
+                        const st = (
+                          item.status || "pending"
+                        ).toLowerCase();
 
-                      // ✅ LOCATION: Location, Zone ya Hotel name sab pick karega
-                      const locationName = item.location || item.zone || item.city || item.destination || item.hotel || "";
+                        const statusBgClass =
+                          st === "confirmed"
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-300"
+                            : st === "contacted"
+                            ? "bg-blue-50 text-blue-700 border-blue-300"
+                            : "bg-amber-50 text-amber-700 border-amber-300";
 
-                      return (
-                        <tr
-                          key={item._id}
-                          onClick={() => handleRowClick(item)}
-                          className={`cursor-pointer transition hover:bg-[#F8FAFB] ${
-                            activeModalEnquiry?._id === item._id
-                              ? "bg-[#FFF7EF]"
-                              : selectedIds.includes(item._id)
-                              ? "bg-slate-50"
-                              : ""
-                          }`}
-                        >
-                          {/* Checkbox */}
-                          <td className="px-1 py-1.5 text-center" onClick={(e) => e.stopPropagation()}>
-                            <input
-                              type="checkbox"
-                              checked={selectedIds.includes(item._id)}
-                              onChange={() => toggleSelectRow(item._id)}
-                              className="h-3 w-3 accent-[#C87532] cursor-pointer"
-                            />
-                          </td>
+                        // LOCATION: Location, Zone ya Hotel name sab pick karega
+                        const locationName =
+                          item.location ||
+                          item.zone ||
+                          item.city ||
+                          item.destination ||
+                          item.hotel ||
+                          "";
 
-                          {/* CUSTOMER */}
-                          {visibleCols.customer && (
-                            <td className="px-2 py-1.5 truncate">
-                              <div className="flex items-center gap-1.5 min-w-0">
-                                <div className="flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full bg-[#18352A] text-[9px] font-semibold text-white overflow-hidden border border-[#DDE3E8]">
-                                  {item.avatar ? (
-                                    <img src={item.avatar} alt={item.name} className="h-full w-full object-cover" />
-                                  ) : (
-                                    getInitials(item.name)
-                                  )}
-                                </div>
-                                <p className="font-medium text-[#18352A] truncate">
-                                  {item.name || "N/A"}
-                                </p>
-                              </div>
-                            </td>
-                          )}
-
-                          {/* LOCATION COLUMN (PIN ICON KE SAATH) */}
-                          {visibleCols.location && (
-                            <td className="px-2 py-1.5 truncate">
-                              {locationName ? (
-                                <span className="inline-flex items-center gap-1 text-[10.5px] font-medium text-[#66734A] truncate">
-                                  <MapPin size={10} className="shrink-0 text-[#C87532]" />
-                                  <span className="truncate">{locationName}</span>
-                                </span>
-                              ) : (
-                                <span className="text-gray-400 text-[10px]">-</span>
-                              )}
-                            </td>
-                          )}
-
-                          {/* Contact */}
-                          {visibleCols.contact && (
-                            <td className="px-2 py-1.5 truncate">
-                              {item.phone ? (
-                                <a
-                                  href={`tel:${item.phone}`}
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="flex items-center gap-1 text-[10.5px] font-medium text-[#18352A] hover:text-[#C87532] truncate"
-                                >
-                                  <Phone size={10} className="shrink-0 text-[#66734A]" />
-                                  <span className="truncate">{item.phone}</span>
-                                </a>
-                              ) : (
-                                <span className="text-gray-400 text-[10px]">N/A</span>
-                              )}
-                            </td>
-                          )}
-
-                          {/* Email */}
-                          {visibleCols.email && (
-                            <td className={`hidden ${isDrawerOpen ? "2xl:table-cell" : "xl:table-cell"} px-2 py-1.5 truncate`}>
-                              {item.email ? (
-                                <a
-                                  href={`mailto:${item.email}`}
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="flex items-center gap-1 text-[10.5px] font-medium text-[#18352A] hover:text-[#C87532] truncate"
-                                >
-                                  <Mail size={10} className="shrink-0 text-[#66734A]" />
-                                  <span className="truncate">{item.email}</span>
-                                </a>
-                              ) : (
-                                <span className="text-gray-400 text-[10px]">N/A</span>
-                              )}
-                            </td>
-                          )}
-
-                          {/* Category */}
-                          {visibleCols.category && (
-                            <td className="hidden lg:table-cell px-2 py-1.5 truncate">
-                              <CategoryBadge item={item} />
-                            </td>
-                          )}
-
-                          {/* ENQUIRY DATE */}
-{visibleCols.enquiryDate && (
-  <td className="px-2 py-1.5 whitespace-nowrap">
-    {item.createdAt ? (
-      <span className="text-[10.5px] font-medium text-[#18352A]">
-        {formatDate(item.createdAt)}
-      </span>
-    ) : (
-      <span className="text-gray-400 text-[10px]">-</span>
-    )}
-  </td>
-)}
-                          
-
-                          {/* Status Dropdown */}
-                          {visibleCols.status && (
-                            <td className="px-1 py-1.5" onClick={(e) => e.stopPropagation()}>
-                              <select
-                                value={st}
-                                onChange={(e) => updateStatus(item._id, e.target.value)}
-                                className={`h-5 w-full rounded-full border px-1 text-[9px] font-medium outline-none cursor-pointer transition ${statusBgClass}`}
-                              >
-                                <option value="pending" className="bg-white text-amber-700">Pending</option>
-                                <option value="contacted" className="bg-white text-blue-700">Contacted</option>
-                                <option value="confirmed" className="bg-white text-emerald-700">Confirmed</option>
-                              </select>
-                            </td>
-                          )}
-
-                          {/* ASSIGNED TO */}
-                          {visibleCols.assignedTo && (
-                            <td className="px-1 py-1.5" onClick={(e) => e.stopPropagation()}>
-                              <select
-                                value={typeof item.assignedTo === 'object' ? item.assignedTo?._id || '' : item.assignedTo || ''}
-                                onChange={(e) => assignRowEnquiry(item._id, e.target.value)}
-                                className="h-5 w-full rounded border border-[#DDE3E8] bg-white px-1 text-[9.5px] font-medium text-[#18352A] outline-none cursor-pointer truncate"
-                                title={getAssigneeName(item.assignedTo) || "Assign Staff"}
-                              >
-                                <option value="">👤 Unassigned</option>
-                                {teamMembers.length === 0 ? (
-                                  <option value="" disabled>No Staff Found</option>
-                                ) : (
-                                  teamMembers.map((member) => {
-                                    const id = member._id || member.id;
-                                    const name = member.name || member.fullName || member.email || "Staff";
-                                    return (
-                                      <option key={id} value={id}>
-                                        👤 {name}
-                                      </option>
-                                    );
-                                  })
+                        return (
+                          <tr
+                            key={item._id}
+                            onClick={() =>
+                              handleRowClick(item)
+                            }
+                            className={`cursor-pointer transition hover:bg-[#F8FAFB] ${
+                              activeModalEnquiry?._id ===
+                              item._id
+                                ? "bg-[#FFF7EF]"
+                                : selectedIds.includes(
+                                    item._id
+                                  )
+                                ? "bg-slate-50"
+                                : ""
+                            }`}
+                          >
+                            {/* Checkbox */}
+                            <td
+                              className="px-1 py-1.5 text-center"
+                              onClick={(e) =>
+                                e.stopPropagation()
+                              }
+                            >
+                              <input
+                                type="checkbox"
+                                checked={selectedIds.includes(
+                                  item._id
                                 )}
-                              </select>
+                                onChange={() =>
+                                  toggleSelectRow(
+                                    item._id
+                                  )
+                                }
+                                className="h-3 w-3 cursor-pointer accent-[#C87532]"
+                              />
                             </td>
-                          )}
 
-                          {/* ACTION BUTTONS */}
-                          {visibleCols.action && (
-                            <td className="px-1 py-1.5 text-right" onClick={(e) => e.stopPropagation()}>
-                              <div className="flex items-center justify-end gap-1">
-                                <button
-                                  onClick={() => handleRowClick(item)}
-                                  className="rounded border border-[#DDE3E8] bg-[#F8FAFB] p-0.5 text-[#18352A] hover:bg-[#18352A] hover:text-white transition"
-                                  title="Edit / View Profile"
-                                >
-                                  <SquarePen size={11} />
-                                </button>
+                            {/* CUSTOMER */}
+                            {visibleCols.customer && (
+                              <td className="truncate px-2 py-1.5">
+                                <div className="flex min-w-0 items-center gap-1.5">
+                                  <div className="flex h-5.5 w-5.5 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#DDE3E8] bg-[#18352A] text-[9px] font-semibold text-white">
+                                    {item.avatar ? (
+                                      <img
+                                        src={item.avatar}
+                                        alt={item.name}
+                                        className="h-full w-full object-cover"
+                                      />
+                                    ) : (
+                                      getInitials(
+                                        item.name
+                                      )
+                                    )}
+                                  </div>
 
-                                <button
-                                  onClick={() => deleteEnquiry(item._id)}
-                                  className="rounded border border-red-200 bg-red-50 p-0.5 text-red-700 hover:bg-red-100 transition"
-                                  title="Delete Enquiry"
+                                  <p className="truncate font-medium text-[#18352A]">
+                                    {item.name ||
+                                      "N/A"}
+                                  </p>
+                                </div>
+                              </td>
+                            )}
+
+                            {/* LOCATION COLUMN */}
+                            {visibleCols.location && (
+                              <td className="truncate px-2 py-1.5">
+                                {locationName ? (
+                                  <span className="inline-flex max-w-full items-center gap-1 truncate text-[10.5px] font-medium text-[#66734A]">
+                                    <MapPin
+                                      size={10}
+                                      className="shrink-0 text-[#C87532]"
+                                    />
+
+                                    <span className="truncate">
+                                      {locationName}
+                                    </span>
+                                  </span>
+                                ) : (
+                                  <span className="text-[10px] text-gray-400">
+                                    -
+                                  </span>
+                                )}
+                              </td>
+                            )}
+
+                            {/* Contact */}
+                            {visibleCols.contact && (
+                              <td className="truncate px-2 py-1.5">
+                                {item.phone ? (
+                                  <a
+                                    href={`tel:${item.phone}`}
+                                    onClick={(e) =>
+                                      e.stopPropagation()
+                                    }
+                                    className="flex items-center gap-1 truncate text-[10.5px] font-medium text-[#18352A] hover:text-[#C87532]"
+                                  >
+                                    <Phone
+                                      size={10}
+                                      className="shrink-0 text-[#66734A]"
+                                    />
+
+                                    <span className="truncate">
+                                      {item.phone}
+                                    </span>
+                                  </a>
+                                ) : (
+                                  <span className="text-[10px] text-gray-400">
+                                    N/A
+                                  </span>
+                                )}
+                              </td>
+                            )}
+
+                            {/* Email */}
+                            {visibleCols.email && (
+                              <td
+                                className={`hidden ${
+                                  isDrawerOpen
+                                    ? "2xl:table-cell"
+                                    : "xl:table-cell"
+                                } truncate px-2 py-1.5`}
+                              >
+                                {item.email ? (
+                                  <a
+                                    href={`mailto:${item.email}`}
+                                    onClick={(e) =>
+                                      e.stopPropagation()
+                                    }
+                                    className="flex items-center gap-1 truncate text-[10.5px] font-medium text-[#18352A] hover:text-[#C87532]"
+                                  >
+                                    <Mail
+                                      size={10}
+                                      className="shrink-0 text-[#66734A]"
+                                    />
+
+                                    <span className="truncate">
+                                      {item.email}
+                                    </span>
+                                  </a>
+                                ) : (
+                                  <span className="text-[10px] text-gray-400">
+                                    N/A
+                                  </span>
+                                )}
+                              </td>
+                            )}
+
+                            {/* Category */}
+                            {visibleCols.category && (
+                              <td className="hidden truncate px-2 py-1.5 lg:table-cell">
+                                <CategoryBadge
+                                  item={item}
+                                />
+                              </td>
+                            )}
+
+                            {/* ENQUIRY DATE */}
+                            {visibleCols.enquiryDate && (
+                              <td className="whitespace-nowrap px-2 py-1.5">
+                                {item.createdAt ? (
+                                  <span className="text-[10.5px] font-medium text-[#18352A]">
+                                    {formatDate(
+                                      item.createdAt
+                                    )}
+                                  </span>
+                                ) : (
+                                  <span className="text-[10px] text-gray-400">
+                                    -
+                                  </span>
+                                )}
+                              </td>
+                            )}
+
+                            {/* Status Dropdown */}
+                            {visibleCols.status && (
+                              <td
+                                className="px-1 py-1.5"
+                                onClick={(e) =>
+                                  e.stopPropagation()
+                                }
+                              >
+                                <select
+                                  value={st}
+                                  onChange={(e) =>
+                                    updateStatus(
+                                      item._id,
+                                      e.target.value
+                                    )
+                                  }
+                                  className={`h-5 w-full cursor-pointer rounded-full border px-1 text-[9px] font-medium outline-none transition ${statusBgClass}`}
                                 >
-                                  <Trash2 size={11} />
-                                </button>
-                              </div>
-                            </td>
-                          )}
-                        </tr>
-                      );
-                    })
+                                  <option
+                                    value="pending"
+                                    className="bg-white text-amber-700"
+                                  >
+                                    Pending
+                                  </option>
+
+                                  <option
+                                    value="contacted"
+                                    className="bg-white text-blue-700"
+                                  >
+                                    Contacted
+                                  </option>
+
+                                  <option
+                                    value="confirmed"
+                                    className="bg-white text-emerald-700"
+                                  >
+                                    Confirmed
+                                  </option>
+                                </select>
+                              </td>
+                            )}
+
+                            {/* ASSIGNED TO */}
+                            {visibleCols.assignedTo && (
+                              <td
+                                className="px-1 py-1.5"
+                                onClick={(e) =>
+                                  e.stopPropagation()
+                                }
+                              >
+                                <select
+                                  value={
+                                    typeof item.assignedTo ===
+                                    "object"
+                                      ? item.assignedTo?._id ||
+                                        ""
+                                      : item.assignedTo ||
+                                        ""
+                                  }
+                                  onChange={(e) =>
+                                    assignRowEnquiry(
+                                      item._id,
+                                      e.target.value
+                                    )
+                                  }
+                                  className="h-5 w-full cursor-pointer truncate rounded border border-[#DDE3E8] bg-white px-1 text-[9.5px] font-medium text-[#18352A] outline-none"
+                                  title={
+                                    getAssigneeName(
+                                      item.assignedTo
+                                    ) ||
+                                    "Assign Staff"
+                                  }
+                                >
+                                  <option value="">
+                                    👤 Unassigned
+                                  </option>
+
+                                  {teamMembers.length ===
+                                  0 ? (
+                                    <option
+                                      value=""
+                                      disabled
+                                    >
+                                      No Staff Found
+                                    </option>
+                                  ) : (
+                                    teamMembers.map(
+                                      (member) => {
+                                        const id =
+                                          member._id ||
+                                          member.id;
+
+                                        const name =
+                                          member.name ||
+                                          member.fullName ||
+                                          member.email ||
+                                          "Staff";
+
+                                        return (
+                                          <option
+                                            key={id}
+                                            value={id}
+                                          >
+                                            👤 {name}
+                                          </option>
+                                        );
+                                      }
+                                    )
+                                  )}
+                                </select>
+                              </td>
+                            )}
+
+                            {/* ACTION BUTTONS */}
+                            {visibleCols.action && (
+                              <td
+                                className="px-1 py-1.5 text-right"
+                                onClick={(e) =>
+                                  e.stopPropagation()
+                                }
+                              >
+                                <div className="flex items-center justify-end gap-1">
+                                  <button
+                                    onClick={() =>
+                                      handleRowClick(item)
+                                    }
+                                    className="rounded border border-[#DDE3E8] bg-[#F8FAFB] p-0.5 text-[#18352A] transition hover:bg-[#18352A] hover:text-white"
+                                    title="Edit / View Profile"
+                                  >
+                                    <SquarePen size={11} />
+                                  </button>
+
+                                  <button
+                                    onClick={() =>
+                                      deleteEnquiry(
+                                        item._id
+                                      )
+                                    }
+                                    className="rounded border border-red-200 bg-red-50 p-0.5 text-red-700 transition hover:bg-red-100"
+                                    title="Delete Enquiry"
+                                  >
+                                    <Trash2 size={11} />
+                                  </button>
+                                </div>
+                              </td>
+                            )}
+                          </tr>
+                        );
+                      }
+                    )
                   )}
                 </tbody>
               </table>
@@ -1380,8 +2143,10 @@ setTimeout(() => {
           {/* DIVIDER */}
           {isDrawerOpen && (
             <div
-              onMouseDown={() => setIsResizingPane(true)}
-              className="hidden lg:flex w-1 hover:w-1.5 bg-[#E2E8F0] hover:bg-[#C87532] cursor-col-resize transition-all shrink-0 select-none group items-center justify-center z-10"
+              onMouseDown={() =>
+                setIsResizingPane(true)
+              }
+              className="group z-10 hidden w-1 shrink-0 select-none items-center justify-center bg-[#E2E8F0] transition-all hover:w-1.5 hover:bg-[#C87532] lg:flex"
               title="Click to collapse / Drag to resize panel"
             >
               <div className="h-8 w-0.5 rounded bg-gray-400 group-hover:bg-white" />
@@ -1391,14 +2156,20 @@ setTimeout(() => {
           {/* RIGHT DRAWER */}
           {isDrawerOpen && (
             <div
-              style={{ width: `${sidebarWidth}px` }}
-              className="hidden lg:flex shrink-0 min-w-0 transition-all duration-75"
+              style={{
+                width: `${sidebarWidth}px`,
+              }}
+              className="hidden min-w-0 shrink-0 transition-all duration-75 lg:flex"
             >
               <EnquiryDetails
                 enquiry={activeModalEnquiry}
-                onClose={() => setIsPaneOpen(false)}
+                onClose={() =>
+                  setIsPaneOpen(false)
+                }
                 updateStatus={updateStatus}
-                updateEnquiryDetails={updateEnquiryDetails}
+                updateEnquiryDetails={
+                  updateEnquiryDetails
+                }
                 deleteEnquiry={deleteEnquiry}
                 formatDate={formatDate}
                 whatsappNumber={whatsappNumber}
@@ -1406,11 +2177,17 @@ setTimeout(() => {
                 StatusBadge={StatusBadge}
                 getInitials={getInitials}
                 teamMembers={teamMembers}
-                selectedAssignee={selectedAssignee}
-                setSelectedAssignee={setSelectedAssignee}
+                selectedAssignee={
+                  selectedAssignee
+                }
+                setSelectedAssignee={
+                  setSelectedAssignee
+                }
                 assignEnquiry={assignEnquiry}
                 isAssigning={isAssigning}
-                getAssigneeName={getAssigneeName}
+                getAssigneeName={
+                  getAssigneeName
+                }
               />
             </div>
           )}
@@ -1423,9 +2200,13 @@ setTimeout(() => {
           <div className="h-full w-full max-w-full overflow-hidden bg-white">
             <EnquiryDetails
               enquiry={activeModalEnquiry}
-              onClose={() => setIsPaneOpen(false)}
+              onClose={() =>
+                setIsPaneOpen(false)
+              }
               updateStatus={updateStatus}
-              updateEnquiryDetails={updateEnquiryDetails}
+              updateEnquiryDetails={
+                updateEnquiryDetails
+              }
               deleteEnquiry={deleteEnquiry}
               formatDate={formatDate}
               whatsappNumber={whatsappNumber}
@@ -1433,11 +2214,17 @@ setTimeout(() => {
               StatusBadge={StatusBadge}
               getInitials={getInitials}
               teamMembers={teamMembers}
-              selectedAssignee={selectedAssignee}
-              setSelectedAssignee={setSelectedAssignee}
+              selectedAssignee={
+                selectedAssignee
+              }
+              setSelectedAssignee={
+                setSelectedAssignee
+              }
               assignEnquiry={assignEnquiry}
               isAssigning={isAssigning}
-              getAssigneeName={getAssigneeName}
+              getAssigneeName={
+                getAssigneeName
+              }
             />
           </div>
         </div>
@@ -1467,8 +2254,11 @@ function EnquiryDetails({
   isAssigning,
   getAssigneeName,
 }) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const [isEditing, setIsEditing] =
+    useState(false);
+
+  const [isSaving, setIsSaving] =
+    useState(false);
 
   const [formData, setFormData] = useState({
     name: enquiry.name || "",
@@ -1478,15 +2268,29 @@ function EnquiryDetails({
     hotel: enquiry.hotel || "",
     safariType: enquiry.safariType || "",
     zone: enquiry.zone || "",
-    location: enquiry.location || enquiry.zone || "",
+    location:
+      enquiry.location || enquiry.zone || "",
     guests: enquiry.guests || "",
     rooms: enquiry.rooms || "",
-    preferredTime: enquiry.preferredTime || "",
+    preferredTime:
+      enquiry.preferredTime || "",
     message: enquiry.message || "",
     avatar: enquiry.avatar || "",
-    checkIn: enquiry.checkIn ? new Date(enquiry.checkIn).toISOString().slice(0, 10) : "",
-    checkOut: enquiry.checkOut ? new Date(enquiry.checkOut).toISOString().slice(0, 10) : "",
-    safariDate: enquiry.safariDate ? new Date(enquiry.safariDate).toISOString().slice(0, 10) : "",
+    checkIn: enquiry.checkIn
+      ? new Date(enquiry.checkIn)
+          .toISOString()
+          .slice(0, 10)
+      : "",
+    checkOut: enquiry.checkOut
+      ? new Date(enquiry.checkOut)
+          .toISOString()
+          .slice(0, 10)
+      : "",
+    safariDate: enquiry.safariDate
+      ? new Date(enquiry.safariDate)
+          .toISOString()
+          .slice(0, 10)
+      : "",
   });
 
   useEffect(() => {
@@ -1498,63 +2302,115 @@ function EnquiryDetails({
       hotel: enquiry.hotel || "",
       safariType: enquiry.safariType || "",
       zone: enquiry.zone || "",
-      location: enquiry.location || enquiry.zone || "",
+      location:
+        enquiry.location || enquiry.zone || "",
       guests: enquiry.guests || "",
       rooms: enquiry.rooms || "",
-      preferredTime: enquiry.preferredTime || "",
+      preferredTime:
+        enquiry.preferredTime || "",
       message: enquiry.message || "",
       avatar: enquiry.avatar || "",
-      checkIn: enquiry.checkIn ? new Date(enquiry.checkIn).toISOString().slice(0, 10) : "",
-      checkOut: enquiry.checkOut ? new Date(enquiry.checkOut).toISOString().slice(0, 10) : "",
-      safariDate: enquiry.safariDate ? new Date(enquiry.safariDate).toISOString().slice(0, 10) : "",
+      checkIn: enquiry.checkIn
+        ? new Date(enquiry.checkIn)
+            .toISOString()
+            .slice(0, 10)
+        : "",
+      checkOut: enquiry.checkOut
+        ? new Date(enquiry.checkOut)
+            .toISOString()
+            .slice(0, 10)
+        : "",
+      safariDate: enquiry.safariDate
+        ? new Date(enquiry.safariDate)
+            .toISOString()
+            .slice(0, 10)
+        : "",
     });
+
     setIsEditing(false);
   }, [enquiry]);
 
-  const handleInputChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+  const handleInputChange = (
+    field,
+    value
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   };
 
   const handlePhotoUpload = (e) => {
     const file = e.target.files?.[0];
+
     if (!file) return;
 
     const reader = new FileReader();
+
     reader.onloadend = () => {
       const base64Photo = reader.result;
-      handleInputChange("avatar", base64Photo);
-      updateEnquiryDetails(enquiry._id, { avatar: base64Photo });
+
+      handleInputChange(
+        "avatar",
+        base64Photo
+      );
+
+      updateEnquiryDetails(
+        enquiry._id,
+        {
+          avatar: base64Photo,
+        }
+      );
     };
+
     reader.readAsDataURL(file);
   };
 
   const handleSaveEdit = async () => {
     setIsSaving(true);
-    const success = await updateEnquiryDetails(enquiry._id, formData);
+
+    const success =
+      await updateEnquiryDetails(
+        enquiry._id,
+        formData
+      );
+
     setIsSaving(false);
+
     if (success) {
       setIsEditing(false);
     }
   };
 
-  const locationName = enquiry.location || enquiry.zone || enquiry.city || enquiry.hotel || "";
+  const locationName =
+    enquiry.location ||
+    enquiry.zone ||
+    enquiry.city ||
+    enquiry.hotel ||
+    "";
 
   return (
     <aside className="flex h-full min-h-0 w-full flex-col overflow-hidden border-l border-[#DDE3E8] bg-white text-xs">
       <div className="flex shrink-0 items-center justify-between border-b border-[#EEF1F3] bg-[#F5F7FA] px-2.5 py-1">
-        <span className="text-[9.5px] font-bold text-[#7A8790] uppercase tracking-wider">Customer Profile</span>
-        
+        <span className="text-[9.5px] font-bold uppercase tracking-wider text-[#7A8790]">
+          Customer Profile
+        </span>
+
         <div className="flex items-center gap-1">
           <button
-            onClick={() => setIsEditing(!isEditing)}
+            onClick={() =>
+              setIsEditing(!isEditing)
+            }
             className={`flex items-center gap-1 rounded px-2 py-0.5 text-[9px] font-semibold transition ${
               isEditing
-                ? "bg-amber-100 text-amber-800 border border-amber-300"
+                ? "border border-amber-300 bg-amber-100 text-amber-800"
                 : "bg-[#18352A] text-white hover:bg-[#244C3C]"
             }`}
           >
             <Edit3 size={10} />
-            {isEditing ? "Cancel" : "Edit Profile"}
+            {isEditing
+              ? "Cancel"
+              : "Edit Profile"}
           </button>
 
           <button
@@ -1569,24 +2425,27 @@ function EnquiryDetails({
 
       <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-2.5">
         <div className="mb-3 flex flex-col items-center justify-center rounded-lg border border-[#DDE3E8] bg-[#F8FAFB] p-3 text-center">
-          <div className="relative group shrink-0 mb-1.5">
+          <div className="group relative mb-1.5 shrink-0">
             {formData.avatar ? (
               <img
                 src={formData.avatar}
                 alt={formData.name}
-                className="h-16 w-16 rounded-full object-cover border-2 border-[#C87532] shadow-sm"
+                className="h-16 w-16 rounded-full border-2 border-[#C87532] object-cover shadow-sm"
               />
             ) : (
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#18352A] text-base font-bold text-white shadow-sm">
-                {getInitials(formData.name)}
+                {getInitials(
+                  formData.name
+                )}
               </div>
             )}
 
             <label
-              className="absolute bottom-0 right-0 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-[#C87532] text-white shadow hover:bg-[#b06326] transition"
+              className="absolute bottom-0 right-0 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-[#C87532] text-white shadow transition hover:bg-[#b06326]"
               title="Upload Customer Profile Photo"
             >
               <Camera size={11} />
+
               <input
                 type="file"
                 accept="image/*"
@@ -1596,15 +2455,22 @@ function EnquiryDetails({
             </label>
           </div>
 
-          <h2 className="text-sm font-bold text-[#18352A] truncate max-w-full">
-            {formData.name || "User Name"}
+          <h2 className="max-w-full truncate text-sm font-bold text-[#18352A]">
+            {formData.name ||
+              "User Name"}
           </h2>
 
           <div className="mt-1 flex flex-wrap items-center justify-center gap-1.5">
-            <CategoryBadge item={enquiry} />
+            <CategoryBadge
+              item={enquiry}
+            />
+
             {locationName && (
-              <span className="inline-flex items-center gap-0.5 rounded bg-amber-50 border border-amber-200 px-1.5 py-0.5 text-[9px] font-semibold text-amber-800">
-                <MapPin size={9} className="text-[#C87532]" />
+              <span className="inline-flex items-center gap-0.5 rounded border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[9px] font-semibold text-amber-800">
+                <MapPin
+                  size={9}
+                  className="text-[#C87532]"
+                />
                 {locationName}
               </span>
             )}
@@ -1616,7 +2482,10 @@ function EnquiryDetails({
             <span className="text-[8.5px] font-medium uppercase text-[#7A8790]">
               Current Status
             </span>
-            <StatusBadge status={enquiry.status} />
+
+            <StatusBadge
+              status={enquiry.status}
+            />
           </div>
         </div>
 
@@ -1624,7 +2493,11 @@ function EnquiryDetails({
         <div className="mb-2 rounded border border-[#DDE3E8] bg-[#FFF7EF] p-1.5">
           <div className="mb-1 flex items-center justify-between">
             <div className="flex items-center gap-1">
-              <UserCheck size={10} className="text-[#C87532]" />
+              <UserCheck
+                size={10}
+                className="text-[#C87532]"
+              />
+
               <p className="text-[8.5px] font-semibold uppercase text-[#7A8790]">
                 Assign Lead to Staff
               </p>
@@ -1633,11 +2506,21 @@ function EnquiryDetails({
 
           {enquiry.assignedTo && (
             <div className="mb-1 flex min-w-0 items-center gap-1 rounded border border-emerald-200 bg-emerald-50 px-1.5 py-0.5">
-              <UserRound size={10} className="shrink-0 text-emerald-700" />
+              <UserRound
+                size={10}
+                className="shrink-0 text-emerald-700"
+              />
+
               <div className="min-w-0">
-                <p className="text-[7.5px] text-emerald-600">Currently Assigned</p>
+                <p className="text-[7.5px] text-emerald-600">
+                  Currently Assigned
+                </p>
+
                 <p className="truncate text-[10.5px] font-semibold text-emerald-800">
-                  {getAssigneeName(enquiry.assignedTo) || "Assigned Staff"}
+                  {getAssigneeName(
+                    enquiry.assignedTo
+                  ) ||
+                    "Assigned Staff"}
                 </p>
               </div>
             </div>
@@ -1646,212 +2529,384 @@ function EnquiryDetails({
           <div className="flex gap-1">
             <select
               value={selectedAssignee}
-              onChange={(e) => setSelectedAssignee(e.target.value)}
+              onChange={(e) =>
+                setSelectedAssignee(
+                  e.target.value
+                )
+              }
               className="h-6 flex-1 rounded border border-[#DDE3E8] bg-white px-1 text-[10.5px] font-medium text-[#18352A] outline-none"
             >
-              <option value="">Select Team Member</option>
-              {teamMembers.length === 0 ? (
-                <option value="" disabled>
-                  No Team Members Found in DB
+              <option value="">
+                Select Team Member
+              </option>
+
+              {teamMembers.length ===
+              0 ? (
+                <option
+                  value=""
+                  disabled
+                >
+                  No Team Members Found
+                  in DB
                 </option>
               ) : (
-                teamMembers.map((member) => {
-                  const memberId = member._id || member.id;
-                  const memberName =
-                    member.name ||
-                    member.fullName ||
-                    member.email ||
-                    member.username ||
-                    "Team Member";
-                  if (!memberId) return null;
-                  return (
-                    <option key={memberId} value={memberId}>
-                      👤 {memberName} {member.role ? `(${member.role})` : ""}
-                    </option>
-                  );
-                })
+                teamMembers.map(
+                  (member) => {
+                    const memberId =
+                      member._id ||
+                      member.id;
+
+                    const memberName =
+                      member.name ||
+                      member.fullName ||
+                      member.email ||
+                      member.username ||
+                      "Team Member";
+
+                    if (!memberId)
+                      return null;
+
+                    return (
+                      <option
+                        key={memberId}
+                        value={memberId}
+                      >
+                        👤 {memberName}{" "}
+                        {member.role
+                          ? `(${member.role})`
+                          : ""}
+                      </option>
+                    );
+                  }
+                )
               )}
             </select>
 
             <button
               type="button"
-              disabled={isAssigning || !selectedAssignee}
-              onClick={assignEnquiry}
+              disabled={
+                isAssigning ||
+                !selectedAssignee
+              }
+              onClick={
+                assignEnquiry
+              }
               className="flex items-center gap-1 rounded bg-[#18352A] px-2 py-0.5 text-[10px] font-medium text-white hover:bg-[#244C3C] disabled:opacity-50"
             >
               <UserCheck size={10} />
-              {isAssigning ? "..." : "Assign"}
+              {isAssigning
+                ? "..."
+                : "Assign"}
             </button>
           </div>
         </div>
-                {/* 🎯 EDITABLE PROFILE FORM (YE MISSING THA) */}
+
+        {/* EDITABLE PROFILE FORM */}
         {isEditing && (
           <div className="mb-2 rounded border border-[#C87532]/40 bg-[#FFF7EF] p-2">
             <div className="mb-1.5 flex items-center justify-between">
               <p className="text-[9px] font-semibold uppercase text-[#C87532]">
-                ✏️ Edit Customer Profile & Photo
+                ✏️ Edit Customer Profile &
+                Photo
               </p>
+
               <button
                 disabled={isSaving}
-                onClick={handleSaveEdit}
+                onClick={
+                  handleSaveEdit
+                }
                 className="flex items-center gap-1 rounded bg-[#C87532] px-2 py-0.5 text-[9px] font-semibold text-white shadow-xs hover:bg-[#b06326] disabled:opacity-50"
               >
                 <Save size={10} />
-                {isSaving ? "Saving..." : "Save Changes"}
+
+                {isSaving
+                  ? "Saving..."
+                  : "Save Changes"}
               </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[11px]">
-              <div className="sm:col-span-2 flex items-center gap-2 bg-white p-1.5 rounded border border-[#DDE3E8]">
+            <div className="grid grid-cols-1 gap-1.5 text-[11px] sm:grid-cols-2">
+              <div className="flex items-center gap-2 rounded border border-[#DDE3E8] bg-white p-1.5 sm:col-span-2">
                 <div className="relative">
                   {formData.avatar ? (
-                    <img src={formData.avatar} alt="Avatar" className="h-8 w-8 rounded-full object-cover border" />
+                    <img
+                      src={formData.avatar}
+                      alt="Avatar"
+                      className="h-8 w-8 rounded-full border object-cover"
+                    />
                   ) : (
-                    <div className="h-8 w-8 rounded-full bg-[#18352A] flex items-center justify-center text-white text-xs font-bold">
-                      {getInitials(formData.name)}
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#18352A] text-xs font-bold text-white">
+                      {getInitials(
+                        formData.name
+                      )}
                     </div>
                   )}
                 </div>
+
                 <div>
-                  <label className="block text-[8px] font-bold text-[#C87532] uppercase">Change Profile Photo</label>
+                  <label className="block text-[8px] font-bold uppercase text-[#C87532]">
+                    Change Profile
+                    Photo
+                  </label>
+
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={handlePhotoUpload}
-                    className="text-[9px] text-gray-500 cursor-pointer"
+                    onChange={
+                      handlePhotoUpload
+                    }
+                    className="cursor-pointer text-[9px] text-gray-500"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[8px] font-medium text-gray-500 uppercase">Customer Name</label>
+                <label className="block text-[8px] font-medium uppercase text-gray-500">
+                  Customer Name
+                </label>
+
                 <input
                   type="text"
                   value={formData.name}
-                  onChange={(e) => handleInputChange("name", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange(
+                      "name",
+                      e.target.value
+                    )
+                  }
                   className="w-full rounded border border-[#DDE3E8] bg-white px-1.5 py-0.5 text-[10.5px] outline-none focus:border-[#C87532]"
                 />
               </div>
 
               <div>
-                <label className="block text-[8px] font-medium text-gray-500 uppercase">Phone Number</label>
+                <label className="block text-[8px] font-medium uppercase text-gray-500">
+                  Phone Number
+                </label>
+
                 <input
                   type="text"
                   value={formData.phone}
-                  onChange={(e) => handleInputChange("phone", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange(
+                      "phone",
+                      e.target.value
+                    )
+                  }
                   className="w-full rounded border border-[#DDE3E8] bg-white px-1.5 py-0.5 text-[10.5px] outline-none focus:border-[#C87532]"
                 />
               </div>
 
               <div className="sm:col-span-2">
-                <label className="block text-[8px] font-medium text-gray-500 uppercase">Email Address</label>
+                <label className="block text-[8px] font-medium uppercase text-gray-500">
+                  Email Address
+                </label>
+
                 <input
                   type="email"
                   value={formData.email}
-                  onChange={(e) => handleInputChange("email", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange(
+                      "email",
+                      e.target.value
+                    )
+                  }
                   className="w-full rounded border border-[#DDE3E8] bg-white px-1.5 py-0.5 text-[10.5px] outline-none focus:border-[#C87532]"
                 />
               </div>
 
               <div>
-                <label className="block text-[8px] font-medium text-gray-500 uppercase">Inquiry Type</label>
+                <label className="block text-[8px] font-medium uppercase text-gray-500">
+                  Inquiry Type
+                </label>
+
                 <input
                   type="text"
-                  value={formData.inquiryType}
-                  onChange={(e) => handleInputChange("inquiryType", e.target.value)}
+                  value={
+                    formData.inquiryType
+                  }
+                  onChange={(e) =>
+                    handleInputChange(
+                      "inquiryType",
+                      e.target.value
+                    )
+                  }
                   className="w-full rounded border border-[#DDE3E8] bg-white px-1.5 py-0.5 text-[10.5px] outline-none focus:border-[#C87532]"
                 />
               </div>
 
               <div>
-                <label className="block text-[8px] font-medium text-gray-500 uppercase">Location / Zone</label>
+                <label className="block text-[8px] font-medium uppercase text-gray-500">
+                  Location / Zone
+                </label>
+
                 <input
                   type="text"
-                  value={formData.location || formData.zone}
+                  value={
+                    formData.location ||
+                    formData.zone
+                  }
                   onChange={(e) => {
-                    handleInputChange("location", e.target.value);
-                    handleInputChange("zone", e.target.value);
+                    handleInputChange(
+                      "location",
+                      e.target.value
+                    );
+
+                    handleInputChange(
+                      "zone",
+                      e.target.value
+                    );
                   }}
                   className="w-full rounded border border-[#DDE3E8] bg-white px-1.5 py-0.5 text-[10.5px] outline-none focus:border-[#C87532]"
                 />
               </div>
 
               <div>
-                <label className="block text-[8px] font-medium text-gray-500 uppercase">Hotel Name</label>
+                <label className="block text-[8px] font-medium uppercase text-gray-500">
+                  Hotel Name
+                </label>
+
                 <input
                   type="text"
                   value={formData.hotel}
-                  onChange={(e) => handleInputChange("hotel", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange(
+                      "hotel",
+                      e.target.value
+                    )
+                  }
                   className="w-full rounded border border-[#DDE3E8] bg-white px-1.5 py-0.5 text-[10.5px] outline-none focus:border-[#C87532]"
                 />
               </div>
 
               <div>
-                <label className="block text-[8px] font-medium text-gray-500 uppercase">Safari Type</label>
+                <label className="block text-[8px] font-medium uppercase text-gray-500">
+                  Safari Type
+                </label>
+
                 <input
                   type="text"
-                  value={formData.safariType}
-                  onChange={(e) => handleInputChange("safariType", e.target.value)}
+                  value={
+                    formData.safariType
+                  }
+                  onChange={(e) =>
+                    handleInputChange(
+                      "safariType",
+                      e.target.value
+                    )
+                  }
                   className="w-full rounded border border-[#DDE3E8] bg-white px-1.5 py-0.5 text-[10.5px] outline-none focus:border-[#C87532]"
                 />
               </div>
 
               <div>
-                <label className="block text-[8px] font-medium text-gray-500 uppercase">Guests</label>
+                <label className="block text-[8px] font-medium uppercase text-gray-500">
+                  Guests
+                </label>
+
                 <input
                   type="text"
                   value={formData.guests}
-                  onChange={(e) => handleInputChange("guests", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange(
+                      "guests",
+                      e.target.value
+                    )
+                  }
                   className="w-full rounded border border-[#DDE3E8] bg-white px-1.5 py-0.5 text-[10.5px] outline-none focus:border-[#C87532]"
                 />
               </div>
 
               <div>
-                <label className="block text-[8px] font-medium text-gray-500 uppercase">Rooms</label>
+                <label className="block text-[8px] font-medium uppercase text-gray-500">
+                  Rooms
+                </label>
+
                 <input
                   type="text"
                   value={formData.rooms}
-                  onChange={(e) => handleInputChange("rooms", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange(
+                      "rooms",
+                      e.target.value
+                    )
+                  }
                   className="w-full rounded border border-[#DDE3E8] bg-white px-1.5 py-0.5 text-[10.5px] outline-none focus:border-[#C87532]"
                 />
               </div>
 
               <div>
-                <label className="block text-[8px] font-medium text-gray-500 uppercase">Check-in</label>
+                <label className="block text-[8px] font-medium uppercase text-gray-500">
+                  Check-in
+                </label>
+
                 <input
                   type="date"
                   value={formData.checkIn}
-                  onChange={(e) => handleInputChange("checkIn", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange(
+                      "checkIn",
+                      e.target.value
+                    )
+                  }
                   className="w-full rounded border border-[#DDE3E8] bg-white px-1 py-0.5 text-[10.5px] outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-[8px] font-medium text-gray-500 uppercase">Check-out</label>
+                <label className="block text-[8px] font-medium uppercase text-gray-500">
+                  Check-out
+                </label>
+
                 <input
                   type="date"
-                  value={formData.checkOut}
-                  onChange={(e) => handleInputChange("checkOut", e.target.value)}
+                  value={
+                    formData.checkOut
+                  }
+                  onChange={(e) =>
+                    handleInputChange(
+                      "checkOut",
+                      e.target.value
+                    )
+                  }
                   className="w-full rounded border border-[#DDE3E8] bg-white px-1 py-0.5 text-[10.5px] outline-none"
                 />
               </div>
 
               <div className="sm:col-span-2">
-                <label className="block text-[8px] font-medium text-gray-500 uppercase">Safari Date</label>
+                <label className="block text-[8px] font-medium uppercase text-gray-500">
+                  Safari Date
+                </label>
+
                 <input
                   type="date"
-                  value={formData.safariDate}
-                  onChange={(e) => handleInputChange("safariDate", e.target.value)}
+                  value={
+                    formData.safariDate
+                  }
+                  onChange={(e) =>
+                    handleInputChange(
+                      "safariDate",
+                      e.target.value
+                    )
+                  }
                   className="w-full rounded border border-[#DDE3E8] bg-white px-1 py-0.5 text-[10.5px] outline-none"
                 />
               </div>
 
               <div className="sm:col-span-2">
-                <label className="block text-[8px] font-medium text-gray-500 uppercase">Customer Note / Requirement</label>
+                <label className="block text-[8px] font-medium uppercase text-gray-500">
+                  Customer Note /
+                  Requirement
+                </label>
+
                 <textarea
                   rows={2.5}
                   value={formData.message}
-                  onChange={(e) => handleInputChange("message", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange(
+                      "message",
+                      e.target.value
+                    )
+                  }
                   placeholder="Enter custom requirements..."
                   className="w-full rounded border border-[#DDE3E8] bg-white p-1 text-[10.5px] outline-none focus:border-[#C87532]"
                 />
@@ -1874,19 +2929,51 @@ function EnquiryDetails({
               ["Zone", formData.zone],
               ["Guests", formData.guests],
               ["Rooms", formData.rooms],
-              ["Check-in", formatDate(formData.checkIn)],
-              ["Check-out", formatDate(formData.checkOut)],
-              ["Safari Date", formatDate(formData.safariDate)],
-              ["Time Slot", formData.preferredTime],
-              ["Inquiry Type", formData.inquiryType],
-              ["Enquiry Date", formatDate(enquiry.createdAt)],
+              [
+                "Check-in",
+                formatDate(
+                  formData.checkIn
+                ),
+              ],
+              [
+                "Check-out",
+                formatDate(
+                  formData.checkOut
+                ),
+              ],
+              [
+                "Safari Date",
+                formatDate(
+                  formData.safariDate
+                ),
+              ],
+              [
+                "Time Slot",
+                formData.preferredTime,
+              ],
+              [
+                "Inquiry Type",
+                formData.inquiryType,
+              ],
+              [
+                "Enquiry Date",
+                formatDate(
+                  enquiry.createdAt
+                ),
+              ],
             ].map(
               ([label, value]) =>
                 value !== undefined &&
                 value !== null &&
                 value !== "" && (
-                  <div key={label} className="min-w-0 rounded bg-[#F8FAFB] p-1">
-                    <span className="block truncate text-[7.5px] text-[#7A8790]">{label}</span>
+                  <div
+                    key={label}
+                    className="min-w-0 rounded bg-[#F8FAFB] p-1"
+                  >
+                    <span className="block truncate text-[7.5px] text-[#7A8790]">
+                      {label}
+                    </span>
+
                     <span className="block break-words text-[10px] font-medium text-[#18352A]">
                       {String(value)}
                     </span>
@@ -1900,11 +2987,17 @@ function EnquiryDetails({
         {formData.message && (
           <div className="mb-2 rounded border border-[#DDE3E8] p-1.5">
             <div className="mb-1 flex items-center gap-1">
-              <MessageSquare size={10} className="text-[#C87532]" />
+              <MessageSquare
+                size={10}
+                className="text-[#C87532]"
+              />
+
               <p className="text-[8.5px] font-medium uppercase text-[#7A8790]">
-                Customer Note / Requirement
+                Customer Note /
+                Requirement
               </p>
             </div>
+
             <p className="whitespace-pre-wrap break-words rounded bg-[#F8FAFB] p-1.5 text-[10.5px] leading-relaxed text-[#53605A]">
               {formData.message}
             </p>
@@ -1916,7 +3009,12 @@ function EnquiryDetails({
       <div className="grid shrink-0 grid-cols-3 gap-1 border-t border-[#EEF1F3] bg-[#F5F7FA] p-1">
         <button
           type="button"
-          onClick={() => updateStatus(enquiry._id, "pending")}
+          onClick={() =>
+            updateStatus(
+              enquiry._id,
+              "pending"
+            )
+          }
           className="rounded border border-amber-200 bg-amber-50 py-0.5 text-[10.5px] font-semibold text-amber-700 hover:bg-amber-100"
         >
           Pending
@@ -1924,7 +3022,12 @@ function EnquiryDetails({
 
         <button
           type="button"
-          onClick={() => updateStatus(enquiry._id, "contacted")}
+          onClick={() =>
+            updateStatus(
+              enquiry._id,
+              "contacted"
+            )
+          }
           className="rounded border border-blue-200 bg-blue-50 py-0.5 text-[10.5px] font-semibold text-blue-700 hover:bg-blue-100"
         >
           Contacted
@@ -1932,7 +3035,12 @@ function EnquiryDetails({
 
         <button
           type="button"
-          onClick={() => updateStatus(enquiry._id, "confirmed")}
+          onClick={() =>
+            updateStatus(
+              enquiry._id,
+              "confirmed"
+            )
+          }
           className="rounded border border-emerald-200 bg-emerald-50 py-0.5 text-[10.5px] font-semibold text-emerald-700 hover:bg-emerald-100"
         >
           Confirmed
@@ -1940,7 +3048,9 @@ function EnquiryDetails({
 
         <button
           type="button"
-          onClick={() => deleteEnquiry(enquiry._id)}
+          onClick={() =>
+            deleteEnquiry(enquiry._id)
+          }
           className="col-span-3 flex items-center justify-center gap-1 rounded border border-red-200 bg-red-50 py-0.5 text-[10.5px] font-semibold text-red-700 hover:bg-red-100"
         >
           <Trash2 size={10} />
@@ -1953,7 +3063,13 @@ function EnquiryDetails({
 
 export default function AdminEnquiriesPage() {
   return (
-    <Suspense fallback={<div className="p-4 text-xs text-[#18352A]">Loading Tracker...</div>}>
+    <Suspense
+      fallback={
+        <div className="p-4 text-xs text-[#18352A]">
+          Loading Tracker...
+        </div>
+      }
+    >
       <EnquiriesContent />
     </Suspense>
   );

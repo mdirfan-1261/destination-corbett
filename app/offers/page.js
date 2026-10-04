@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -128,10 +127,10 @@ const TERMS = [
   ],
 ];
 
-const gold = "#B99255";
+const orange = "#C87532";
 
 const focus =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#B99255]";
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C87532]";
 
 /* ----------------------------------------
    Copy Offer Code
@@ -161,8 +160,8 @@ function CopyCode({ code, dark = false }) {
       aria-label={`Copy offer code ${code}`}
       className={`inline-flex items-center gap-1.5 rounded-md border border-dashed px-2.5 py-1.5 text-[11px] font-semibold tracking-[0.08em] transition ${focus} ${
         dark
-          ? "border-[#B99255] text-[#E8D8B8] hover:bg-white/10"
-          : "border-[#B99255] text-[#234235] hover:bg-[#B99255]/10"
+          ? "border-[#C87532] text-[#F0C69F] hover:bg-white/10"
+          : "border-[#C87532] text-[#18352A] hover:bg-[#C87532]/10"
       }`}
     >
       {copied ? "COPIED" : code}
@@ -181,7 +180,7 @@ function Price({ offer, dark = false }) {
     <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
       <span
         className={`font-serif text-[22px] font-semibold ${
-          dark ? "text-white" : "text-[#234235]"
+          dark ? "text-white" : "text-[#172033]"
         }`}
       >
         {offer.price}
@@ -223,7 +222,7 @@ function OfferItems({ offer, dark = false }) {
         <li key={item} className="flex items-start gap-1.5">
           <Check
             size={13}
-            className="mt-1 shrink-0 text-[#B99255]"
+            className="mt-1 shrink-0 text-[#C87532]"
             strokeWidth={2.5}
           />
 
@@ -240,14 +239,14 @@ function OfferItems({ offer, dark = false }) {
 
 function FeaturedCard({ offer }) {
   return (
-    <article className="relative overflow-hidden rounded-xl bg-[#234235] text-white shadow-sm sm:col-span-2 lg:col-span-3">
-      <div className="absolute right-0 top-0 h-36 w-36 rounded-full bg-[#B99255]/10 blur-3xl" />
+    <article className="relative overflow-hidden rounded-xl bg-[#18352A] text-white shadow-sm sm:col-span-2 lg:col-span-3">
+      <div className="absolute right-0 top-0 h-36 w-36 rounded-full bg-[#C87532]/10 blur-3xl" />
 
       <div className="relative grid md:grid-cols-[0.9fr_1.6fr]">
         {/* Left */}
-        <div className="flex min-h-[145px] flex-col justify-between border-b border-white/10 bg-gradient-to-br from-[#315846] to-[#234235] p-5 md:border-b-0 md:border-r">
+        <div className="flex min-h-[145px] flex-col justify-between border-b border-white/10 bg-gradient-to-br from-[#28513E] to-[#18352A] p-5 md:border-b-0 md:border-r">
           <div>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#B99255] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-[#234235]">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#C87532] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-white">
               <Sparkles size={11} />
               Featured offer
             </span>
@@ -265,7 +264,7 @@ function FeaturedCard({ offer }) {
         {/* Right */}
         <div className="flex flex-col justify-center gap-3 p-5 md:p-6">
           <div>
-            <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#E8D8B8]">
+            <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#F0C69F]">
               {offer.category}
             </p>
 
@@ -292,7 +291,7 @@ function FeaturedCard({ offer }) {
 
             <Link
               href={`/contact?offer=${encodeURIComponent(offer.code)}`}
-              className={`inline-flex items-center gap-1.5 rounded-md bg-[#B99255] px-3.5 py-2 text-[11px] font-bold text-[#234235] transition hover:bg-[#C8A968] ${focus}`}
+              className={`inline-flex items-center gap-1.5 rounded-md bg-[#C87532] px-3.5 py-2 text-[11px] font-bold text-white transition hover:bg-[#B96928] ${focus}`}
             >
               Book this offer
               <ArrowRight size={13} />
@@ -312,7 +311,7 @@ function OfferCard({ offer }) {
   return (
     <article
       className="group flex flex-col rounded-lg border border-stone-200 border-t-2 bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
-      style={{ borderTopColor: gold }}
+      style={{ borderTopColor: orange }}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -320,7 +319,7 @@ function OfferCard({ offer }) {
             {offer.category}
           </p>
 
-          <h2 className="mt-0.5 font-serif text-[18px] leading-snug text-[#234235]">
+          <h2 className="mt-0.5 font-serif text-[18px] leading-snug text-[#172033]">
             {offer.title}
           </h2>
 
@@ -329,7 +328,7 @@ function OfferCard({ offer }) {
           </p>
         </div>
 
-        <span className="shrink-0 rounded-md bg-[#234235] px-2 py-1 text-[10px] font-bold text-[#E8D8B8]">
+        <span className="shrink-0 rounded-md bg-[#18352A] px-2 py-1 text-[10px] font-bold text-[#F0C69F]">
           {offer.badge}
         </span>
       </div>
@@ -352,7 +351,7 @@ function OfferCard({ offer }) {
 
         <Link
           href={`/contact?offer=${encodeURIComponent(offer.code)}`}
-          className={`inline-flex items-center gap-1 rounded-md bg-[#234235] px-3 py-1.5 text-[11px] font-semibold text-white transition hover:bg-[#3B6752] ${focus}`}
+          className={`inline-flex items-center gap-1 rounded-md bg-[#18352A] px-3 py-1.5 text-[11px] font-semibold text-white transition hover:bg-[#28513E] ${focus}`}
         >
           Book now
           <ArrowRight size={12} />
@@ -385,21 +384,21 @@ export default function OffersPage() {
   const featuredOffer = OFFERS.find((offer) => offer.featured);
 
   return (
-    <main className="min-h-screen bg-[#F8F6F1] text-stone-900">
+    <main className="min-h-screen bg-[#F7F5F0] text-[#172033]">
       {/* =====================================
           HERO
       ====================================== */}
 
-      <section className="bg-[#234235] px-5 py-9 text-white md:py-11">
+      <section className="bg-[#18352A] px-5 py-9 text-white md:py-11">
         <div className="mx-auto max-w-6xl">
           <div className="max-w-2xl">
-            <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#E8D8B8]">
+            <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#F0C69F]">
               Exclusive Corbett Offers
             </p>
 
             <h1 className="font-serif text-3xl leading-[1.08] md:text-4xl">
               Stay closer to the jungle.
-              <span className="block text-[#E8D8B8]">
+              <span className="block text-[#F0C69F]">
                 Pay less for the experience.
               </span>
             </h1>
@@ -413,7 +412,7 @@ export default function OffersPage() {
           {featuredOffer && (
             <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] text-white/45">
               <span className="flex items-center gap-1.5">
-                <Sparkles size={12} className="text-[#B99255]" />
+                <Sparkles size={12} className="text-[#C87532]" />
                 Featured: {featuredOffer.code}
               </span>
 
@@ -421,7 +420,7 @@ export default function OffersPage() {
 
               <Link
                 href="/contact"
-                className={`inline-flex items-center gap-1 text-[#E8D8B8] hover:text-white ${focus}`}
+                className={`inline-flex items-center gap-1 text-[#F0C69F] hover:text-white ${focus}`}
               >
                 Need a custom package?
                 <ArrowRight size={12} />
@@ -435,7 +434,7 @@ export default function OffersPage() {
           FILTERS
       ====================================== */}
 
-      <div className="sticky top-0 z-20 border-b border-stone-200 bg-[#F8F6F1]/95 backdrop-blur-md">
+      <div className="sticky top-0 z-20 border-b border-[#18352A]/10 bg-[#F7F5F0]/95 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl gap-1.5 overflow-x-auto px-5 py-2.5">
           {TABS.map((tab) => {
             const active = activeTab === tab;
@@ -449,15 +448,15 @@ export default function OffersPage() {
                 onClick={() => setActiveTab(tab)}
                 className={`shrink-0 rounded-full px-3.5 py-1.5 text-[11px] font-semibold transition ${focus} ${
                   active
-                    ? "bg-[#234235] text-white"
-                    : "bg-white text-stone-600 ring-1 ring-stone-200 hover:ring-[#234235]"
+                    ? "bg-[#18352A] text-white"
+                    : "bg-white text-stone-600 ring-1 ring-stone-200 hover:ring-[#18352A]"
                 }`}
               >
                 {tab}
 
                 <span
                   className={`ml-1 ${
-                    active ? "text-[#E8D8B8]" : "text-stone-400"
+                    active ? "text-[#F0C69F]" : "text-stone-400"
                   }`}
                 >
                   {getCount(tab)}
@@ -485,7 +484,7 @@ export default function OffersPage() {
 
         {filteredOffers.length === 0 && (
           <div className="rounded-lg border border-stone-200 bg-white px-5 py-10 text-center">
-            <p className="font-serif text-lg text-[#234235]">
+            <p className="font-serif text-lg text-[#172033]">
               No offers available
             </p>
 
@@ -495,7 +494,7 @@ export default function OffersPage() {
 
             <Link
               href="/contact"
-              className={`mt-4 inline-flex items-center gap-1.5 rounded-md bg-[#234235] px-4 py-2 text-xs font-semibold text-white ${focus}`}
+              className={`mt-4 inline-flex items-center gap-1.5 rounded-md bg-[#18352A] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#28513E] ${focus}`}
             >
               Contact us
               <ArrowRight size={13} />
@@ -510,11 +509,11 @@ export default function OffersPage() {
 
       <section className="mx-auto max-w-6xl px-5 pb-6">
         <div className="mb-3">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#B99255]">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#C87532]">
             Simple process
           </p>
 
-          <h2 className="mt-0.5 font-serif text-xl text-[#234235]">
+          <h2 className="mt-0.5 font-serif text-xl text-[#172033]">
             How to redeem
           </h2>
         </div>
@@ -525,12 +524,12 @@ export default function OffersPage() {
               key={step.number}
               className="flex gap-3 rounded-lg border border-stone-200 bg-white p-3.5"
             >
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#234235] font-mono text-[10px] font-bold text-[#E8D8B8]">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#18352A] font-mono text-[10px] font-bold text-[#F0C69F]">
                 {step.number}
               </span>
 
               <div>
-                <h3 className="text-[12px] font-semibold text-[#234235]">
+                <h3 className="text-[12px] font-semibold text-[#172033]">
                   {step.title}
                 </h3>
 
@@ -548,11 +547,11 @@ export default function OffersPage() {
       ====================================== */}
 
       <section className="mx-auto max-w-6xl px-5 pb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#B99255]">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#C87532]">
           Before booking
         </p>
 
-        <h2 className="mt-0.5 font-serif text-xl text-[#234235]">
+        <h2 className="mt-0.5 font-serif text-xl text-[#172033]">
           Good to know
         </h2>
 
@@ -583,9 +582,9 @@ export default function OffersPage() {
       ====================================== */}
 
       <section className="mx-auto max-w-6xl px-5 pb-8">
-        <div className="flex flex-col gap-3 rounded-xl bg-[#234235] px-5 py-4 text-white shadow-sm sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 rounded-xl bg-[#18352A] px-5 py-4 text-white shadow-sm sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#E8D8B8]">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#F0C69F]">
               Need something specific?
             </p>
 
@@ -613,7 +612,7 @@ export default function OffersPage() {
 
             <a
               href={`tel:${PHONE}`}
-              className={`inline-flex items-center gap-1.5 rounded-md bg-[#B99255] px-3.5 py-2 text-[11px] font-bold text-[#234235] transition hover:bg-[#C8A968] ${focus}`}
+              className={`inline-flex items-center gap-1.5 rounded-md bg-[#C87532] px-3.5 py-2 text-[11px] font-bold text-white transition hover:bg-[#B96928] ${focus}`}
             >
               <Phone size={13} />
               Call us
@@ -624,4 +623,3 @@ export default function OffersPage() {
     </main>
   );
 }
-
