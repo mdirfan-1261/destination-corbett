@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -50,19 +50,19 @@ const meetingBenefits = [
 
 const meetingGallery = [
   {
-    image: "/images/events/corporate-meetings-1.jpg",
+    image: "/images/events/optimized/corporate-meetings-1.webp",
     title: "Meeting Venues",
     description:
       "Professional spaces for focused discussions and corporate gatherings.",
   },
   {
-    image: "/images/events/corporate-meetings-2.jpg",
+    image: "/images/events/optimized/corporate-meetings-2.webp",
     title: "Team Gatherings",
     description:
       "Comfortable settings for teams, discussions and business interactions.",
   },
   {
-    image: "/images/events/corporate-meetings-3.jpg",
+    image: "/images/events/optimized/corporate-meetings-3.webp",
     title: "Corporate Stay",
     description:
       "Combine your meeting with a comfortable stay surrounded by nature.",
@@ -80,7 +80,7 @@ export default function CorporateMeetingsPage() {
           <div className="relative h-[285px] sm:h-[380px] md:h-[450px] lg:h-[500px]">
 
             <Image
-              src="/images/events/corporate-meetings-hero.png"
+              src="/images/events/optimized/corporate-meetings-hero.webp"
               alt="Corporate meetings in Jim Corbett"
               fill
               priority
@@ -210,10 +210,10 @@ export default function CorporateMeetingsPage() {
   loop
   playsInline
   preload="auto"
-  poster="/images/events/corporate-meetings-video.jpg"
+  poster="/images/events/optimized/corporate-meetings-hero.webp"
 >
   <source
-    src="/videos/corporate-meetings-video.mp4"
+    src="/videos/optimized/corporate-meetings-video.mp4"
     type="video/mp4"
   />
   Your browser does not support the video tag.
@@ -499,3 +499,4 @@ export default function CorporateMeetingsPage() {
     </main>
   );
 }
+

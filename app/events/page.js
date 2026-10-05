@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import Image from "next/image";
@@ -26,7 +26,7 @@ const eventTypes = [
     description:
       "Professional meeting spaces and complete hospitality solutions for focused business gatherings.",
     href: "/events/meetings",
-    image: "/images/events/corporate-meetings.jpg",
+    image: "/images/events/optimized/corporate-meetings.webp",
     icon: Users,
   },
   {
@@ -34,7 +34,7 @@ const eventTypes = [
     description:
       "Plan conferences with venue, accommodation, food, technology and on-ground coordination.",
     href: "/events/conferences",
-    image: "/images/events/conferences.jpg",
+    image: "/images/events/optimized/conferences.webp",
     icon: Presentation,
   },
   {
@@ -42,7 +42,7 @@ const eventTypes = [
     description:
       "Bring your team together with memorable outings, activities and unique Corbett experiences.",
     href: "/events/team-outings",
-    image: "/images/events/team-outings.jpg",
+    image: "/images/events/optimized/team-outings.webp",
     icon: Mountain,
   },
   {
@@ -50,7 +50,7 @@ const eventTypes = [
     description:
       "Combine productive sessions with comfortable stays, nature, relaxation and team experiences.",
     href: "/events/retreats",
-    image: "/images/events/corporate-retreats.jpg",
+    image: "/images/events/optimized/corporate-retreats.webp",
     icon: Building2,
   },
   {
@@ -58,7 +58,7 @@ const eventTypes = [
     description:
       "Create professional dealer meets with comfortable stays, curated experiences and seamless arrangements.",
     href: "/events/dealer-meets",
-    image: "/images/events/dealer-meets.jpg",
+    image: "/images/events/optimized/dealer-meets.webp",
     icon: Handshake,
   },
   {
@@ -66,7 +66,7 @@ const eventTypes = [
     description:
       "Sound, lights, LED, stage, branding and complete production support for your event.",
     href: "/event-production",
-    image: "/images/events/event-production1.jpg",
+    image: "/images/events/optimized/event-production1.webp",
     icon: Clapperboard,
   },
 ];
@@ -155,7 +155,7 @@ export default function EventsPage() {
         <div className="relative mx-auto min-h-[300px] max-w-[1440px] overflow-hidden rounded-xl bg-[#172033] text-white sm:min-h-[420px] sm:rounded-[24px] md:min-h-[470px] md:rounded-[28px] lg:min-h-[560px]">
 
           <Image
-            src="/images/events/events-hero.jpg"
+            src="/images/events/optimized/events-hero.webp"
             alt="Corporate events in Jim Corbett"
             fill
             priority
@@ -623,12 +623,12 @@ export default function EventsPage() {
                   loop
                   playsInline
                   preload="metadata"
-                  poster="/images/events/corbett-experience.jpg"
+                  poster="/images/events/optimized/events-hero.webp"
                   className="absolute inset-0 h-full w-full object-cover object-center"
                 >
 
                   <source
-                    src="/videos/corbett-experience.mp4"
+                    src="/videos/optimized/corbett-experience.mp4"
                     type="video/mp4"
                   />
 
@@ -808,7 +808,7 @@ export default function EventsPage() {
             </p>
 
             <h2 className="mt-1.5 text-[24px] font-bold leading-[1.15] sm:text-3xl">
-              Meetings • Retreats • Conferences • Celebrations
+              Meetings â€¢ Retreats â€¢ Conferences â€¢ Celebrations
             </h2>
 
             <p className="mx-auto mt-2.5 max-w-xl text-[13px] leading-5.5 text-white/60 sm:mt-3 sm:text-sm sm:leading-6">
@@ -847,3 +847,4 @@ export default function EventsPage() {
     </main>
   );
 }
+

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -50,19 +50,19 @@ const outingBenefits = [
 
 const outingGallery = [
   {
-    image: "/images/events/team-outings-1.jpg",
+    image: "/images/events/optimized/team-outings-1.webp",
     title: "Team Adventures",
     description:
       "Take your team outside the usual workplace and create memorable shared experiences.",
   },
   {
-    image: "/images/events/team-outings-2.jpg",
+    image: "/images/events/optimized/team-outings-2.webp",
     title: "Outdoor Team Activities",
     description:
       "Plan engaging outdoor activities that encourage interaction, collaboration and team bonding.",
   },
   {
-    image: "/images/events/team-outings-3.jpg",
+    image: "/images/events/optimized/team-outings-3.webp",
     title: "Relax & Reconnect",
     description:
       "Combine adventure, nature and comfortable hospitality for a refreshing team getaway.",
@@ -79,7 +79,7 @@ export default function TeamOutingsPage() {
           <div className="relative h-[300px] overflow-hidden sm:h-[420px] md:h-[470px] lg:h-[560px]">
 
             <Image
-              src="/images/events/team-outings-hero.jpg"
+              src="/images/events/optimized/team-outings-hero.webp"
               alt="Team outing in Jim Corbett"
               fill
               priority
@@ -201,10 +201,10 @@ export default function TeamOutingsPage() {
                 loop
                 playsInline
                 preload="auto"
-                poster="/images/events/team-outings-video.jpg"
+                poster="/images/events/optimized/team-outings-hero.webp"
               >
                 <source
-                  src="/videos/team-outings-video.mp4"
+                  src="/videos/optimized/team-outings-video.mp4"
                   type="video/mp4"
                 />
 
@@ -457,3 +457,4 @@ export default function TeamOutingsPage() {
     </main>
   );
 }
+

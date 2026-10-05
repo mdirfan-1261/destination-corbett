@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -51,19 +51,19 @@ const conferenceBenefits = [
 
 const conferenceGallery = [
   {
-    image: "/images/events/conferences-1.jpg",
+    image: "/images/events/optimized/conferences-1.webp",
     title: "Conference Sessions",
     description:
       "Create a focused environment for presentations, discussions and knowledge sharing.",
   },
   {
-    image: "/images/events/conferences-2.jpg",
+    image: "/images/events/optimized/conferences-2.webp",
     title: "Corporate Gatherings",
     description:
       "Bring teams, delegates and business partners together in a comfortable setting.",
   },
   {
-    image: "/images/events/conferences-3.jpg",
+    image: "/images/events/optimized/conferences-3.webp",
     title: "Conference Experience",
     description:
       "Combine productive business sessions with a refreshing Jim Corbett experience.",
@@ -80,7 +80,7 @@ export default function ConferencesPage() {
           <div className="relative h-[300px] overflow-hidden sm:h-[420px] md:h-[470px] lg:h-[560px]">
 
             <Image
-              src="/images/events/conferences-hero.png"
+              src="/images/events/optimized/conferences-hero.webp"
               alt="Corporate conference in Jim Corbett"
               fill
               priority
@@ -202,10 +202,10 @@ export default function ConferencesPage() {
                 loop
                 playsInline
                 preload="auto"
-                poster="/images/events/conferences-video.jpg"
+                poster="/images/events/optimized/conferences-hero.webp"
               >
                 <source
-                  src="/videos/conferences-video.mp4"
+                  src="/videos/optimized/conferences-video.mp4"
                   type="video/mp4"
                 />
 
@@ -459,3 +459,4 @@ export default function ConferencesPage() {
     </main>
   );
 }
+
