@@ -229,111 +229,176 @@ export default function RolesPermissionsPage() {
   };
 
   const openUserPermissions = async (user) => {
-    try {
-      setSelectedUser(user);
-      setPermissionsLoading(true);
-      setSaveMessage("");
+  try {
+    setSelectedUser(user);
+    setPermissionsLoading(true);
+    setSaveMessage("");
 
-      const response = await fetch(
-        `${API_URL}/api/admin/users/${user._id}/permissions`,
-        {
-          headers: authHeaders(),
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.message || "Failed to load user permissions."
-        );
+    const response = await fetch(
+      `${API_URL}/api/admin/users/${user._id}/permissions`,
+      {
+        headers: authHeaders(),
       }
-
-      setUserPermissions(
-        Array.isArray(data.permissions)
-          ? data.permissions
-          : []
-      );
-    } catch (err) {
-      console.error("User permissions error:", err);
-
-      setSaveMessage(
-        err.message || "Failed to load permissions."
-      );
-    } finally {
-      setPermissionsLoading(false);
-    }
-  };
-
-  const togglePermission = (permission) => {
-    setUserPermissions((current) =>
-      current.includes(permission)
-        ? current.filter((item) => item !== permission)
-        : [...current, permission]
     );
 
-    setSaveMessage("");
-  };
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.message || "Failed to load user permissions."
+      );
+    }
+
+    /*
+      Backend already tells us which permissions
+      the logged-in admin is allowed to delegate.
+
+      Super Admin:
+      -> all permissions
+
+      Admin / Manager:
+      -> only their own current permissions
+    */
+    const allowedPermissions = Array.isArray(
+      data.availablePermissions
+    )
+      ? data.availablePermissions
+      : [];
+
+    const targetPermissions = Array.isArray(
+      data.permissions
+    )
+      ? data.permissions
+      : [];
+
+    /*
+      Important:
+      Target user's old permissions are filtered against
+      the current admin's permissions.
+
+      Example:
+      Manager does NOT have enquiries.update
+      Staff has enquiries.update from old data
+
+      enquiries.update will NOT appear/select.
+    */
+    const filteredPermissions =
+      targetPermissions.filter((permission) =>
+        allowedPermissions.includes(permission)
+      );
+
+    setAvailablePermissions(allowedPermissions);
+    setUserPermissions(filteredPermissions);
+  } catch (err) {
+    console.error("User permissions error:", err);
+
+    setSaveMessage(
+      err.message || "Failed to load permissions."
+    );
+  } finally {
+    setPermissionsLoading(false);
+  }
+};
+
+  const togglePermission = (permission) => {
+  // Never allow a permission outside the current
+  // admin's delegation scope.
+  if (!availablePermissions.includes(permission)) {
+    return;
+  }
+
+  setUserPermissions((current) =>
+    current.includes(permission)
+      ? current.filter(
+          (item) => item !== permission
+        )
+      : [...current, permission]
+  );
+
+  setSaveMessage("");
+};
 
   const saveUserPermissions = async () => {
-    if (!selectedUser) return;
+  if (!selectedUser) return;
 
-    try {
-      setSavingPermissions(true);
-      setSaveMessage("");
+  try {
+    setSavingPermissions(true);
+    setSaveMessage("");
 
-      const response = await fetch(
-        `${API_URL}/api/admin/users/${selectedUser._id}/permissions`,
-        {
-          method: "PUT",
-          headers: authHeaders(),
-          body: JSON.stringify({
-            permissions: userPermissions,
-          }),
-        }
+    /*
+      Final safety check before sending to backend.
+
+      Even if somehow UI state contains an old/disallowed
+      permission, it will NOT be sent.
+    */
+    const allowedPermissions = new Set(
+      availablePermissions
+    );
+
+    const permissionsToSave =
+      userPermissions.filter((permission) =>
+        allowedPermissions.has(permission)
       );
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.message || "Failed to save permissions."
-        );
+    const response = await fetch(
+      `${API_URL}/api/admin/users/${selectedUser._id}/permissions`,
+      {
+        method: "PUT",
+        headers: authHeaders(),
+        body: JSON.stringify({
+          permissions: permissionsToSave,
+        }),
       }
+    );
 
-      setSaveMessage(
-        "Permissions updated successfully."
-      );
+    const data = await response.json();
 
-      setUsers((currentUsers) =>
-        currentUsers.map((user) =>
-          user._id === selectedUser._id
-            ? {
-                ...user,
-                permissions: userPermissions,
-              }
-            : user
-        )
+    if (!response.ok) {
+      throw new Error(
+        data.message ||
+          "Failed to save permissions."
       );
-
-      setSelectedUser((current) =>
-        current
-          ? {
-              ...current,
-              permissions: userPermissions,
-            }
-          : current
-      );
-    } catch (err) {
-      console.error("Save permissions error:", err);
-
-      setSaveMessage(
-        err.message || "Failed to save permissions."
-      );
-    } finally {
-      setSavingPermissions(false);
     }
-  };
+
+    setSaveMessage(
+      "Permissions updated successfully."
+    );
+
+    setUserPermissions(permissionsToSave);
+
+    setUsers((currentUsers) =>
+      currentUsers.map((user) =>
+        user._id === selectedUser._id
+          ? {
+              ...user,
+              permissions: permissionsToSave,
+            }
+          : user
+      )
+    );
+
+    setSelectedUser((current) =>
+      current
+        ? {
+            ...current,
+            permissions: permissionsToSave,
+          }
+        : current
+    );
+  } catch (err) {
+    console.error(
+      "Save permissions error:",
+      err
+    );
+
+    setSaveMessage(
+      err.message ||
+        "Failed to save permissions."
+    );
+  } finally {
+    setSavingPermissions(false);
+  }
+};
 
   const closePermissions = () => {
     setSelectedUser(null);

@@ -4,42 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { ArrowRight, MapPin, ChevronDown } from "lucide-react";
+import safariOptions from "@/data/safari";
 
-const safariOptions = [
-    {
-        id: 1,
-        name: "Jeep Safari",
-        location: "Jim Corbett National Park",
-        image: "/safari/jeep-safari.jpg",
-        description:
-            "Explore the wilderness of Jim Corbett in an open gypsy with an experienced naturalist and driver.",
-        price: "₹5,500",
-        duration: "3–4 Hours",
-        guests: "Up to 6 Guests",
-    },
-    {
-        id: 2,
-        name: "Canter Safari",
-        location: "Jim Corbett National Park",
-        image: "/safari/canter-safari.jpg",
-        description:
-            "Enjoy a shared safari experience through Corbett's forest zones with fellow wildlife enthusiasts.",
-        price: "₹1,500",
-        duration: "3–4 Hours",
-        guests: "Up to 16 Guests",
-    },
-    {
-        id: 3,
-        name: "Elephant Safari",
-        location: "Corbett Forest Area",
-        image: "/safari/elephant-safari1.jpg",
-        description:
-            "Experience the forest from a unique perspective with a memorable elephant safari adventure.",
-        price: "₹2,500",
-        duration: "2–3 Hours",
-        guests: "Limited Seats",
-    },
-];
 
 export default function SafariPage() {
     const [expanded, setExpanded] = useState(null);
@@ -302,19 +268,17 @@ export default function SafariPage() {
                                             {/* ENQUIRE */}
 
                                             <Link
-                                                href={`/contact?safari=${encodeURIComponent(
-                                                    safari.name
-                                                )}&image=${encodeURIComponent(
-                                                    safari.image
-                                                )}`}
-                                                onClick={(e) =>
-                                                    e.stopPropagation()
-                                                }
-                                                className="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-[#C87532] px-2.5 py-1.5 text-[10px] font-semibold text-white transition hover:bg-[#B96928] sm:gap-2 sm:px-4 sm:py-2.5 sm:text-xs md:text-sm"
-                                            >
-                                                Enquire
-                                                <ArrowRight size={13} />
-                                            </Link>
+  href={`/booking?type=safari&safari_id=${encodeURIComponent(
+    safari.id
+  )}&safari=${encodeURIComponent(safari.name)}&image=${encodeURIComponent(
+    safari.image
+  )}`}
+  onClick={(e) => e.stopPropagation()}
+  className="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-[#C87532] px-2.5 py-1.5 text-[10px] font-semibold text-white transition hover:bg-[#B96928] sm:gap-2 sm:px-4 sm:py-2.5 sm:text-xs md:text-sm"
+>
+  Book Safari
+  <ArrowRight size={13} />
+</Link>
 
                                         </div>
 

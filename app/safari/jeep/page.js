@@ -327,20 +327,20 @@ export default function SafariPage() {
 
         {/* BOOK */}
 
-        <Link
-            href={`/booking?safari=${encodeURIComponent(
-                safari.name
-            )}&zone=${encodeURIComponent(
-                safari.zone
-            )}&image=${encodeURIComponent(
-                safari.image
-            )}`}
-            onClick={(e) => e.stopPropagation()}
-            className="inline-flex h-8 flex-1 items-center justify-center gap-1 rounded-lg bg-[#C87532] px-1.5 text-[9px] font-semibold text-white transition hover:bg-[#B96928] sm:h-10 sm:gap-1.5 sm:px-3 sm:text-xs"
-        >
-            Book
-            <ArrowRight size={11} />
-        </Link>
+       <Link
+    href={`/booking?type=safari&safari=${encodeURIComponent(
+        safari.name
+    )}&zone=${encodeURIComponent(
+        safari.zone
+    )}&image=${encodeURIComponent(
+        safari.image
+    )}`}
+    onClick={(e) => e.stopPropagation()}
+    className="inline-flex h-8 flex-1 items-center justify-center gap-1 rounded-lg bg-[#C87532] px-1.5 text-[9px] font-semibold text-white transition hover:bg-[#B96928] sm:h-10 sm:gap-1.5 sm:px-3 sm:text-xs"
+>
+    Book
+    <ArrowRight size={11} />
+</Link>
 
     </div>
 

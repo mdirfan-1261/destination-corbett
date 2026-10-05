@@ -268,16 +268,18 @@ export default function CanterSafariPage() {
                                 </Link>
 
                                 <Link
-                                    href={`/booking?safari=${encodeURIComponent(
-                                        canterSafari.name
-                                    )}&image=${encodeURIComponent(
-                                        canterSafari.image
-                                    )}`}
-                                    className="inline-flex h-9 flex-1 items-center justify-center gap-1 rounded-lg bg-[#C87532] px-2 text-[10px] font-semibold text-white transition hover:bg-[#B96928] sm:h-10 sm:flex-none sm:px-4 sm:text-xs"
-                                >
-                                    <CalendarDays size={12} />
-                                    Book
-                                </Link>
+    href={`/booking?type=safari&safari_id=${encodeURIComponent(
+        canterSafari.id
+    )}&safari=${encodeURIComponent(
+        canterSafari.name
+    )}&image=${encodeURIComponent(
+        canterSafari.image
+    )}`}
+    className="inline-flex h-9 flex-1 items-center justify-center gap-1 rounded-lg bg-[#C87532] px-2 text-[10px] font-semibold text-white transition hover:bg-[#B96928] sm:h-10 sm:flex-none sm:px-4 sm:text-xs"
+>
+    <CalendarDays size={12} />
+    Book
+</Link>
 
                             </div>
 

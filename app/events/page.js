@@ -262,41 +262,7 @@ export default function EventsPage() {
           INTRO
       ========================================================= */}
 
-      <section className="px-4 py-9 sm:px-5 sm:py-12 md:px-8 md:py-14">
-
-        <div className="mx-auto max-w-7xl">
-
-          <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr] lg:items-end lg:gap-7">
-
-            <div>
-
-              <p className="text-[10px] font-semibold uppercase tracking-[2.5px] text-[#C87532] sm:text-xs sm:tracking-[3px]">
-                Events in Jim Corbett
-              </p>
-
-              <h2 className="mt-1.5 text-[25px] font-bold leading-[1.15] sm:text-3xl">
-                More than an event.
-                <br />
-                An experience.
-              </h2>
-
-            </div>
-
-            <p className="max-w-3xl text-[13px] leading-5.5 text-black/60 sm:text-sm sm:leading-6">
-
-              Destination Corbett brings together the essential elements
-              required to plan a successful corporate event. Whether it is a
-              focused business meeting, a large conference, a team outing or
-              a relaxed corporate retreat, the Corbett setting adds a
-              distinctive experience to your event.
-
-            </p>
-
-          </div>
-
-        </div>
-
-      </section>
+      
 
 
       {/* =========================================================

@@ -13,7 +13,7 @@ export default function Footer() {
             <div className="flex items-center gap-3">
               <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-xl border border-[#C87532]/40 bg-white p-0.5 shadow-md">
                 <img
-                  src="/logo/corbett-logo 1.jpeg"
+                  src="/logo/corbett-logo.jpeg"
                   alt="Destination Corbett"
                   className="h-full w-full rounded-lg object-cover"
                 />
