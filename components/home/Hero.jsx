@@ -95,6 +95,24 @@ export default function Hero() {
   }, ${rooms} ${rooms === 1 ? "Room" : "Rooms"}`;
 
   // =========================================================
+  // DATE DISPLAY
+  // =========================================================
+
+  const formatMobileDate = (dateValue) => {
+    if (!dateValue) {
+      return "DD/MM/YYYY";
+    }
+
+    const date = new Date(`${dateValue}T00:00:00`);
+
+    if (Number.isNaN(date.getTime())) {
+      return "DD/MM/YYYY";
+    }
+
+    return date.toLocaleDateString("en-GB");
+  };
+
+  // =========================================================
   // DYNAMIC SEARCH RESULTS
   // =========================================================
 
@@ -755,7 +773,7 @@ export default function Hero() {
 
                   <label
                     htmlFor="mobile-search-query"
-                    className="text-[10px] font-bold uppercase tracking-wide text-[#385247]"
+                    className="text-[10px] font-black uppercase tracking-wide text-[#385247]"
                   >
                     Safari Zone / Stay
                   </label>
@@ -819,15 +837,36 @@ export default function Hero() {
                     Check In
                   </label>
 
-                  <input
-                    id="mobile-check-in"
-                    type="date"
-                    value={checkIn}
-                    onChange={(e) =>
-                      setCheckIn(e.target.value)
-                    }
-                    className="mt-0.5 w-full min-w-0 bg-transparent text-[12px] font-semibold text-[#172033] focus:outline-none"
-                  />
+                  {/* MOBILE DATE DISPLAY */}
+
+                  <div className="relative mt-0.5 h-[20px] min-w-0">
+
+                    {/* VISIBLE TEXT */}
+
+                    <span
+                      className={`pointer-events-none absolute inset-0 z-10 flex items-center truncate text-[12px] font-semibold ${
+                        checkIn
+                          ? "text-[#172033]"
+                          : "text-gray-400"
+                      }`}
+                    >
+                      {formatMobileDate(checkIn)}
+                    </span>
+
+                    {/* ACTUAL DATE PICKER */}
+
+                    <input
+                      id="mobile-check-in"
+                      type="date"
+                      value={checkIn}
+                      onChange={(e) =>
+                        setCheckIn(e.target.value)
+                      }
+                      aria-label="Check In"
+                      className="absolute inset-0 z-20 h-full w-full cursor-pointer appearance-none bg-transparent opacity-0"
+                    />
+
+                  </div>
 
                 </div>
 
@@ -851,16 +890,37 @@ export default function Hero() {
                     Check Out
                   </label>
 
-                  <input
-                    id="mobile-check-out"
-                    type="date"
-                    value={checkOut}
-                    min={checkIn || undefined}
-                    onChange={(e) =>
-                      setCheckOut(e.target.value)
-                    }
-                    className="mt-0.5 w-full min-w-0 bg-transparent text-[12px] font-semibold text-[#172033] focus:outline-none"
-                  />
+                  {/* MOBILE DATE DISPLAY */}
+
+                  <div className="relative mt-0.5 h-[20px] min-w-0">
+
+                    {/* VISIBLE TEXT */}
+
+                    <span
+                      className={`pointer-events-none absolute inset-0 z-10 flex items-center truncate text-[12px] font-semibold ${
+                        checkOut
+                          ? "text-[#172033]"
+                          : "text-gray-400"
+                      }`}
+                    >
+                      {formatMobileDate(checkOut)}
+                    </span>
+
+                    {/* ACTUAL DATE PICKER */}
+
+                    <input
+                      id="mobile-check-out"
+                      type="date"
+                      value={checkOut}
+                      min={checkIn || undefined}
+                      onChange={(e) =>
+                        setCheckOut(e.target.value)
+                      }
+                      aria-label="Check Out"
+                      className="absolute inset-0 z-20 h-full w-full cursor-pointer appearance-none bg-transparent opacity-0"
+                    />
+
+                  </div>
 
                 </div>
 
@@ -887,7 +947,7 @@ export default function Hero() {
 
                 <div className="min-w-0">
 
-                  <p className="text-[9px] font-bold uppercase tracking-wide text-gray-600">
+                  <p className="text-[9px] font-black uppercase tracking-wide text-gray-600">
                     Guests & Rooms
                   </p>
 

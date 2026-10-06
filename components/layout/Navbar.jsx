@@ -47,9 +47,9 @@ export default function Navbar() {
 
               {/* LOGO TEXT */}
   <div className="flex flex-col min-w-0 leading-none">
-  <span className="text-[8px] xs:text-[9px] sm:text-xs font-extrabold tracking-[0.06em] sm:tracking-[0.10em] text-[#18352A] uppercase truncate">
-    DESTINATION
-  </span>
+  <span className="text-[8px] xs:text-[9px] sm:text-xs font-black tracking-[0.06em] sm:tracking-[0.10em] text-[#18352A] uppercase truncate">
+  DESTINATION
+</span>
 
   <span className="mt-0.5 text-[9px] xs:text-[10px] sm:text-[11px] font-black tracking-[0.09em] sm:tracking-[0.12em] text-[#B96928] uppercase truncate">
     CORBETT
