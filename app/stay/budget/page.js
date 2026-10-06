@@ -16,7 +16,7 @@ const budgetHotels = [
         id: "corbett-nature-retreat",
         name: "Corbett Nature Retreat",
         location: "Dhikuli, Jim Corbett",
-        image: "/stay/budget-1.jpg",
+        image: "/stay/budget-1.webp",
         description:
             "Comfortable and affordable accommodation for families, groups and weekend travellers.",
         price: "₹2,499",
@@ -29,7 +29,7 @@ const budgetHotels = [
         id: "forest-view-resort",
         name: "Forest View Resort",
         location: "Sitabani Road, Corbett",
-        image: "/stay/budget-2.jpg",
+        image: "/stay/budget-2.webp",
         description:
             "A peaceful budget stay surrounded by nature with comfortable rooms and essential facilities.",
         price: "₹2,799",
@@ -42,7 +42,7 @@ const budgetHotels = [
         id: "corbett-green-stay",
         name: "Corbett Green Stay",
         location: "Ramnagar, Uttarakhand",
-        image: "/stay/budget-3.jpg",
+        image: "/stay/budget-3.webp",
         description:
             "A practical stay option for groups and travellers looking for comfort at a reasonable budget.",
         price: "₹2,999",
@@ -55,7 +55,7 @@ const budgetHotels = [
         id: "jungle-edge-retreat",
         name: "Jungle Edge Retreat",
         location: "Dhela, Jim Corbett",
-        image: "/stay/budget-4.jpg",
+        image: "/stay/budget-4.webp",
         description:
             "Relaxing accommodation with easy access to Corbett's major tourism experiences.",
         price: "₹3,299",
@@ -87,7 +87,7 @@ export default function BudgetHotelsPage() {
 
       {/* HERO IMAGE */}
       <Image
-        src="/stay/stay-hero.jpg"
+        src="/stay/stay-hero.webp"
         alt="Budget Hotels in Jim Corbett"
         fill
         priority

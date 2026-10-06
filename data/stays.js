@@ -5,7 +5,7 @@ const stays = [
     locationSlug: "dhikuli",
     name: "Corbett Forest Resort",
     location: "Dhikuli, Jim Corbett",
-    image: "/stay/resort-1.jpg",
+    image: "/stay/resort-1.webp",
 
     description:
       "A peaceful forest resort surrounded by nature, perfect for families and weekend getaways.",
@@ -17,7 +17,7 @@ const stays = [
     checkIn: "1:00 PM",
     checkOut: "11:00 AM",
 
-    images: ["/stay/resort-1.jpg"],
+    images: ["/stay/resort-1.webp"],
 
     amenities: [
       "Free WiFi",
@@ -68,7 +68,7 @@ const stays = [
     locationSlug: "ramnagar",
     name: "Riverside Retreat",
     location: "Ramnagar, Jim Corbett",
-    image: "/stay/resort-2.jpg",
+    image: "/stay/resort-2.webp",
 
     description:
       "Enjoy a relaxing stay with beautiful surroundings and a peaceful riverside atmosphere.",
@@ -80,7 +80,7 @@ const stays = [
     checkIn: "1:00 PM",
     checkOut: "11:00 AM",
 
-    images: ["/stay/resort-2.jpg"],
+    images: ["/stay/resort-2.webp"],
 
     amenities: [
       "Free WiFi",
@@ -130,7 +130,7 @@ const stays = [
     locationSlug: "sitabani",
     name: "Jungle View Resort",
     location: "Sitabani, Jim Corbett",
-    image: "/stay/resort-3.jpg",
+    image: "/stay/resort-3.webp",
 
     description:
       "Experience nature, comfort and adventure with a beautiful jungle view.",
@@ -142,7 +142,7 @@ const stays = [
     checkIn: "1:00 PM",
     checkOut: "11:00 AM",
 
-    images: ["/stay/resort-3.jpg"],
+    images: ["/stay/resort-3.webp"],
 
     amenities: [
       "Free WiFi",
@@ -192,7 +192,7 @@ const stays = [
     locationSlug: "dhangari",
     name: "Corbett Nature Stay",
     location: "Dhangari, Jim Corbett",
-    image: "/stay/resort-4.jpg",
+    image: "/stay/resort-4.webp",
 
     description:
       "Comfortable rooms, peaceful surroundings and easy access to Jim Corbett attractions.",
@@ -204,7 +204,7 @@ const stays = [
     checkIn: "1:00 PM",
     checkOut: "11:00 AM",
 
-    images: ["/stay/resort-4.jpg"],
+    images: ["/stay/resort-4.webp"],
 
     amenities: [
       "Free WiFi",
@@ -254,7 +254,7 @@ const stays = [
     locationSlug: "mohokand",
     name: "Wildlife Retreat",
     location: "Mohokand, Jim Corbett",
-    image: "/stay/resort-5.jpg",
+    image: "/stay/resort-5.webp",
 
     description:
       "A comfortable retreat for travellers looking for a relaxing wildlife experience.",
@@ -266,7 +266,7 @@ const stays = [
     checkIn: "1:00 PM",
     checkOut: "11:00 AM",
 
-    images: ["/stay/resort-5.jpg"],
+    images: ["/stay/resort-5.webp"],
 
     amenities: [
       "Free WiFi",
@@ -316,7 +316,7 @@ const stays = [
     locationSlug: "ramnagar",
     name: "Green Valley Resort",
     location: "Ramnagar, Jim Corbett",
-    image: "/stay/resort-6.jpg",
+    image: "/stay/resort-6.webp",
 
     description:
       "A beautiful nature stay offering comfort, greenery and a memorable Corbett experience.",
@@ -328,7 +328,7 @@ const stays = [
     checkIn: "1:00 PM",
     checkOut: "11:00 AM",
 
-    images: ["/stay/resort-6.jpg"],
+    images: ["/stay/resort-6.webp"],
 
     amenities: [
       "Free WiFi",

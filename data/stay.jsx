@@ -12,7 +12,7 @@ export const stayData = {
       title: "Luxury Resorts",
       description:
         "Premium resorts with exceptional hospitality, comfort and memorable experiences.",
-      image: "/stay/luxury-resort.jpg",
+      image: "/stay/luxury-resort.webp",
       href: "/stay/luxury",
     },
 
@@ -21,7 +21,7 @@ export const stayData = {
       title: "Premium Hotels",
       description:
         "Comfortable and well-equipped hotels for corporate and leisure groups.",
-      image: "/stay/premium-hotel.jpg",
+      image: "/stay/premium-hotel.webp",
       href: "/stay/deluxe",
     },
 
@@ -30,7 +30,7 @@ export const stayData = {
       title: "Group Accommodation",
       description:
         "Spacious and practical stays designed for groups, tours and corporate outings.",
-      image: "/stay/group-stay.jpg",
+      image: "/stay/group-stay.webp",
       href: "/stay/rooms",
     },
 
@@ -39,7 +39,7 @@ export const stayData = {
       title: "Conference Resorts",
       description:
         "Resorts with meeting spaces and facilities for conferences and corporate events.",
-      image: "/stay/conference-resort.jpg",
+      image: "/stay/conference-resort.webp",
       href: "/stay/resorts",
     },
   ],

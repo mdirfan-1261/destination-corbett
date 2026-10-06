@@ -31,7 +31,7 @@ export default function ResortsStaysPage() {
                     <div className="relative h-[300px] overflow-hidden sm:h-[420px] md:h-[470px] lg:h-[560px]">
 
                         <Image
-                            src="/stay/resort-hero.jpg"
+                            src="/stay/resort-hero.webp"
                             alt="Resorts and Stays in Jim Corbett"
                             fill
                             priority

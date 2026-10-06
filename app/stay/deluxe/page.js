@@ -10,7 +10,7 @@ const deluxeHotels = [
         id: 1,
         name: "Corbett Deluxe Retreat",
         location: "Dhikuli, Jim Corbett",
-        image: "/stay/deluxe-1.jpg",
+        image: "/stay/deluxe-1.webp",
         description:
             "Comfortable deluxe accommodation with modern amenities for families, groups and corporate travellers.",
         price: "₹4,499",
@@ -23,7 +23,7 @@ const deluxeHotels = [
         id: 2,
         name: "River View Deluxe Resort",
         location: "Sitabani Road, Corbett",
-        image: "/stay/deluxe-2.jpg",
+        image: "/stay/deluxe-2.webp",
         description:
             "A peaceful deluxe stay surrounded by nature, offering comfortable rooms and a relaxing experience.",
         price: "₹4,999",
@@ -36,7 +36,7 @@ const deluxeHotels = [
         id: 3,
         name: "Forest Crown Resort",
         location: "Dhela, Jim Corbett",
-        image: "/stay/deluxe-3.jpg",
+        image: "/stay/deluxe-3.webp",
         description:
             "Well-appointed accommodation suitable for corporate groups, families and leisure travellers.",
         price: "₹5,499",
@@ -49,7 +49,7 @@ const deluxeHotels = [
         id: 4,
         name: "Corbett Valley Resort",
         location: "Ramnagar, Uttarakhand",
-        image: "/stay/deluxe-4.jpg",
+        image: "/stay/deluxe-4.webp",
         description:
             "A comfortable deluxe property offering a convenient stay for groups and travellers visiting Corbett.",
         price: "₹5,999",
@@ -81,7 +81,7 @@ export default function DeluxeHotelsPage() {
                         {/* HERO IMAGE */}
 
                         <Image
-                            src="/stay/stay-hero.jpg"
+                            src="/stay/stay-hero.webp"
                             alt="Deluxe Hotels in Jim Corbett"
                             fill
                             priority

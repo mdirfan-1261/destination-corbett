@@ -1,5 +1,5 @@
 export const miceData = {
-  image: "/mice/mice.jpg",
+  image: "/mice/mice.webp",
   eyebrow: "MICE & CORPORATE EVENTS",
   title: "Corporate Events, Meetings & Experiences",
   description:

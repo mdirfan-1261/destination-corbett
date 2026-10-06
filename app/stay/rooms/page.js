@@ -15,7 +15,7 @@ const rooms = [
         id: 1,
         name: "Luxury Forest Room",
         location: "Dhikuli, Jim Corbett",
-        image: "/stay/rooms-1.jpg",
+        image: "/stay/rooms-1.webp",
         description:
             "A beautifully designed room offering premium comfort with peaceful forest surroundings.",
     },
@@ -23,7 +23,7 @@ const rooms = [
         id: 2,
         name: "Deluxe Nature Room",
         location: "Ramnagar, Jim Corbett",
-        image: "/stay/rooms-2.jpg",
+        image: "/stay/rooms-2.webp",
         description:
             "Comfortable accommodation with modern amenities and a relaxing natural atmosphere.",
     },
@@ -31,7 +31,7 @@ const rooms = [
         id: 3,
         name: "Cozy Resort Room",
         location: "Sitabani, Jim Corbett",
-        image: "/stay/rooms-3.jpg",
+        image: "/stay/rooms-3.webp",
         description:
             "A cozy room perfect for couples and travellers looking for a peaceful Corbett stay.",
     },
@@ -39,7 +39,7 @@ const rooms = [
         id: 4,
         name: "Family Room",
         location: "Dhangari, Jim Corbett",
-        image: "/stay/rooms-4.jpg",
+        image: "/stay/rooms-4.webp",
         description:
             "Spacious and comfortable accommodation designed for families and small groups.",
     },
@@ -47,7 +47,7 @@ const rooms = [
         id: 5,
         name: "Forest Cottage",
         location: "Mohokand, Jim Corbett",
-        image: "/stay/rooms-5.jpg",
+        image: "/stay/rooms-5.webp",
         description:
             "Enjoy a unique cottage stay surrounded by greenery, nature and peaceful surroundings.",
     },
@@ -55,7 +55,7 @@ const rooms = [
         id: 6,
         name: "Balcony Room",
         location: "Ramnagar, Jim Corbett",
-        image: "/stay/rooms-6.jpg",
+        image: "/stay/rooms-6.webp",
         description:
             "Relax in a comfortable room with a private balcony and beautiful views of nature.",
     },
@@ -80,7 +80,7 @@ export default function RoomsAccommodationPage() {
                     <div className="relative h-[300px] overflow-hidden sm:h-[420px] md:h-[470px] lg:h-[560px]">
 
                         <Image
-                            src="/stay/rooms-hero.jpg"
+                            src="/stay/rooms-hero.webp"
                             alt="Rooms and Accommodation in Jim Corbett"
                             fill
                             priority

@@ -35,9 +35,6 @@ export default function Hero() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchDropdownOpen, setSearchDropdownOpen] = useState(false);
-
-  // Selected result is stored here.
-  // Selecting a result will NOT navigate immediately.
   const [selectedSearchItem, setSelectedSearchItem] = useState(null);
 
   const [checkIn, setCheckIn] = useState("");
@@ -171,11 +168,6 @@ export default function Hero() {
   // =========================================================
   // SEARCH ITEM SELECT
   // =========================================================
-  // IMPORTANT:
-  // Selecting a dropdown result DOES NOT navigate.
-  // It only selects the result.
-  // Navigation happens only after Search button click.
-  // =========================================================
 
   const handleSearchItemSelect = (item) => {
     setSearchQuery(item.name);
@@ -191,10 +183,6 @@ export default function Hero() {
     e.preventDefault();
 
     const query = searchQuery.trim();
-
-    // ---------------------------------------------------------
-    // REQUIRED SEARCH FIELDS
-    // ---------------------------------------------------------
 
     if (!query || !checkIn || !checkOut) {
       return;
@@ -398,7 +386,7 @@ export default function Hero() {
 
             {/* EYEBROW */}
 
-            <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.1em] text-white/85 backdrop-blur-xl sm:mb-4 sm:px-3 sm:py-1.5 sm:text-[9px] sm:tracking-[0.12em]">
+            <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-white/85 backdrop-blur-xl sm:mb-4 sm:px-3 sm:py-1.5 sm:text-[9px] sm:tracking-[0.12em]">
 
               <span className="h-1.5 w-1.5 rounded-full bg-[#C87532]" />
 
@@ -408,19 +396,19 @@ export default function Hero() {
 
             {/* HEADING */}
 
-            <h1 className="max-w-2xl text-[25px] font-bold leading-[1.05] tracking-tight sm:text-4xl sm:leading-[1.08] md:text-5xl lg:text-6xl">
+            <h1 className="max-w-2xl text-[29px] font-bold leading-[1.08] tracking-tight sm:text-4xl sm:leading-[1.08] md:text-5xl lg:text-6xl">
               {heroData.title}
             </h1>
 
             {/* DESCRIPTION */}
 
-            <p className="mt-2 max-w-xl text-[11px] leading-4 text-white/80 sm:mt-4 sm:text-sm sm:leading-6 md:text-base md:leading-7">
+            <p className="mt-2 max-w-xl text-[13px] leading-5 text-white/80 sm:mt-4 sm:text-sm sm:leading-6 md:text-base md:leading-7">
               {heroData.description}
             </p>
 
             {/* BUTTONS */}
 
-            <div className="mt-3 flex flex-wrap items-center gap-1.5 sm:mt-5 sm:gap-2">
+            <div className="mt-4 flex flex-wrap items-center gap-2 sm:mt-5 sm:gap-2">
 
               {heroData.buttons.map((button, index) => {
                 const isPrimary = index === 0;
@@ -432,16 +420,18 @@ export default function Hero() {
                     className={`
                       group
                       inline-flex
+                      min-h-[40px]
                       items-center
                       justify-center
-                      gap-1
+                      gap-1.5
                       rounded-full
-                      px-3.5
-                      py-1.5
-                      text-[11px]
+                      px-4
+                      py-2
+                      text-[12px]
                       font-semibold
                       transition-all
                       duration-200
+                      sm:min-h-0
                       sm:gap-1.5
                       sm:px-5
                       sm:py-2.5
@@ -456,7 +446,7 @@ export default function Hero() {
                     <span>{button.text}</span>
 
                     <ArrowRight
-                      size={12}
+                      size={14}
                       className="transition-transform duration-200 group-hover:translate-x-1 sm:h-4 sm:w-4"
                     />
                   </Link>
@@ -467,7 +457,7 @@ export default function Hero() {
 
             {/* HIGHLIGHTS */}
 
-            <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-[8px] text-white/65 sm:mt-6 sm:gap-x-6 sm:gap-y-2 sm:text-xs sm:text-white/70">
+            <div className="mt-4 flex flex-wrap gap-x-3 gap-y-1.5 text-[10px] text-white/70 sm:mt-6 sm:gap-x-6 sm:gap-y-2 sm:text-xs sm:text-white/70">
 
               <span className="flex items-center gap-1.5 sm:gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#C87532]" />
@@ -553,9 +543,7 @@ export default function Hero() {
               className="grid grid-cols-[1.3fr_1fr_1fr_auto] items-center gap-1.5"
             >
 
-              {/* =================================================
-                  DESKTOP SEARCH
-              ================================================= */}
+              {/* SEARCH */}
 
               <div className="relative">
 
@@ -599,8 +587,6 @@ export default function Hero() {
 
                 </div>
 
-                {/* DESKTOP RESULTS */}
-
                 {searchDropdownOpen &&
                   searchQuery.trim() && (
                     <SearchResultsDropdown
@@ -612,9 +598,7 @@ export default function Hero() {
 
               </div>
 
-              {/* =================================================
-                  DESKTOP DATES
-              ================================================= */}
+              {/* DATES */}
 
               <div className="flex items-center gap-2.5 rounded-lg border border-gray-200 bg-white px-3 py-2.5">
 
@@ -672,9 +656,7 @@ export default function Hero() {
 
               </div>
 
-              {/* =================================================
-                  DESKTOP GUESTS
-              ================================================= */}
+              {/* GUESTS */}
 
               <div className="relative">
 
@@ -722,9 +704,7 @@ export default function Hero() {
 
               </div>
 
-              {/* =================================================
-                  DESKTOP SEARCH BUTTON
-              ================================================= */}
+              {/* SEARCH BUTTON */}
 
               <button
                 type="submit"
@@ -753,23 +733,21 @@ export default function Hero() {
 
       <div className="relative z-30 mx-auto -mt-10 max-w-5xl px-3 md:hidden">
 
-        <div className="overflow-visible rounded-xl border border-gray-200 bg-white p-1.5 shadow-xl">
+        <div className="overflow-visible rounded-xl border border-gray-200 bg-white p-2 shadow-xl">
 
           <form
             onSubmit={handleSearchSubmit}
-            className="grid grid-cols-1 gap-1"
+            className="grid grid-cols-1 gap-2"
           >
 
-            {/* =================================================
-                MOBILE SEARCH
-            ================================================= */}
+            {/* MOBILE SEARCH */}
 
             <div className="relative">
 
-              <div className="flex items-center gap-2 rounded-lg border border-[#D5E6DF] bg-[#EEF5F2] px-2.5 py-1.5">
+              <div className="flex min-h-[52px] items-center gap-2.5 rounded-lg border border-[#D5E6DF] bg-[#EEF5F2] px-3 py-2">
 
                 <Search
-                  size={14}
+                  size={17}
                   className="shrink-0 text-[#18352A]"
                 />
 
@@ -777,9 +755,9 @@ export default function Hero() {
 
                   <label
                     htmlFor="mobile-search-query"
-                    className="text-[8px] font-bold uppercase tracking-wide text-[#385247]"
+                    className="text-[10px] font-bold uppercase tracking-wide text-[#385247]"
                   >
-                    Safari Zone / stay
+                    Safari Zone / Stay
                   </label>
 
                   <input
@@ -798,17 +776,15 @@ export default function Hero() {
                         Boolean(e.target.value.trim())
                       );
                     }}
-                    placeholder="Dhikala, Bijrani, Jhirna..."
-                    className="w-full bg-transparent text-[12px] font-semibold text-[#172033] placeholder:text-[#7B8F86] focus:outline-none"
+                    placeholder="Search safari or stay..."
+                    className="w-full bg-transparent text-[14px] font-semibold text-[#172033] placeholder:text-[#7B8F86] focus:outline-none"
                   />
 
                 </div>
 
               </div>
 
-              {/* =================================================
-                  MOBILE RESULTS
-              ================================================= */}
+              {/* MOBILE RESULTS */}
 
               {searchDropdownOpen &&
                 searchQuery.trim() && (
@@ -821,26 +797,24 @@ export default function Hero() {
 
             </div>
 
-            {/* =================================================
-                MOBILE DATE ROW
-            ================================================= */}
+            {/* MOBILE DATE ROW */}
 
-            <div className="grid grid-cols-2 gap-1">
+            <div className="grid grid-cols-2 gap-2">
 
               {/* CHECK IN */}
 
-              <div className="flex min-w-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5">
+              <div className="flex min-h-[54px] min-w-0 items-center gap-2 rounded-lg border border-gray-200 bg-white px-2.5 py-2">
 
                 <CalendarDays
-                  size={14}
+                  size={16}
                   className="shrink-0 text-[#172033]"
                 />
 
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
 
                   <label
                     htmlFor="mobile-check-in"
-                    className="text-[8px] font-bold uppercase tracking-wide text-gray-600"
+                    className="block text-[9px] font-bold uppercase tracking-wide text-gray-600"
                   >
                     Check In
                   </label>
@@ -852,7 +826,7 @@ export default function Hero() {
                     onChange={(e) =>
                       setCheckIn(e.target.value)
                     }
-                    className="w-full min-w-0 bg-transparent text-[10px] font-semibold text-[#172033] focus:outline-none"
+                    className="mt-0.5 w-full min-w-0 bg-transparent text-[12px] font-semibold text-[#172033] focus:outline-none"
                   />
 
                 </div>
@@ -861,18 +835,18 @@ export default function Hero() {
 
               {/* CHECK OUT */}
 
-              <div className="flex min-w-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5">
+              <div className="flex min-h-[54px] min-w-0 items-center gap-2 rounded-lg border border-gray-200 bg-white px-2.5 py-2">
 
                 <CalendarDays
-                  size={14}
+                  size={16}
                   className="shrink-0 text-[#172033]"
                 />
 
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
 
                   <label
                     htmlFor="mobile-check-out"
-                    className="text-[8px] font-bold uppercase tracking-wide text-gray-600"
+                    className="block text-[9px] font-bold uppercase tracking-wide text-gray-600"
                   >
                     Check Out
                   </label>
@@ -885,7 +859,7 @@ export default function Hero() {
                     onChange={(e) =>
                       setCheckOut(e.target.value)
                     }
-                    className="w-full min-w-0 bg-transparent text-[10px] font-semibold text-[#172033] focus:outline-none"
+                    className="mt-0.5 w-full min-w-0 bg-transparent text-[12px] font-semibold text-[#172033] focus:outline-none"
                   />
 
                 </div>
@@ -894,9 +868,7 @@ export default function Hero() {
 
             </div>
 
-            {/* =================================================
-                MOBILE GUESTS
-            ================================================= */}
+            {/* MOBILE GUESTS */}
 
             <div className="relative">
 
@@ -905,21 +877,21 @@ export default function Hero() {
                 onClick={() =>
                   setGuestPopupOpen(!guestPopupOpen)
                 }
-                className="flex w-full items-center gap-2 rounded-lg border border-gray-200 bg-white px-2.5 py-2 text-left"
+                className="flex min-h-[54px] w-full items-center gap-2.5 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-left"
               >
 
                 <Users2
-                  size={14}
+                  size={17}
                   className="shrink-0 text-[#172033]"
                 />
 
                 <div className="min-w-0">
 
-                  <p className="text-[8px] font-bold uppercase tracking-wide text-gray-600">
+                  <p className="text-[9px] font-bold uppercase tracking-wide text-gray-600">
                     Guests & Rooms
                   </p>
 
-                  <p className="truncate text-[11px] font-semibold text-[#172033]">
+                  <p className="truncate text-[13px] font-semibold text-[#172033]">
                     {guestSummary}
                   </p>
 
@@ -945,9 +917,7 @@ export default function Hero() {
 
             </div>
 
-            {/* =================================================
-                MOBILE SEARCH BUTTON
-            ================================================= */}
+            {/* MOBILE SEARCH BUTTON */}
 
             <button
               type="submit"
@@ -956,9 +926,9 @@ export default function Hero() {
                 !checkIn ||
                 !checkOut
               }
-              className="flex h-8 items-center justify-center gap-1.5 rounded-lg bg-[#C87532] text-[11px] font-bold text-white transition hover:bg-[#B96928] disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex min-h-[44px] items-center justify-center gap-2 rounded-lg bg-[#C87532] text-[13px] font-bold text-white transition hover:bg-[#B96928] disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <Search size={13} />
+              <Search size={16} />
               Search
             </button>
 
@@ -1011,24 +981,24 @@ function SearchResultsDropdown({
               key={item.id}
               type="button"
               onClick={() => onSelect(item)}
-              className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition hover:bg-[#EEF5F2]"
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left transition hover:bg-[#EEF5F2]"
             >
 
               {/* IMAGE */}
 
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[#F7F5F0]">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[#F7F5F0]">
 
                 {item.image ? (
                   <Image
                     src={item.image}
                     alt={item.name}
-                    width={36}
-                    height={36}
+                    width={40}
+                    height={40}
                     className="h-full w-full object-cover"
                   />
                 ) : (
                   <MapPin
-                    size={16}
+                    size={18}
                     className="text-[#C87532]"
                   />
                 )}
@@ -1041,20 +1011,20 @@ function SearchResultsDropdown({
 
                 <div className="flex items-center gap-2">
 
-                  <p className="truncate text-xs font-bold">
+                  <p className="truncate text-[13px] font-bold">
                     {item.name}
                   </p>
 
-                  <span className="shrink-0 rounded-full bg-[#F7F5F0] px-2 py-0.5 text-[8px] font-bold uppercase tracking-wide text-[#C87532]">
+                  <span className="shrink-0 rounded-full bg-[#F7F5F0] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-[#C87532]">
                     {item.type}
                   </span>
 
                 </div>
 
-                <p className="mt-0.5 flex items-center gap-1 truncate text-[10px] text-gray-500">
+                <p className="mt-0.5 flex items-center gap-1 truncate text-[11px] text-gray-500">
 
                   <MapPin
-                    size={10}
+                    size={11}
                     className="shrink-0"
                   />
 
@@ -1075,15 +1045,15 @@ function SearchResultsDropdown({
         <div className="px-4 py-5 text-center">
 
           <Search
-            size={18}
+            size={20}
             className="mx-auto text-gray-300"
           />
 
-          <p className="mt-2 text-xs font-semibold text-gray-600">
+          <p className="mt-2 text-[13px] font-semibold text-gray-600">
             No matching safari or stay found
           </p>
 
-          <p className="mt-1 text-[10px] text-gray-400">
+          <p className="mt-1 text-[11px] text-gray-400">
             Try a stay name, location or safari type
           </p>
 
@@ -1115,11 +1085,12 @@ function GuestPopup({
   return (
     <div
       className={`
-        absolute z-[100] w-[300px] rounded-xl border border-gray-200
+        absolute z-[100] w-[300px] max-w-[calc(100vw-32px)]
+        rounded-xl border border-gray-200
         bg-white p-4 text-[#172033] shadow-2xl
         ${
           mobile
-            ? "bottom-full left-0 mb-2 mt-0"
+            ? "bottom-full left-0 mb-2"
             : "bottom-full right-0 mb-2"
         }
       `}
@@ -1131,11 +1102,11 @@ function GuestPopup({
 
         <div>
 
-          <h3 className="text-sm font-bold">
+          <h3 className="text-[15px] font-bold">
             Guests & Rooms
           </h3>
 
-          <p className="mt-0.5 text-[10px] text-gray-500">
+          <p className="mt-0.5 text-[11px] text-gray-500">
             Select your group size
           </p>
 
@@ -1144,10 +1115,10 @@ function GuestPopup({
         <button
           type="button"
           onClick={onDone}
-          className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition hover:bg-gray-200"
+          className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition hover:bg-gray-200"
           aria-label="Close"
         >
-          <X size={14} />
+          <X size={15} />
         </button>
 
       </div>
@@ -1190,7 +1161,7 @@ function GuestPopup({
       <button
         type="button"
         onClick={onDone}
-        className="mt-3 flex w-full items-center justify-center rounded-lg bg-[#C87532] py-2.5 text-xs font-bold text-white transition hover:bg-[#B96928]"
+        className="mt-3 flex min-h-[42px] w-full items-center justify-center rounded-lg bg-[#C87532] py-2.5 text-[13px] font-bold text-white transition hover:bg-[#B96928]"
       >
         Done
       </button>
@@ -1216,7 +1187,7 @@ function GuestRow({
 
       <div>
 
-        <p className="text-xs font-semibold text-[#172033]">
+        <p className="text-[13px] font-semibold text-[#172033]">
 
           {title}
 
@@ -1230,29 +1201,29 @@ function GuestRow({
 
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2.5">
 
         <button
           type="button"
           onClick={onDecrease}
           disabled={value <= min}
-          className="flex h-7 w-7 items-center justify-center rounded-full border border-gray-200 text-gray-600 transition hover:border-[#C87532] hover:text-[#C87532] disabled:cursor-not-allowed disabled:opacity-30"
+          className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 text-gray-600 transition hover:border-[#C87532] hover:text-[#C87532] disabled:cursor-not-allowed disabled:opacity-30"
           aria-label={`Decrease ${title}`}
         >
-          <Minus size={13} />
+          <Minus size={14} />
         </button>
 
-        <span className="w-5 text-center text-xs font-bold">
+        <span className="w-6 text-center text-[13px] font-bold">
           {value}
         </span>
 
         <button
           type="button"
           onClick={onIncrease}
-          className="flex h-7 w-7 items-center justify-center rounded-full border border-gray-200 text-gray-600 transition hover:border-[#C87532] hover:text-[#C87532]"
+          className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 text-gray-600 transition hover:border-[#C87532] hover:text-[#C87532]"
           aria-label={`Increase ${title}`}
         >
-          <Plus size={13} />
+          <Plus size={14} />
         </button>
 
       </div>

@@ -15,7 +15,7 @@ const luxuryHotels = [
         id: 1,
         name: "Corbett Luxury Retreat",
         location: "Dhikuli, Jim Corbett",
-        image: "/stay/luxury-1.jpg",
+        image: "/stay/luxury-1.webp",
         description:
             "Premium luxury accommodation with elegant interiors, modern amenities and a refined jungle retreat experience.",
         price: "₹7,499",
@@ -28,7 +28,7 @@ const luxuryHotels = [
         id: 2,
         name: "The Forest Crown",
         location: "Sitabani Road, Corbett",
-        image: "/stay/luxury-2.jpg",
+        image: "/stay/luxury-2.webp",
         description:
             "A sophisticated luxury stay surrounded by nature, offering spacious rooms and a relaxing premium experience.",
         price: "₹8,499",
@@ -41,7 +41,7 @@ const luxuryHotels = [
         id: 3,
         name: "Corbett Wilderness Resort",
         location: "Dhela, Jim Corbett",
-        image: "/stay/luxury-3.jpg",
+        image: "/stay/luxury-3.webp",
         description:
             "An upscale jungle retreat designed for travellers seeking comfort, privacy and a premium Corbett experience.",
         price: "₹9,499",
@@ -54,7 +54,7 @@ const luxuryHotels = [
         id: 4,
         name: "Riverside Luxury Resort",
         location: "Ramnagar, Uttarakhand",
-        image: "/stay/luxury-4.jpg",
+        image: "/stay/luxury-4.webp",
         description:
             "An elegant riverside stay combining premium comfort, beautiful surroundings and exceptional hospitality.",
         price: "₹10,999",
@@ -84,7 +84,7 @@ export default function LuxuryHotelsPage() {
                     <div className="relative h-[300px] overflow-hidden sm:h-[420px] md:h-[470px] lg:h-[560px]">
 
                         <Image
-                            src="/stay/stay-hero.jpg"
+                            src="/stay/stay-hero.webp"
                             alt="Luxury Hotels in Jim Corbett"
                             fill
                             priority

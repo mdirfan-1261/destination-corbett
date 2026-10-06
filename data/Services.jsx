@@ -4,7 +4,7 @@ export const services = [
     title: "Stay",
     description:
       "Resorts, hotels and group accommodation for every requirement.",
-    image: "/images/services/stay.jpg",
+    image: "/images/services/stay.webp",
     href: "/stay",
   },
   {
@@ -12,7 +12,7 @@ export const services = [
     title: "Safari & Tourism",
     description:
       "Safari experiences, nature activities and local Corbett experiences.",
-    image: "/images/services/safari.jpg",
+    image: "/images/services/safari.webp",
     href: "/safari",
   },
   {
@@ -20,7 +20,7 @@ export const services = [
     title: "Events",
     description:
       "Complete solutions for meetings, conferences and corporate events.",
-    image: "/images/services/mice.jpg",
+    image: "/images/services/mice.webp",
     href: "/events",
   },
   {
@@ -28,7 +28,7 @@ export const services = [
     title: "Destination Weddings",
     description:
       "Plan memorable weddings with decor, entertainment and hospitality.",
-    image: "/images/services/wedding.jpg",
+    image: "/images/services/wedding.webp",
     href: "/weddings",
   },
   
@@ -37,7 +37,7 @@ export const services = [
     title: "Transportation",
     description:
       "Airport transfers, local transport and complete event transportation.",
-    image: "/images/services/transport.jpg",
+    image: "/images/services/transport.webp",
     href: "/transport",
   },
 ];
