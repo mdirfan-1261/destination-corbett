@@ -65,6 +65,20 @@ const formatPermission = (permission) => {
     .join(" ");
 };
 
+const getPermissionGroups = (permissionsList) => {
+  const groupMap = {};
+  (permissionsList || []).forEach((permission) => {
+    const moduleName = permission.includes(".")
+      ? permission.split(".")[0]
+      : "general";
+    if (!groupMap[moduleName]) {
+      groupMap[moduleName] = [];
+    }
+    groupMap[moduleName].push(permission);
+  });
+  return groupMap;
+};
+
 export default function RolesPermissionsPage() {
   const [groups, setGroups] = useState([]);
   const [users, setUsers] = useState([]);
@@ -229,176 +243,145 @@ export default function RolesPermissionsPage() {
   };
 
   const openUserPermissions = async (user) => {
-  try {
-    setSelectedUser(user);
-    setPermissionsLoading(true);
-    setSaveMessage("");
+    try {
+      setSelectedUser(user);
+      setPermissionsLoading(true);
+      setSaveMessage("");
 
-    const response = await fetch(
-      `${API_URL}/api/admin/users/${user._id}/permissions`,
-      {
-        headers: authHeaders(),
+      const response = await fetch(
+        `${API_URL}/api/admin/users/${user._id}/permissions`,
+        {
+          headers: authHeaders(),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Failed to load user permissions."
+        );
       }
-    );
 
-    const data = await response.json();
+      const allowedPermissions = Array.isArray(
+        data.availablePermissions
+      )
+        ? data.availablePermissions
+        : [];
 
-    if (!response.ok) {
-      throw new Error(
-        data.message || "Failed to load user permissions."
+      const targetPermissions = Array.isArray(
+        data.permissions
+      )
+        ? data.permissions
+        : [];
+
+      const filteredPermissions =
+        targetPermissions.filter((permission) =>
+          allowedPermissions.includes(permission)
+        );
+
+      setAvailablePermissions(allowedPermissions);
+      setUserPermissions(filteredPermissions);
+    } catch (err) {
+      console.error("User permissions error:", err);
+
+      setSaveMessage(
+        err.message || "Failed to load permissions."
       );
+    } finally {
+      setPermissionsLoading(false);
     }
-
-    /*
-      Backend already tells us which permissions
-      the logged-in admin is allowed to delegate.
-
-      Super Admin:
-      -> all permissions
-
-      Admin / Manager:
-      -> only their own current permissions
-    */
-    const allowedPermissions = Array.isArray(
-      data.availablePermissions
-    )
-      ? data.availablePermissions
-      : [];
-
-    const targetPermissions = Array.isArray(
-      data.permissions
-    )
-      ? data.permissions
-      : [];
-
-    /*
-      Important:
-      Target user's old permissions are filtered against
-      the current admin's permissions.
-
-      Example:
-      Manager does NOT have enquiries.update
-      Staff has enquiries.update from old data
-
-      enquiries.update will NOT appear/select.
-    */
-    const filteredPermissions =
-      targetPermissions.filter((permission) =>
-        allowedPermissions.includes(permission)
-      );
-
-    setAvailablePermissions(allowedPermissions);
-    setUserPermissions(filteredPermissions);
-  } catch (err) {
-    console.error("User permissions error:", err);
-
-    setSaveMessage(
-      err.message || "Failed to load permissions."
-    );
-  } finally {
-    setPermissionsLoading(false);
-  }
-};
+  };
 
   const togglePermission = (permission) => {
-  // Never allow a permission outside the current
-  // admin's delegation scope.
-  if (!availablePermissions.includes(permission)) {
-    return;
-  }
-
-  setUserPermissions((current) =>
-    current.includes(permission)
-      ? current.filter(
-          (item) => item !== permission
-        )
-      : [...current, permission]
-  );
-
-  setSaveMessage("");
-};
-
-  const saveUserPermissions = async () => {
-  if (!selectedUser) return;
-
-  try {
-    setSavingPermissions(true);
-    setSaveMessage("");
-
-    /*
-      Final safety check before sending to backend.
-
-      Even if somehow UI state contains an old/disallowed
-      permission, it will NOT be sent.
-    */
-    const allowedPermissions = new Set(
-      availablePermissions
-    );
-
-    const permissionsToSave =
-      userPermissions.filter((permission) =>
-        allowedPermissions.has(permission)
-      );
-
-    const response = await fetch(
-      `${API_URL}/api/admin/users/${selectedUser._id}/permissions`,
-      {
-        method: "PUT",
-        headers: authHeaders(),
-        body: JSON.stringify({
-          permissions: permissionsToSave,
-        }),
-      }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(
-        data.message ||
-          "Failed to save permissions."
-      );
+    if (!availablePermissions.includes(permission)) {
+      return;
     }
 
-    setSaveMessage(
-      "Permissions updated successfully."
+    setUserPermissions((current) =>
+      current.includes(permission)
+        ? current.filter((item) => item !== permission)
+        : [...current, permission]
     );
 
-    setUserPermissions(permissionsToSave);
+    setSaveMessage("");
+  };
 
-    setUsers((currentUsers) =>
-      currentUsers.map((user) =>
-        user._id === selectedUser._id
+  const selectAllUserPermissions = () => {
+    setUserPermissions([...availablePermissions]);
+    setSaveMessage("");
+  };
+
+  const clearUserPermissions = () => {
+    setUserPermissions([]);
+    setSaveMessage("");
+  };
+
+  const saveUserPermissions = async () => {
+    if (!selectedUser) return;
+
+    try {
+      setSavingPermissions(true);
+      setSaveMessage("");
+
+      const allowedPermissions = new Set(availablePermissions);
+
+      const permissionsToSave = userPermissions.filter(
+        (permission) => allowedPermissions.has(permission)
+      );
+
+      const response = await fetch(
+        `${API_URL}/api/admin/users/${selectedUser._id}/permissions`,
+        {
+          method: "PUT",
+          headers: authHeaders(),
+          body: JSON.stringify({
+            permissions: permissionsToSave,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Failed to save permissions."
+        );
+      }
+
+      setSaveMessage("Permissions updated successfully.");
+
+      setUserPermissions(permissionsToSave);
+
+      setUsers((currentUsers) =>
+        currentUsers.map((user) =>
+          user._id === selectedUser._id
+            ? {
+                ...user,
+                permissions: permissionsToSave,
+              }
+            : user
+        )
+      );
+
+      setSelectedUser((current) =>
+        current
           ? {
-              ...user,
+              ...current,
               permissions: permissionsToSave,
             }
-          : user
-      )
-    );
+          : current
+      );
+    } catch (err) {
+      console.error("Save permissions error:", err);
 
-    setSelectedUser((current) =>
-      current
-        ? {
-            ...current,
-            permissions: permissionsToSave,
-          }
-        : current
-    );
-  } catch (err) {
-    console.error(
-      "Save permissions error:",
-      err
-    );
-
-    setSaveMessage(
-      err.message ||
-        "Failed to save permissions."
-    );
-  } finally {
-    setSavingPermissions(false);
-  }
-};
+      setSaveMessage(
+        err.message || "Failed to save permissions."
+      );
+    } finally {
+      setSavingPermissions(false);
+    }
+  };
 
   const closePermissions = () => {
     setSelectedUser(null);
@@ -428,9 +411,7 @@ export default function RolesPermissionsPage() {
               Unable to load roles & permissions
             </h3>
 
-            <p className="text-xs text-red-700 mt-1">
-              {error}
-            </p>
+            <p className="text-xs text-red-700 mt-1">{error}</p>
 
             <button
               onClick={loadData}
@@ -786,173 +767,176 @@ export default function RolesPermissionsPage() {
         </div>
       </div>
 
-      {/* PERMISSIONS */}
+      {/* PERMISSIONS MODAL */}
 
       {selectedUser && (
-        <div className="fixed inset-0 z-50 bg-black/45 flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="w-full sm:max-w-3xl h-[94vh] sm:h-auto sm:max-h-[90vh] bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-3">
+          <div className="w-full max-w-2xl max-h-[90vh] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col">
 
-            <div className="px-4 sm:px-5 py-3.5 border-b border-gray-200 flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <h2 className="text-base font-bold text-[#172033] truncate">
-                  {selectedUser.name}
+            <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between shrink-0">
+              <div>
+                <h2 className="text-sm font-bold text-[#172033]">
+                  Manage User Permissions
                 </h2>
 
-                <p className="text-[10px] text-gray-500 mt-0.5 truncate">
-                  {groupedData.find(
-                    (group) =>
-                      group.groupId === selectedUser.group
-                  )?.name || selectedUser.group}
-                  {" · "}
+                <p className="text-[9px] text-gray-400 mt-0.5">
+                  {selectedUser.name} ({selectedUser.email})
+                  {" • "}
                   {ROLE_LABELS[selectedUser.role] ||
-                    selectedUser.role}
+                    selectedUser.role ||
+                    "User"}
                 </p>
               </div>
 
               <button
                 type="button"
                 onClick={closePermissions}
-                className="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-500"
+                className="w-7 h-7 rounded-lg hover:bg-gray-100 flex items-center justify-center"
               >
-                <X className="w-4 h-4" />
+                <X className="w-4 h-4 text-gray-500" />
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-3 sm:p-5">
+            <div className="p-4 overflow-y-auto">
+
+              <div className="flex items-center justify-between gap-3 mb-3">
+                <div>
+                  <p className="text-[11px] font-semibold text-gray-800">
+                    Available Permissions
+                  </p>
+
+                  <p className="text-[9px] text-gray-400">
+                    Select permissions to delegate to this user.
+                  </p>
+                </div>
+
+                <span className="text-[9px] text-[#C87532] font-semibold whitespace-nowrap">
+                  {userPermissions.length} selected
+                </span>
+              </div>
+
               {permissionsLoading ? (
-                <div className="py-16 flex justify-center">
-                  <div className="flex items-center gap-2 text-gray-500 text-sm">
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Loading permissions...
-                  </div>
+                <div className="py-12 flex justify-center">
+                  <Loader2 className="w-5 h-5 animate-spin text-[#C87532]" />
+                </div>
+              ) : availablePermissions.length === 0 ? (
+                <div className="py-12 text-center text-[10px] text-gray-400">
+                  No permissions available to delegate.
                 </div>
               ) : (
                 <>
-                  <div className="mb-4">
-                    <p className="text-sm font-semibold text-gray-800">
-                      Permissions
-                    </p>
+                  <div className="flex items-center gap-2 mb-3">
+                    <button
+                      type="button"
+                      onClick={selectAllUserPermissions}
+                      className="h-8 px-3 rounded-lg bg-gray-100 hover:bg-gray-200 text-[9px] font-medium text-gray-700"
+                    >
+                      Select All
+                    </button>
 
-                    <p className="text-[10px] text-gray-500 mt-0.5">
-                      {userPermissions.length} selected
-                    </p>
+                    <button
+                      type="button"
+                      onClick={clearUserPermissions}
+                      className="h-8 px-3 rounded-lg border border-gray-200 hover:bg-gray-50 text-[9px] font-medium text-gray-600"
+                    >
+                      Clear
+                    </button>
                   </div>
 
-                  {availablePermissions.length === 0 ? (
-                    <div className="rounded-xl border border-gray-200 p-6 text-center text-xs text-gray-500">
-                      No permissions available.
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {availablePermissions.map(
-                        (permission) => {
-                          const checked =
-                            userPermissions.includes(
-                              permission
+                  <div className="space-y-3">
+                    {Object.entries(
+                      getPermissionGroups(availablePermissions)
+                    ).map(([module, permissions]) => (
+                      <div
+                        key={module}
+                        className="border border-gray-200 rounded-xl overflow-hidden"
+                      >
+                        <div className="px-3 py-2 bg-gray-50 border-b border-gray-100">
+                          <p className="text-[10px] font-semibold text-[#172033] capitalize">
+                            {module.replace(/_/g, " ")}
+                          </p>
+                        </div>
+
+                        <div className="p-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {permissions.map((permission) => {
+                            const checked =
+                              userPermissions.includes(permission);
+
+                            return (
+                              <label
+                                key={permission}
+                                className={`flex items-center gap-2 rounded-lg border px-2.5 py-2 cursor-pointer transition ${
+                                  checked
+                                    ? "border-[#C87532] bg-orange-50"
+                                    : "border-gray-200 hover:bg-gray-50"
+                                }`}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={checked}
+                                  onChange={() =>
+                                    togglePermission(permission)
+                                  }
+                                  className="accent-[#C87532]"
+                                />
+
+                                <span className="text-[10px] text-gray-700">
+                                  {formatPermission(permission)}
+                                </span>
+                              </label>
                             );
-
-                          return (
-                            <button
-                              key={permission}
-                              type="button"
-                              onClick={() =>
-                                togglePermission(
-                                  permission
-                                )
-                              }
-                              className={`text-left border rounded-xl p-3 transition ${
-                                checked
-                                  ? "border-[#18352A] bg-[#18352A]/5"
-                                  : "border-gray-200 bg-white hover:bg-gray-50"
-                              }`}
-                            >
-                              <div className="flex items-center justify-between gap-2">
-                                <div className="min-w-0">
-                                  <p className="text-xs font-semibold text-gray-800 truncate">
-                                    {formatPermission(
-                                      permission
-                                    )}
-                                  </p>
-
-                                  <p className="text-[9px] text-gray-400 mt-0.5 truncate">
-                                    {permission}
-                                  </p>
-                                </div>
-
-                                <div
-                                  className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
-                                    checked
-                                      ? "bg-[#18352A] border-[#18352A]"
-                                      : "bg-white border-gray-300"
-                                  }`}
-                                >
-                                  {checked && (
-                                    <Check className="w-2.5 h-2.5 text-white stroke-[3]" />
-                                  )}
-                                </div>
-                              </div>
-                            </button>
-                          );
-                        }
-                      )}
-                    </div>
-                  )}
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </>
               )}
             </div>
 
-            <div className="px-4 sm:px-5 py-3.5 border-t border-gray-200 bg-gray-50">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between gap-2 shrink-0">
 
-                <div className="min-h-[18px]">
-                  {saveMessage && (
-                    <p
-                      className={`text-[10px] sm:text-xs ${
-                        saveMessage.includes(
-                          "successfully"
-                        )
-                          ? "text-green-600"
-                          : "text-red-600"
-                      }`}
-                    >
-                      {saveMessage}
-                    </p>
-                  )}
-                </div>
-
-                <div className="flex justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={closePermissions}
-                    className="px-3.5 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 text-xs font-medium hover:bg-gray-100"
+              <div className="min-h-[18px]">
+                {saveMessage && (
+                  <p
+                    className={`text-[10px] ${
+                      saveMessage.includes("successfully") ||
+                      saveMessage.includes("updated")
+                        ? "text-green-600"
+                        : "text-red-600"
+                    }`}
                   >
-                    Cancel
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={saveUserPermissions}
-                    disabled={
-                      permissionsLoading ||
-                      savingPermissions
-                    }
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[#C87532] hover:bg-[#B96928] text-white text-xs font-medium disabled:opacity-50"
-                  >
-                    {savingPermissions ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <Save className="w-3.5 h-3.5" />
-                    )}
-
-                    {savingPermissions
-                      ? "Saving..."
-                      : "Save"}
-                  </button>
-                </div>
-
+                    {saveMessage}
+                  </p>
+                )}
               </div>
-            </div>
 
+              <div className="flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={closePermissions}
+                  className="h-9 px-4 rounded-lg border border-gray-200 text-[10px] font-medium text-gray-600 hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  onClick={saveUserPermissions}
+                  disabled={savingPermissions || permissionsLoading}
+                  className="h-9 px-4 rounded-lg bg-[#C87532] hover:bg-[#B96928] disabled:opacity-50 text-white text-[10px] font-semibold flex items-center gap-1.5"
+                >
+                  {savingPermissions ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Save className="w-3.5 h-3.5" />
+                  )}
+
+                  {savingPermissions ? "Saving..." : "Save Permissions"}
+                </button>
+              </div>
+
+            </div>
           </div>
         </div>
       )}

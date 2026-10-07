@@ -18,6 +18,7 @@ import {
   Users,
   ShieldCheck,
   ChevronDown,
+  Archive,
 } from "lucide-react";
 
 export default function AdminSidebar({
@@ -226,7 +227,23 @@ export default function AdminSidebar({
                       Groups & Departments
                     </span>
                   </Link>
+                    {/* RECOVERY BIN */}
+<Link
+  href="/admin/administration/recovery"
+  className={`flex items-center gap-2 rounded-lg px-3 py-2 transition ${
+    pathname.startsWith(
+      "/admin/administration/recovery"
+    )
+      ? "bg-[#C87532] font-bold text-white"
+      : "text-[#C7D0BC] hover:bg-white/10 hover:text-white"
+  }`}
+>
+  <Archive size={15} />
 
+  <span>
+    Recovery Bin
+  </span>
+</Link>
                 </div>
               )}
 
@@ -541,6 +558,24 @@ export default function AdminSidebar({
                       Groups & Departments
                     </span>
                   </Link>
+
+                  {/* RECOVERY BIN */}
+<Link
+  href="/admin/administration/recovery"
+  className={`flex items-center gap-2 rounded-lg px-2.5 py-2 transition ${
+    pathname.startsWith(
+      "/admin/administration/recovery"
+    )
+      ? "bg-[#C87532] font-bold text-white shadow-md"
+      : "text-[#C7D0BC] hover:bg-white/10 hover:text-white"
+  }`}
+>
+  <Archive size={15} />
+
+  <span className="truncate">
+    Recovery Bin
+  </span>
+</Link>
 
                 </div>
               )}

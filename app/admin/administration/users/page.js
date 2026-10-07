@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import {
   Plus,
   Search,
@@ -237,60 +237,60 @@ export default function UserManagementPage() {
   ===================================================== */
 
   const fetchRoles = async () => {
-  try {
-    setRolesLoading(true);
+    try {
+      setRolesLoading(true);
 
-    const token =
-      localStorage.getItem("adminToken");
+      const token =
+        localStorage.getItem("adminToken");
 
-    if (!token) return;
+      if (!token) return;
 
-    const response = await fetch(
-      `${API_URL}/api/admin/roles`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        cache: "no-store",
+      const response = await fetch(
+        `${API_URL}/api/admin/roles`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          cache: "no-store",
+        }
+      );
+
+      if (response.status === 403) {
+        setRoles([]);
+        setCurrentPermissions([]);
+        return;
       }
-    );
 
-    if (response.status === 403) {
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data?.message || "Failed to fetch roles."
+        );
+      }
+
+      setRoles(
+        Array.isArray(data?.roles)
+          ? data.roles
+          : []
+      );
+
+      if (
+        Array.isArray(data?.availablePermissions)
+      ) {
+        setCurrentPermissions(
+          data.availablePermissions
+        );
+      }
+    } catch (err) {
+      console.error("Fetch roles error:", err);
       setRoles([]);
-      setCurrentPermissions([]);
-      return;
+    } finally {
+      setRolesLoading(false);
     }
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(
-        data?.message || "Failed to fetch roles."
-      );
-    }
-
-    setRoles(
-      Array.isArray(data?.roles)
-        ? data.roles
-        : []
-    );
-
-    if (
-      Array.isArray(data?.availablePermissions)
-    ) {
-      setCurrentPermissions(
-        data.availablePermissions
-      );
-    }
-  } catch (err) {
-    console.error("Fetch roles error:", err);
-    setRoles([]);
-  } finally {
-    setRolesLoading(false);
-  }
-};
+  };
 
   /* =====================================================
      FETCH GROUPS
@@ -455,7 +455,6 @@ export default function UserManagementPage() {
 
   /* =====================================================
      ROLE STYLE
-     Object format is used by mobile badges.
   ===================================================== */
 
   const getRoleStyle = (role) => {
@@ -588,26 +587,26 @@ export default function UserManagementPage() {
   ===================================================== */
 
   const handleAddUser = () => {
-  if (!hasPermission("team.create")) {
-    setError(
-      "You do not have permission to create users."
-    );
-    return;
-  }
+    if (!hasPermission("team.create")) {
+      setError(
+        "You do not have permission to create users."
+      );
+      return;
+    }
 
-  setEditingUser(null);
+    setEditingUser(null);
 
-  setFormData({
-    ...emptyForm,
-    role: "staff",
-    group: "",
-  });
+    setFormData({
+      ...emptyForm,
+      role: "staff",
+      group: "",
+    });
 
-  setShowPassword(false);
-  setError("");
-  setSuccess("");
-  setShowModal(true);
-};
+    setShowPassword(false);
+    setError("");
+    setSuccess("");
+    setShowModal(true);
+  };
 
   /* =====================================================
      EDIT USER
@@ -1203,15 +1202,11 @@ export default function UserManagementPage() {
 
       <div className="p-3 sm:p-4 lg:p-5">
 
-        {/* =================================================
-            HEADER
-        ================================================= */}
+        {/* HEADER */}
 
         <div className="mb-4">
 
           <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3">
-
-            {/* TITLE */}
 
             <div className="min-w-0">
 
@@ -1360,9 +1355,7 @@ export default function UserManagementPage() {
 
         </div>
 
-        {/* =================================================
-            SUMMARY
-        ================================================= */}
+        {/* SUMMARY */}
 
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-4">
 
@@ -1398,9 +1391,7 @@ export default function UserManagementPage() {
 
         </div>
 
-        {/* =================================================
-            ALERTS
-        ================================================= */}
+        {/* ALERTS */}
 
         {error && (
 
@@ -1439,10 +1430,7 @@ export default function UserManagementPage() {
 
         )}
 
-        {/* =================================================
-            TOOLBAR
-            Mobile fixed compact pixel layout
-        ================================================= */}
+        {/* TOOLBAR */}
 
         <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-2.5 sm:p-3 mb-3">
 
@@ -1508,11 +1496,9 @@ export default function UserManagementPage() {
 
             </div>
 
-            {/* MOBILE BUTTON ROW */}
+            {/* BUTTONS */}
 
             <div className="flex items-center gap-[6px]">
-
-              {/* REFRESH */}
 
               <button
                 onClick={() => {
@@ -1530,8 +1516,6 @@ export default function UserManagementPage() {
                 </span>
 
               </button>
-
-              {/* ADD USER */}
 
               <button
                 onClick={handleAddUser}
@@ -1557,9 +1541,7 @@ export default function UserManagementPage() {
 
         </div>
 
-        {/* =================================================
-            DESKTOP TABLE
-        ================================================= */}
+        {/* DESKTOP TABLE */}
 
         <div className="hidden md:block bg-white border border-gray-200 rounded-xl shadow-sm overflow-visible">
 
@@ -1775,16 +1757,11 @@ export default function UserManagementPage() {
 
         </div>
 
-        {/* =================================================
-            MOBILE USERS
-            Fixed pixel compact responsive layout
-        ================================================= */}
+        {/* MOBILE USERS */}
 
         <div className="md:hidden space-y-[6px]">
 
           {loading ? (
-
-            /* MOBILE LOADING */
 
             <div className="h-[110px] bg-white border border-gray-200 rounded-xl shadow-sm flex items-center justify-center">
 
@@ -1793,8 +1770,6 @@ export default function UserManagementPage() {
             </div>
 
           ) : filteredUsers.length === 0 ? (
-
-            /* MOBILE EMPTY STATE */
 
             <div className="h-[120px] bg-white border border-gray-200 rounded-xl shadow-sm flex flex-col items-center justify-center px-4">
 
@@ -1811,8 +1786,6 @@ export default function UserManagementPage() {
             </div>
 
           ) : (
-
-            /* MOBILE USER LIST */
 
             filteredUsers.map(
               (user) => {
@@ -1849,25 +1822,15 @@ export default function UserManagementPage() {
                     className="bg-white border border-gray-200 rounded-xl p-[10px] shadow-sm"
                   >
 
-                    {/* =====================================
-                        MOBILE USER HEADER
-                    ===================================== */}
-
                     <div className="h-[36px] flex items-center justify-between gap-2">
 
-                      {/* USER INFO */}
-
                       <div className="flex items-center gap-[8px] min-w-0">
-
-                        {/* AVATAR */}
 
                         <div className="w-[34px] h-[34px] rounded-full bg-[#18352A] flex items-center justify-center shrink-0">
 
                           <UserRoundCheck className="w-[14px] h-[14px] text-white" />
 
                         </div>
-
-                        {/* NAME + EMAIL */}
 
                         <div className="min-w-0">
 
@@ -1889,164 +1852,41 @@ export default function UserManagementPage() {
 
                       </div>
 
-                      {/* MOBILE ACTION MENU */}
-
-                      <div className="relative shrink-0">
-
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-
-                            setOpenActionId(
-                              openActionId ===
-                                user._id
-                                ? null
-                                : user._id
-                            );
-                          }}
-                          className="w-[28px] h-[28px] rounded-lg border border-gray-200 bg-white flex items-center justify-center text-gray-500 hover:bg-gray-50"
-                        >
-
-                          <MoreHorizontal className="w-[14px] h-[14px]" />
-
-                        </button>
-
-                        {openActionId ===
-                          user._id && (
-
-                          <>
-
-                            <div
-                              className="fixed inset-0 z-20"
-                              onClick={() =>
-                                setOpenActionId(
-                                  null
-                                )
-                              }
-                            />
-
-                            <div
-                              onClick={(e) =>
-                                e.stopPropagation()
-                              }
-                              className="absolute right-0 top-[32px] z-30 w-[174px] bg-white border border-gray-200 rounded-xl shadow-xl p-[5px]"
-                            >
-
-                              {/* EDIT */}
-
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  handleEditUser(
-                                    user
-                                  )
-                                }
-                                disabled={
-                                  !hasPermission(
-                                    "team.update"
-                                  )
-                                }
-                                className="w-full h-[34px] flex items-center gap-2 px-2.5 rounded-lg text-[10px] text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
-                              >
-
-                                <Pencil className="w-[13px] h-[13px]" />
-
-                                Edit User
-
-                              </button>
-
-                              {/* PERMISSIONS */}
-
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  handleManagePermissions(
-                                    user
-                                  )
-                                }
-                                disabled={
-                                  !hasPermission(
-                                    "team.view"
-                                  )
-                                }
-                                className="w-full h-[34px] flex items-center gap-2 px-2.5 rounded-lg text-[10px] text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
-                              >
-
-                                <KeyRound className="w-[13px] h-[13px]" />
-
-                                Permissions
-
-                              </button>
-
-                              {/* STATUS */}
-
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  handleToggleStatus(
-                                    user
-                                  )
-                                }
-                                disabled={
-                                  !hasPermission(
-                                    "team.update"
-                                  )
-                                }
-                                className="w-full h-[34px] flex items-center gap-2 px-2.5 rounded-lg text-[10px] text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
-                              >
-
-                                <UserX className="w-[13px] h-[13px]" />
-
-                                {user.status ===
-                                "inactive"
-                                  ? "Activate"
-                                  : "Deactivate"}
-
-                              </button>
-
-                              <div className="my-[4px] border-t border-gray-100" />
-
-                              {/* DELETE */}
-
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  handleDeleteUser(
-                                    user
-                                  )
-                                }
-                                disabled={
-                                  !hasPermission(
-                                    "team.delete"
-                                  )
-                                }
-                                className="w-full h-[34px] flex items-center gap-2 px-2.5 rounded-lg text-[10px] text-red-600 hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed"
-                              >
-
-                                <Trash2 className="w-[13px] h-[13px]" />
-
-                                Delete User
-
-                              </button>
-
-                            </div>
-
-                          </>
-
+                      <ActionMenu
+                        user={user}
+                        openActionId={
+                          openActionId
+                        }
+                        setOpenActionId={
+                          setOpenActionId
+                        }
+                        onEdit={
+                          handleEditUser
+                        }
+                        onPermissions={
+                          handleManagePermissions
+                        }
+                        onToggleStatus={
+                          handleToggleStatus
+                        }
+                        onDelete={
+                          handleDeleteUser
+                        }
+                        canEdit={hasPermission(
+                          "team.update"
                         )}
-
-                      </div>
+                        canDelete={hasPermission(
+                          "team.delete"
+                        )}
+                        canViewPermissions={hasPermission(
+                          "team.view"
+                        )}
+                        mobile={true}
+                      />
 
                     </div>
 
-                    {/* =====================================
-                        MOBILE BADGES
-                    ===================================== */}
-
                     <div className="mt-[8px] flex flex-wrap items-center gap-[5px]">
-
-                      {/* ROLE */}
 
                       <span
                         className={`inline-flex items-center gap-[4px] h-[22px] px-[7px] rounded-lg border text-[8px] font-semibold ${roleStyle.badge}`}
@@ -2062,8 +1902,6 @@ export default function UserManagementPage() {
 
                       </span>
 
-                      {/* DEPARTMENT */}
-
                       <span className="h-[22px] inline-flex items-center px-[7px] rounded-lg bg-gray-50 border border-gray-200 text-[8px] text-gray-600">
 
                         {getGroupLabel(
@@ -2071,8 +1909,6 @@ export default function UserManagementPage() {
                         )}
 
                       </span>
-
-                      {/* STATUS */}
 
                       <span
                         className={`h-[22px] inline-flex items-center px-[7px] rounded-lg text-[8px] font-semibold ${
@@ -2092,10 +1928,6 @@ export default function UserManagementPage() {
 
                     </div>
 
-                    {/* =====================================
-                        MOBILE CREATED DATE
-                    ===================================== */}
-
                     <div className="mt-[6px] px-[7px] py-[5px] rounded-lg bg-gray-50 border border-gray-100">
 
                       <p className="text-[7px] text-gray-400 uppercase tracking-wide">
@@ -2113,12 +1945,6 @@ export default function UserManagementPage() {
                       </p>
 
                     </div>
-
-                    {/* =====================================
-                        MOBILE ASSIGNMENT ACTIVITY
-                        CRM STYLE
-                        No Assigned By / Assigned To
-                    ===================================== */}
 
                     {userAssignment.length >
                       0 && (
@@ -2200,9 +2026,7 @@ export default function UserManagementPage() {
 
       </div>
 
-      {/* =================================================
-          ADD / EDIT USER MODAL
-      ================================================= */}
+      {/* ADD / EDIT USER MODAL */}
 
       {showModal && (
 
@@ -2246,8 +2070,6 @@ export default function UserManagementPage() {
               className="p-4 space-y-3"
             >
 
-              {/* NAME */}
-
               <div>
 
                 <label className="block text-[10px] font-semibold text-gray-600 mb-1">
@@ -2267,8 +2089,6 @@ export default function UserManagementPage() {
                 />
 
               </div>
-
-              {/* EMAIL */}
 
               <div>
 
@@ -2290,8 +2110,6 @@ export default function UserManagementPage() {
                 />
 
               </div>
-
-              {/* PASSWORD */}
 
               <div>
 
@@ -2351,60 +2169,54 @@ export default function UserManagementPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
-                {/* ROLE */}
+                <div>
 
-                {/* ROLE */}
+                  <label className="block text-[10px] font-semibold text-gray-600 mb-1">
+                    Role
+                  </label>
 
-<div>
+                  <div className="relative">
 
-  <label className="block text-[10px] font-semibold text-gray-600 mb-1">
-    Role
-  </label>
+                    <select
+                      value={formData.role}
+                      onChange={(e) =>
+                        handleFormChange(
+                          "role",
+                          e.target.value
+                        )
+                      }
+                      className="w-full h-9 appearance-none rounded-lg border border-gray-200 px-3 pr-8 text-[11px] outline-none focus:border-[#C87532]"
+                    >
 
-  <div className="relative">
+                      <option value="">
+                        Select role
+                      </option>
 
-    <select
-      value={formData.role}
-      onChange={(e) =>
-        handleFormChange(
-          "role",
-          e.target.value
-        )
-      }
-      className="w-full h-9 appearance-none rounded-lg border border-gray-200 px-3 pr-8 text-[11px] outline-none focus:border-[#C87532]"
-    >
+                      <option value="admin">
+                        Admin
+                      </option>
 
-      <option value="">
-        Select role
-      </option>
+                      <option value="manager">
+                        Manager
+                      </option>
 
-      <option value="admin">
-        Admin
-      </option>
+                      <option value="staff">
+                        Staff
+                      </option>
 
-      <option value="manager">
-        Manager
-      </option>
+                      {currentRole === "super_admin" && (
+                        <option value="super_admin">
+                          Super Admin
+                        </option>
+                      )}
 
-      <option value="staff">
-        Staff
-      </option>
+                    </select>
 
-      {currentRole === "super_admin" && (
-        <option value="super_admin">
-          Super Admin
-        </option>
-      )}
+                    <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
 
-    </select>
+                  </div>
 
-    <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
-
-  </div>
-
-</div>
-
-                {/* GROUP */}
+                </div>
 
                 <div>
 
@@ -2465,8 +2277,6 @@ export default function UserManagementPage() {
 
               </div>
 
-              {/* ACTIONS */}
-
               <div className="pt-2 flex items-center justify-end gap-2">
 
                 <button
@@ -2507,9 +2317,7 @@ export default function UserManagementPage() {
 
       )}
 
-      {/* =================================================
-          PERMISSION MODAL
-      ================================================= */}
+      {/* PERMISSION MODAL */}
 
       {showPermissionModal && (
 
@@ -2801,7 +2609,7 @@ function SummaryCard({
 }
 
 /* =====================================================
-   ACTION MENU
+   ACTION MENU (DYNAMIC CONTAINER BOUND RECT POSITIONING)
 ===================================================== */
 
 function ActionMenu({
@@ -2817,24 +2625,61 @@ function ActionMenu({
   canViewPermissions,
   mobile = false,
 }) {
-  const isOpen =
-    openActionId === user._id;
+  const isOpen = openActionId === user._id;
+  const buttonRef = useRef(null);
+  const [openUpward, setOpenUpward] = useState(false);
+
+  const checkPosition = () => {
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      // Find nearest scrollable container, table, or outer wrapper
+      const container =
+        buttonRef.current.closest(
+          ".overflow-x-auto, .overflow-y-auto, .overflow-auto, table, body"
+        ) || document.body;
+      const containerRect = container.getBoundingClientRect();
+
+      const spaceBelowContainer = containerRect.bottom - rect.bottom;
+      const spaceBelowWindow = window.innerHeight - rect.bottom;
+
+      // If space below inside container OR window is less than 200px, open UPWARD
+      if (spaceBelowContainer < 200 || spaceBelowWindow < 200) {
+        setOpenUpward(true);
+      } else {
+        setOpenUpward(false);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      checkPosition();
+    }
+  }, [isOpen]);
+
+  const handleToggle = (e) => {
+    e.stopPropagation();
+    if (!isOpen) {
+      checkPosition();
+    }
+    setOpenActionId(isOpen ? null : user._id);
+  };
 
   return (
     <div className="relative inline-block text-left">
 
       <button
-        onClick={() =>
-          setOpenActionId(
-            isOpen
-              ? null
-              : user._id
-          )
+        ref={buttonRef}
+        type="button"
+        onClick={handleToggle}
+        className={
+          mobile
+            ? "w-[28px] h-[28px] rounded-lg border border-gray-200 bg-white flex items-center justify-center text-gray-500 hover:bg-gray-50"
+            : "w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-500"
         }
-        className="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-500"
       >
 
-        <MoreHorizontal className="w-4 h-4" />
+        <MoreHorizontal className={mobile ? "w-[14px] h-[14px]" : "w-4 h-4"} />
 
       </button>
 
@@ -2844,82 +2689,101 @@ function ActionMenu({
 
           <div
             className="fixed inset-0 z-20"
-            onClick={() =>
-              setOpenActionId(null)
-            }
+            onClick={() => setOpenActionId(null)}
           />
 
           <div
-            className={`absolute ${
-              mobile
-                ? "right-0"
-                : "right-0"
-            } top-9 z-30 w-44 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden`}
+            onClick={(e) => e.stopPropagation()}
+            className={`absolute right-0 ${
+              openUpward
+                ? "bottom-full mb-1"
+                : "top-full mt-1"
+            } z-30 ${
+              mobile ? "w-[174px] p-[5px]" : "w-44 overflow-hidden"
+            } bg-white border border-gray-200 rounded-xl shadow-xl`}
           >
 
             <button
+              type="button"
               disabled={!canEdit}
-              onClick={() =>
-                onEdit(user)
+              onClick={() => {
+                setOpenActionId(null);
+                onEdit(user);
+              }}
+              className={
+                mobile
+                  ? "w-full h-[34px] flex items-center gap-2 px-2.5 rounded-lg text-[10px] text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                  : "w-full flex items-center gap-2 px-3 py-2.5 text-left text-[10px] text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
               }
-              className="w-full flex items-center gap-2 px-3 py-2.5 text-left text-[10px] text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
             >
 
-              <Pencil className="w-3.5 h-3.5" />
+              <Pencil className={mobile ? "w-[13px] h-[13px]" : "w-3.5 h-3.5"} />
 
               Edit User
 
             </button>
 
             <button
-              disabled={
-                !canViewPermissions
+              type="button"
+              disabled={!canViewPermissions}
+              onClick={() => {
+                setOpenActionId(null);
+                onPermissions(user);
+              }}
+              className={
+                mobile
+                  ? "w-full h-[34px] flex items-center gap-2 px-2.5 rounded-lg text-[10px] text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                  : "w-full flex items-center gap-2 px-3 py-2.5 text-left text-[10px] text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
               }
-              onClick={() =>
-                onPermissions(user)
-              }
-              className="w-full flex items-center gap-2 px-3 py-2.5 text-left text-[10px] text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
             >
 
-              <ShieldCheck className="w-3.5 h-3.5" />
+              <ShieldCheck className={mobile ? "w-[13px] h-[13px]" : "w-3.5 h-3.5"} />
 
               Permissions
 
             </button>
 
             <button
+              type="button"
               disabled={!canEdit}
-              onClick={() =>
-                onToggleStatus(user)
+              onClick={() => {
+                setOpenActionId(null);
+                onToggleStatus(user);
+              }}
+              className={
+                mobile
+                  ? "w-full h-[34px] flex items-center gap-2 px-2.5 rounded-lg text-[10px] text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                  : "w-full flex items-center gap-2 px-3 py-2.5 text-left text-[10px] text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
               }
-              className="w-full flex items-center gap-2 px-3 py-2.5 text-left text-[10px] text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
             >
 
-              {user.status ===
-              "active" ? (
-                <UserX className="w-3.5 h-3.5" />
+              {user.status === "active" ? (
+                <UserX className={mobile ? "w-[13px] h-[13px]" : "w-3.5 h-3.5"} />
               ) : (
-                <UserRoundCheck className="w-3.5 h-3.5" />
+                <UserRoundCheck className={mobile ? "w-[13px] h-[13px]" : "w-3.5 h-3.5"} />
               )}
 
-              {user.status ===
-              "active"
-                ? "Deactivate"
-                : "Activate"}
+              {user.status === "active" ? "Deactivate" : "Activate"}
 
             </button>
 
-            <div className="border-t border-gray-100" />
+            <div className={mobile ? "my-[4px] border-t border-gray-100" : "border-t border-gray-100"} />
 
             <button
+              type="button"
               disabled={!canDelete}
-              onClick={() =>
-                onDelete(user)
+              onClick={() => {
+                setOpenActionId(null);
+                onDelete(user);
+              }}
+              className={
+                mobile
+                  ? "w-full h-[34px] flex items-center gap-2 px-2.5 rounded-lg text-[10px] text-red-600 hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                  : "w-full flex items-center gap-2 px-3 py-2.5 text-left text-[10px] text-red-600 hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed"
               }
-              className="w-full flex items-center gap-2 px-3 py-2.5 text-left text-[10px] text-red-600 hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed"
             >
 
-              <Trash2 className="w-3.5 h-3.5" />
+              <Trash2 className={mobile ? "w-[13px] h-[13px]" : "w-3.5 h-3.5"} />
 
               Delete User
 

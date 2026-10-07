@@ -1037,9 +1037,10 @@ export default function AdminCustomersPage() {
                 </div>
               </div>
 
+              {/* MOBILE COMPACT FIX: Smooth Horizontal Scroll Container */}
               <div className="w-full overflow-x-auto">
 
-                <table className="w-full min-w-0 table-fixed border-collapse text-left">
+                <table className="w-full min-w-[850px] border-collapse text-left text-xs sm:table-fixed sm:min-w-0">
 
                   <colgroup>
                     <col className="w-[17%]" />
@@ -1056,39 +1057,39 @@ export default function AdminCustomersPage() {
                   <thead>
                     <tr className="border-b border-[#EEF1F3] bg-[#F8FAFB] text-[9px] font-semibold uppercase tracking-wider text-[#66734A]">
 
-                      <th className="px-2.5 py-2">
+                      <th className="whitespace-nowrap px-2.5 py-2">
                         Customer
                       </th>
 
-                      <th className="px-2 py-2">
+                      <th className="whitespace-nowrap px-2 py-2">
                         Contact
                       </th>
 
-                      <th className="px-2 py-2">
+                      <th className="whitespace-nowrap px-2 py-2">
                         Email
                       </th>
 
-                      <th className="px-2 py-2">
+                      <th className="whitespace-nowrap px-2 py-2">
                         Company
                       </th>
 
-                      <th className="px-2 py-2">
+                      <th className="whitespace-nowrap px-2 py-2">
                         Location
                       </th>
 
-                      <th className="px-2 py-2">
+                      <th className="whitespace-nowrap px-2 py-2">
                         Source
                       </th>
 
-                      <th className="px-2 py-2">
+                      <th className="whitespace-nowrap px-2 py-2">
                         Status
                       </th>
 
-                      <th className="px-2 py-2">
+                      <th className="whitespace-nowrap px-2 py-2">
                         Created
                       </th>
 
-                      <th className="px-1.5 py-2 text-right">
+                      <th className="whitespace-nowrap px-1.5 py-2 text-right">
                         Action
                       </th>
 
