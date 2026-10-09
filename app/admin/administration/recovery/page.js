@@ -84,9 +84,27 @@ export default function RecoveryPage() {
   // DAYS REMAINING
   // =====================================================
 
-  const getDaysRemaining = (expiresAt) => {
+  const getRecoveryDeadline = (record) => {
+    if (record.recoveryStage === "department") {
+      return record.departmentStageExpiresAt;
+    }
+
+    if (record.recoveryStage === "super_admin") {
+      return record.superAdminExpiresAt;
+    }
+
+    return null;
+  };
+
+  const getDaysRemaining = (record) => {
+    const deadline = getRecoveryDeadline(record);
+
+    if (!deadline) {
+      return 0;
+    }
+
     const remaining =
-      new Date(expiresAt).getTime() -
+      new Date(deadline).getTime() -
       Date.now();
 
     return Math.max(
@@ -241,11 +259,11 @@ export default function RecoveryPage() {
   // =====================================================
 
   const handleRestore = async (
-  id
-) => {
-  try {
-    setError("");
-    setSuccess("");
+    id
+  ) => {
+    try {
+      setError("");
+      setSuccess("");
       setActionLoading(id);
 
       const token =
@@ -281,7 +299,9 @@ export default function RecoveryPage() {
         record into its original collection.
       */
 
-      setSuccess("Record restored successfully.");
+      setSuccess(
+        "Record restored successfully."
+      );
 
       closeConfirmation();
     } catch (error) {
@@ -361,6 +381,28 @@ export default function RecoveryPage() {
     return "bg-[#18352A]/5 text-[#18352A] border-[#18352A]/10";
   };
 
+  // =====================================================
+  // STAGE LABEL
+  // =====================================================
+
+  const getStageLabel = (record) => {
+    if (
+      record.recoveryStage ===
+      "department"
+    ) {
+      return "Department";
+    }
+
+    if (
+      record.recoveryStage ===
+      "super_admin"
+    ) {
+      return "Super Admin";
+    }
+
+    return "Completed";
+  };
+
   return (
     <div className="min-h-full bg-[#F7F5F0] p-3 sm:p-5 lg:p-6">
 
@@ -382,7 +424,7 @@ export default function RecoveryPage() {
             </h1>
 
             <p className="mt-0.5 text-xs text-gray-500 sm:text-sm">
-              Deleted records are retained for 30 days.
+              Deleted records follow a 7-day department stage and 15-day Super Admin stage.
             </p>
           </div>
 
@@ -436,26 +478,31 @@ export default function RecoveryPage() {
 
         </div>
       )}
+
       {success && (
-  <div className="mb-4 flex items-start gap-3 rounded-xl border border-green-100 bg-green-50 px-4 py-3 text-xs text-green-700">
-    <CheckCircle2
-      size={16}
-      className="mt-0.5 shrink-0"
-    />
+        <div className="mb-4 flex items-start gap-3 rounded-xl border border-green-100 bg-green-50 px-4 py-3 text-xs text-green-700">
 
-    <span className="flex-1">
-      {success}
-    </span>
+          <CheckCircle2
+            size={16}
+            className="mt-0.5 shrink-0"
+          />
 
-    <button
-      type="button"
-      onClick={() => setSuccess("")}
-      className="shrink-0 rounded-md p-1 hover:bg-green-100"
-    >
-      <X size={14} />
-    </button>
-  </div>
-)}
+          <span className="flex-1">
+            {success}
+          </span>
+
+          <button
+            type="button"
+            onClick={() =>
+              setSuccess("")
+            }
+            className="shrink-0 rounded-md p-1 hover:bg-green-100"
+          >
+            <X size={14} />
+          </button>
+
+        </div>
+      )}
 
       {/* =================================================
           STATS
@@ -465,8 +512,10 @@ export default function RecoveryPage() {
         <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
 
           <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
+
             <div className="flex items-center gap-2 text-gray-400">
               <Database size={14} />
+
               <span className="text-[10px] font-semibold uppercase tracking-wide">
                 Deleted
               </span>
@@ -475,24 +524,30 @@ export default function RecoveryPage() {
             <p className="mt-1 text-lg font-bold text-[#172033]">
               {records.length}
             </p>
+
           </div>
 
           <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
+
             <div className="flex items-center gap-2 text-gray-400">
               <Clock3 size={14} />
+
               <span className="text-[10px] font-semibold uppercase tracking-wide">
                 Retention
               </span>
             </div>
 
             <p className="mt-1 text-lg font-bold text-[#172033]">
-              30 Days
+              22 Days
             </p>
+
           </div>
 
           <div className="col-span-2 rounded-xl border border-gray-200 bg-white p-3 shadow-sm sm:col-span-1">
+
             <div className="flex items-center gap-2 text-gray-400">
               <CheckCircle2 size={14} />
+
               <span className="text-[10px] font-semibold uppercase tracking-wide">
                 Showing
               </span>
@@ -501,6 +556,7 @@ export default function RecoveryPage() {
             <p className="mt-1 text-lg font-bold text-[#172033]">
               {filteredRecords.length}
             </p>
+
           </div>
 
         </div>
@@ -637,7 +693,7 @@ export default function RecoveryPage() {
 
             <div className="overflow-x-auto">
 
-              <table className="w-full min-w-[900px] text-left">
+              <table className="w-full min-w-[1000px] text-left">
 
                 <thead className="border-b border-gray-200 bg-gray-50/80">
 
@@ -664,6 +720,10 @@ export default function RecoveryPage() {
                     </th>
 
                     <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wide text-gray-500">
+                      Stage
+                    </th>
+
+                    <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wide text-gray-500">
                       Remaining
                     </th>
 
@@ -681,7 +741,7 @@ export default function RecoveryPage() {
                     (record) => {
                       const days =
                         getDaysRemaining(
-                          record.expiresAt
+                          record
                         );
 
                       const busy =
@@ -732,6 +792,20 @@ export default function RecoveryPage() {
                               record.deletedAt
                             ).toLocaleString()}
                           </td>
+
+                          {/* STAGE */}
+
+                          <td className="px-4 py-3">
+
+                            <span className="rounded-full bg-[#18352A]/5 px-2.5 py-1 text-[10px] font-semibold text-[#18352A]">
+                              {getStageLabel(
+                                record
+                              )}
+                            </span>
+
+                          </td>
+
+                          {/* REMAINING */}
 
                           <td className="px-4 py-3">
 
@@ -815,7 +889,7 @@ export default function RecoveryPage() {
               (record) => {
                 const days =
                   getDaysRemaining(
-                    record.expiresAt
+                    record
                   );
 
                 const busy =
@@ -904,6 +978,18 @@ export default function RecoveryPage() {
                         <p className="mt-0.5 truncate text-[11px] font-medium text-[#18352A]">
                           {record.deletedByRole ||
                             "—"}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-[9px] font-semibold uppercase tracking-wide text-gray-400">
+                          Stage
+                        </p>
+
+                        <p className="mt-0.5 truncate text-[11px] font-medium text-[#18352A]">
+                          {getStageLabel(
+                            record
+                          )}
                         </p>
                       </div>
 
