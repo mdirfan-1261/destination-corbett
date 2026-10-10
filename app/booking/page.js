@@ -24,6 +24,16 @@ import {
   Plus,
 } from "lucide-react";
 
+// ==========================================
+// BACKEND API URL
+// Local development ke liye localhost.
+// Production mein Vercel environment variable use hoga.
+// ==========================================
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://localhost:5000";
+
 const BOOKING_CONFIG = {
   stay: {
     label: "Stay",
@@ -89,6 +99,8 @@ const BOOKING_CONFIG = {
   },
 };
 
+
+
 export default function BookingPage() {
   const router = useRouter();
 
@@ -117,6 +129,12 @@ export default function BookingPage() {
   });
 
   const [submitted, setSubmitted] = useState(false);
+  // ==========================================
+// BOOKING SUBMISSION ERROR
+// API fail hone par customer ko error dikhayenge.
+// ==========================================
+
+const [submitError, setSubmitError] = useState("");
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -258,115 +276,177 @@ export default function BookingPage() {
     }));
   };
 
-  const handleConfirm = (e) => {
-    e.preventDefault();
 
-    if (
-      !guest.name.trim() ||
-      !guest.phone.trim() ||
-      !guest.email.trim()
-    ) {
-      alert("Please fill all required details.");
-      return;
+// =====================================================
+// CONFIRM BOOKING
+// Backend API mein booking save karna
+// Successful response ke baad hi confirmation page khulega
+// =====================================================
+
+const handleConfirm = async (e) => {
+  e.preventDefault();
+
+  // Already request chal rahi ho toh duplicate submit nahi karna
+  if (submitted) return;
+
+  // ==========================================
+  // VALIDATE CUSTOMER DETAILS
+  // ==========================================
+
+  if (
+    !guest.name.trim() ||
+    !guest.phone.trim() ||
+    !guest.email.trim()
+  ) {
+    setSubmitError("Please fill all required details.");
+    return;
+  }
+
+  // ==========================================
+  // PREPARE API PAYLOAD
+  // Backend apne aap booking group aur reference set karega
+  // ==========================================
+
+  const payload = {
+    type: bookingData.type,
+
+    propertyId: bookingData.propertyId,
+    roomTypeId: bookingData.roomTypeId,
+    packageId: bookingData.packageId,
+    safariId: bookingData.safariId,
+    eventId: bookingData.eventId,
+    venueId: bookingData.venueId,
+
+    checkIn: bookingData.checkIn,
+    checkOut: bookingData.checkOut,
+    date: bookingData.date,
+    zone: bookingData.zone,
+
+    adults: bookingData.adults,
+    children: bookingData.children,
+    rooms: bookingData.rooms,
+
+    name: guest.name.trim(),
+    phone: guest.phone.trim(),
+    email: guest.email.trim(),
+    specialRequest: guest.specialRequest.trim(),
+  };
+
+  // ==========================================
+  // SUBMIT BOOKING TO BACKEND
+  // ==========================================
+
+  setSubmitted(true);
+  setSubmitError("");
+
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/api/bookings`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    // Response JSON parse karo
+    const result = await response.json();
+
+    // Failed HTTP response ya unsuccessful API response
+    if (!response.ok || !result.success) {
+      throw new Error(
+        result.message || "Booking submission failed."
+      );
     }
 
-    setSubmitted(true);
+    // ==========================================
+    // BUILD CONFIRMATION URL
+    // Backend se mila actual reference use karo
+    // ==========================================
 
     const params = new URLSearchParams();
 
     params.set("type", bookingData.type);
 
-    if (bookingData.propertyId) {
+    if (result.booking?.bookingReference) {
       params.set(
-        "property_id",
-        bookingData.propertyId
+        "booking_reference",
+        result.booking.bookingReference
       );
+    }
+
+    if (bookingData.propertyId) {
+      params.set("property_id", bookingData.propertyId);
     }
 
     if (bookingData.roomTypeId) {
-      params.set(
-        "room_type_id",
-        bookingData.roomTypeId
-      );
+      params.set("room_type_id", bookingData.roomTypeId);
     }
 
     if (bookingData.packageId) {
-      params.set(
-        "package_id",
-        bookingData.packageId
-      );
+      params.set("package_id", bookingData.packageId);
     }
 
     if (bookingData.safariId) {
-      params.set(
-        "safari_id",
-        bookingData.safariId
-      );
+      params.set("safari_id", bookingData.safariId);
     }
 
     if (bookingData.eventId) {
-      params.set(
-        "event_id",
-        bookingData.eventId
-      );
+      params.set("event_id", bookingData.eventId);
     }
 
     if (bookingData.venueId) {
-      params.set(
-        "venue_id",
-        bookingData.venueId
-      );
+      params.set("venue_id", bookingData.venueId);
     }
 
     if (bookingData.checkIn) {
-      params.set(
-        "check_in",
-        bookingData.checkIn
-      );
+      params.set("check_in", bookingData.checkIn);
     }
 
     if (bookingData.checkOut) {
-      params.set(
-        "check_out",
-        bookingData.checkOut
-      );
+      params.set("check_out", bookingData.checkOut);
     }
 
     if (bookingData.date) {
-      params.set(
-        "date",
-        bookingData.date
-      );
+      params.set("date", bookingData.date);
     }
 
-    params.set(
-      "adults",
-      bookingData.adults
-    );
-
-    params.set(
-      "children",
-      bookingData.children
-    );
-
-    params.set(
-      "rooms",
-      bookingData.rooms
-    );
+    params.set("adults", String(bookingData.adults));
+    params.set("children", String(bookingData.children));
+    params.set("rooms", String(bookingData.rooms));
 
     if (bookingData.zone) {
-      params.set(
-        "zone",
-        bookingData.zone
-      );
+      params.set("zone", bookingData.zone);
     }
 
-    setTimeout(() => {
-      router.push(
-        `/booking/confirmation?${params.toString()}`
-      );
-    }, 500);
-  };
+    // ==========================================
+    // SUCCESS
+    // Ab booking database mein save ho chuki hai
+    // ==========================================
+
+    router.push(
+      `/booking/confirmation?${params.toString()}`
+    );
+  } catch (error) {
+    // ==========================================
+    // ERROR HANDLING
+    // Failure par retry allow karo
+    // ==========================================
+
+    console.error("Booking submission error:", error);
+
+    setSubmitError(
+      error.message ||
+        "Unable to submit your booking. Please try again."
+    );
+
+    setSubmitted(false);
+  }
+};
+
+
 
   const today = new Date()
     .toISOString()

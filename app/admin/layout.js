@@ -213,7 +213,7 @@ export default function AdminLayout({ children }) {
         if (!response.ok) {
           throw new Error(
             data?.message ||
-              "Failed to fetch admin profile."
+            "Failed to fetch admin profile."
           );
         }
 
@@ -319,7 +319,7 @@ export default function AdminLayout({ children }) {
       if (!response.ok) {
         throw new Error(
           data?.message ||
-            "Failed to fetch notifications."
+          "Failed to fetch notifications."
         );
       }
 
@@ -436,17 +436,17 @@ export default function AdminLayout({ children }) {
       if (!response.ok) {
         throw new Error(
           data?.message ||
-            "Failed to mark notification as read."
+          "Failed to mark notification as read."
         );
       }
 
       setNotifications((prev) =>
-  prev.filter(
-    (notification) =>
-      String(notification._id) !==
-      String(notificationId)
-  )
-);
+        prev.filter(
+          (notification) =>
+            String(notification._id) !==
+            String(notificationId)
+        )
+      );
 
 
 
@@ -498,12 +498,12 @@ export default function AdminLayout({ children }) {
         if (!response.ok) {
           throw new Error(
             data?.message ||
-              "Failed to mark all notifications as read."
+            "Failed to mark all notifications as read."
           );
         }
 
         setNotifications([]);
-setUnreadCount(0);
+        setUnreadCount(0);
 
         setUnreadCount(0);
       } catch (error) {
@@ -574,9 +574,8 @@ setUnreadCount(0);
       );
 
     if (days < 7) {
-      return `${days} day${
-        days > 1 ? "s" : ""
-      } ago`;
+      return `${days} day${days > 1 ? "s" : ""
+        } ago`;
     }
 
     return date.toLocaleDateString(
@@ -806,22 +805,20 @@ setUnreadCount(0);
 
   return (
     <main
-      className={`min-h-screen transition-colors duration-300 ${
-        darkMode
+      className={`min-h-screen transition-colors duration-300 ${darkMode
           ? "text-white"
           : "text-[#18352A]"
-      }`}
+        }`}
     >
       {/* BACKGROUND */}
 
       <div className="fixed inset-0 -z-20 bg-[#F5F7FA]" />
 
       <div
-        className={`fixed inset-0 -z-10 transition-all duration-300 ${
-          darkMode
+        className={`fixed inset-0 -z-10 transition-all duration-300 ${darkMode
             ? "bg-[#07100C]/40"
             : "bg-[#F5F7FA]/70"
-        }`}
+          }`}
       />
 
       {/* ========================= */}
@@ -829,11 +826,10 @@ setUnreadCount(0);
       {/* ========================= */}
 
       <header
-        className={`sticky top-0 z-50 border-b backdrop-blur-2xl transition-all duration-300 ${
-          darkMode
+        className={`sticky top-0 z-50 border-b backdrop-blur-2xl transition-all duration-300 ${darkMode
             ? "border-white/10 bg-[#142019]/90"
             : "border-[#18352A]/20 bg-[#18352A]/95"
-        }`}
+          }`}
       >
         <div className="flex h-14 items-center justify-between gap-3 px-3 sm:px-5">
 
@@ -903,8 +899,8 @@ setUnreadCount(0);
                   {profileLoading
                     ? "Loading..."
                     : formatLastLogin(
-                        profile.lastLoginAt
-                      )}
+                      profile.lastLoginAt
+                    )}
                 </p>
 
               </div>
@@ -962,11 +958,10 @@ setUnreadCount(0);
 
                       <p className="mt-0.5 text-[9px] text-gray-400">
                         {unreadCount > 0
-                          ? `${unreadCount} unread notification${
-                              unreadCount > 1
-                                ? "s"
-                                : ""
-                            }`
+                          ? `${unreadCount} unread notification${unreadCount > 1
+                            ? "s"
+                            : ""
+                          }`
                           : "You're all caught up"}
                       </p>
                     </div>
@@ -1044,11 +1039,10 @@ setUnreadCount(0);
                                 );
                               }
                             }}
-                            className={`flex w-full gap-3 border-b border-gray-100 px-4 py-3 text-left transition last:border-b-0 ${
-                              notification.isRead
+                            className={`flex w-full gap-3 border-b border-gray-100 px-4 py-3 text-left transition last:border-b-0 ${notification.isRead
                                 ? "bg-white hover:bg-gray-50"
                                 : "bg-[#FFFBF5] hover:bg-[#FFF7EA]"
-                            }`}
+                              }`}
                           >
 
                             {/* STATUS DOT */}
@@ -1056,11 +1050,10 @@ setUnreadCount(0);
                             <div className="pt-1">
 
                               <span
-                                className={`block h-2 w-2 rounded-full ${
-                                  notification.isRead
+                                className={`block h-2 w-2 rounded-full ${notification.isRead
                                     ? "bg-gray-200"
                                     : "bg-[#F08A5D]"
-                                }`}
+                                  }`}
                               />
 
                             </div>
@@ -1072,11 +1065,10 @@ setUnreadCount(0);
                               <div className="flex items-start justify-between gap-2">
 
                                 <p
-                                  className={`text-[11px] ${
-                                    notification.isRead
+                                  className={`text-[11px] ${notification.isRead
                                       ? "font-medium text-gray-600"
                                       : "font-bold text-[#18352A]"
-                                  }`}
+                                    }`}
                                 >
                                   {
                                     notification.title
@@ -1170,26 +1162,25 @@ setUnreadCount(0);
                     {profileLoading
                       ? "Loading..."
                       : profile.name ||
-                        "Admin"}
+                      "Admin"}
                   </p>
 
                   <p className="text-[8px] text-white/60">
                     {profileLoading
                       ? "—"
                       : formatRole(
-                          profile.role
-                        )}
+                        profile.role
+                      )}
                   </p>
 
                 </div>
 
                 <ChevronDown
                   size={13}
-                  className={`hidden transition-transform sm:block ${
-                    profileOpen
+                  className={`hidden transition-transform sm:block ${profileOpen
                       ? "rotate-180"
                       : ""
-                  }`}
+                    }`}
                 />
 
               </button>
@@ -1362,27 +1353,17 @@ setUnreadCount(0);
       {/* ADMIN CONTENT AREA */}
       {/* ========================= */}
 
-      <div className="flex items-start min-h-[calc(100vh-56px)]">
-
-        {/* SIDEBAR */}
-
+      <div className="flex min-h-[calc(100vh-56px)] items-stretch">
         <AdminSidebar
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
-          sidebarCollapsed={
-            sidebarCollapsed
-          }
-          setSidebarCollapsed={
-            setSidebarCollapsed
-          }
+          sidebarCollapsed={sidebarCollapsed}
+          setSidebarCollapsed={setSidebarCollapsed}
         />
 
-        {/* PAGE CONTENT */}
-
-       <section className="min-w-0 flex-1">
-  {children}
-</section>
-
+        <section className="min-w-0 flex-1 transition-all duration-300">
+          {children}
+        </section>
       </div>
 
       {/* ========================= */}
