@@ -627,7 +627,7 @@ function BookingDetails({
               Customer's Bookings ({count})
             </h3>
 
-            <div className="divide-y divide-slate-100 overflow-hidden rounded-lg border border-[#E2E6EA]">
+            <div className="divide-y divide-slate-100 overflow-auto rounded-lg border border-[#E2E6EA]">
               {customerBookings.map((item) => {
                 const itemId = getId(item);
                 const current = itemId === id;
@@ -1870,8 +1870,8 @@ function AdminBookingsContent() {
               </div>
             </div>
 
-            <div className="w-full min-w-0 overflow-x-hidden">
-  <table className="w-full table-fixed border-collapse text-left">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[1000px] border-collapse text-left">
                 <thead>
                   <tr className="border-b border-slate-100 bg-white text-[10px] font-bold text-slate-500">
                     <th className="w-8 px-2.5 py-1.5">
