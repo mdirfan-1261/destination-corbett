@@ -1,10 +1,10 @@
 export const heroData = {
   images: [
-    "/images/hero/corbett-hero1.jpg",
-    "/images/hero/corbett-hero2.jpg",
-    "/images/hero/corbett-hero3.jpg",
-    "/images/hero/corbett-hero4.jpg",
-  ],
+  "/images/hero/optimized/corbett-hero1.webp",
+  "/images/hero/optimized/corbett-hero2.webp",
+  "/images/hero/optimized/corbett-hero3.webp",
+  "/images/hero/optimized/corbett-hero4.webp",
+],
 
   eyebrow: "EXPLORE. EXPERIENCE. CONNECT.",
 

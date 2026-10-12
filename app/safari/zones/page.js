@@ -15,7 +15,7 @@ const zones = [
         name: "Dhikala Zone",
         slug: "dhikala",
         location: "Ramnagar, Jim Corbett",
-        image: "/safari/zones/dhikala-zone1.jpg",
+        image: "/safari/zones/dhikala-zone1.webp",
         description:
             "One of Corbett's popular safari zones, known for its forest landscapes, wildlife experience and natural surroundings.",
         safari: "Jeep Safari",
@@ -26,7 +26,7 @@ const zones = [
         name: "Bijrani Zone",
         slug: "bijrani",
         location: "Ramnagar, Jim Corbett",
-        image: "/safari/zones/bijrani-zone.jpg",
+        image: "/safari/zones/bijrani-zone.webp",
         description:
             "A scenic forest zone offering a memorable wildlife experience with dense forests and open grassland areas.",
         safari: "Jeep Safari",
@@ -37,7 +37,7 @@ const zones = [
         name: "Jhirna Zone",
         slug: "jhirna",
         location: "Jim Corbett National Park",
-        image: "/safari/zones/jhirna-zone.jpg",
+        image: "/safari/zones/jhirna-zone.webp",
         description:
             "A beautiful safari zone with diverse landscapes and opportunities to experience Corbett's natural wilderness.",
         safari: "Jeep Safari",
@@ -48,7 +48,7 @@ const zones = [
         name: "Dhela Zone",
         slug: "dhela",
         location: "Ramnagar, Jim Corbett",
-        image: "/safari/zones/dhela-zone.jpg",
+        image: "/safari/zones/dhela-zone.webp",
         description:
             "Known for its peaceful forest environment, Dhela offers an exciting safari experience surrounded by nature.",
         safari: "Jeep Safari",
@@ -59,7 +59,7 @@ const zones = [
         name: "Sitabani Zone",
         slug: "sitabani",
         location: "Sitabani, Corbett",
-        image: "/safari/zones/sitabani-zone.jpg",
+        image: "/safari/zones/sitabani-zone.webp",
         description:
             "A serene forest area offering a relaxed wildlife experience away from the busier tourist zones.",
         safari: "Jeep Safari",
@@ -78,7 +78,7 @@ export default function SafariZonesPage() {
                     <div className="relative h-[300px] overflow-hidden sm:h-[420px] md:h-[470px] lg:h-[560px]">
 
                         <Image
-                            src="/safari/zones/zones-hero.jpg"
+                            src="/safari/zones/zones-hero.webp"
                             alt="Jim Corbett Safari Zones"
                             fill
                             priority

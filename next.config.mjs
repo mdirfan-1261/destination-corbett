@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  /* config options here */
+  images: {
+    formats: ["image/avif", "image/webp"],
+    qualities: [50, 70, 75],
+  },
 };
 
 export default nextConfig;

@@ -14,6 +14,7 @@ import {
   Mail,
   Phone,
 } from "lucide-react";
+import { useOrganisationProfile } from "@/hooks/useOrganisationProfile";
 
 const initialFormData = {
   name: "",
@@ -36,6 +37,11 @@ const initialFormData = {
 
 function ContactPage() {
   const searchParams = useSearchParams();
+  const { profile } = useOrganisationProfile();
+
+  const phone = profile.phone || "";
+  const phoneLink = phone.replace(/[^\d+]/g, "");
+  const email = profile.email || "";
 
   const hotelName = searchParams.get("hotel");
   const hotelImage = searchParams.get("hotelImage");
@@ -382,7 +388,7 @@ function ContactPage() {
             <div className="flex items-center gap-2 pt-1 sm:pt-0">
 
               <a
-                href="tel:+919205299338"
+                href={phoneLink ? `tel:${phoneLink}` : undefined}
                 className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/10 px-3.5 py-2.5 backdrop-blur-md transition-all duration-200 hover:bg-white/20 hover:border-[#C87532]/50 active:scale-[0.98] sm:flex-initial"
               >
 
@@ -398,7 +404,7 @@ function ContactPage() {
                   </p>
 
                   <p className="text-xs font-semibold text-white">
-                    +91 9205299338
+                    {phone}
                   </p>
 
                 </div>
@@ -406,7 +412,7 @@ function ContactPage() {
               </a>
 
               <a
-                href="mailto:marketing@texora.ai"
+                href={email ? `mailto:${email}` : undefined}
                 className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/10 px-3.5 py-2.5 backdrop-blur-md transition-all duration-200 hover:bg-white/20 hover:border-[#C87532]/50 active:scale-[0.98] sm:flex-initial"
               >
 
@@ -422,7 +428,7 @@ function ContactPage() {
                   </p>
 
                   <p className="truncate text-xs font-semibold text-white">
-                    marketing@texora.ai
+                    {email}
                   </p>
 
                 </div>
@@ -580,7 +586,7 @@ function ContactPage() {
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-1">
 
                 <a
-                  href="tel:+919205299338"
+                  href={phoneLink ? `tel:${phoneLink}` : undefined}
                   className="group flex items-center gap-3 rounded-2xl border border-[#18352A]/10 bg-white p-3 shadow-sm transition-all duration-200 hover:border-[#C87532]/50 hover:shadow-md active:scale-[0.98] cursor-pointer"
                 >
 
@@ -599,7 +605,7 @@ function ContactPage() {
                     </p>
 
                     <p className="text-xs font-bold text-[#18352A] transition-colors group-hover:text-[#C87532] sm:text-sm">
-                      +91 9205299338
+                      {phone}
                     </p>
 
                   </div>
@@ -607,7 +613,7 @@ function ContactPage() {
                 </a>
 
                 <a
-                  href="mailto:marketing@texora.ai"
+                  href={email ? `mailto:${email}` : undefined}
                   className="group flex items-center gap-3 rounded-2xl border border-[#18352A]/10 bg-white p-3 shadow-sm transition-all duration-200 hover:border-[#C87532]/50 hover:shadow-md active:scale-[0.98] cursor-pointer"
                 >
 
@@ -626,7 +632,7 @@ function ContactPage() {
                     </p>
 
                     <p className="break-all text-xs font-bold text-[#18352A] transition-colors group-hover:text-[#C87532] sm:text-sm">
-                      marketing@texora.ai
+                      {email}
                     </p>
 
                   </div>

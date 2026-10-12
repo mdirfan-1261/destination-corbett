@@ -29,6 +29,7 @@ import {
   Copy,
   Repeat,
   Check,
+  Ticket,
 } from "lucide-react";
 
 const API_BASE_URL = (
@@ -158,6 +159,27 @@ function getBookingDate(item) {
     item?.createdAt ||
     ""
   );
+}
+
+
+function getSafariDate(booking) {
+  return booking?.date || booking?.safariDate || booking?.travelDate || "";
+}
+
+function getSafariZone(booking) {
+  return booking?.zone || booking?.safariZone || booking?.location || "";
+}
+
+function getSafariId(booking) {
+  return booking?.safariId || "";
+}
+
+function getAdults(booking) {
+  return Number(booking?.adults ?? 0);
+}
+
+function getChildren(booking) {
+  return Number(booking?.children ?? 0);
 }
 
 function formatDate(value) {
@@ -465,6 +487,12 @@ function BookingDetails({
   if (!booking) return null;
 
   const type = getBookingType(booking);
+  
+const isSafari = type === "safari";
+const safariDate = getSafariDate(booking);
+const safariZone = getSafariZone(booking);
+const safariId = getSafariId(booking);
+
   const name = getName(booking);
   const phone = getPhone(booking);
   const email = getEmail(booking);
@@ -590,6 +618,36 @@ function BookingDetails({
             <DetailRow icon={CalendarDays} label="Check-out">
               {formatDate(booking.checkOut)}
             </DetailRow>
+
+            
+
+{isSafari && (
+  <>
+    <DetailRow icon={MapPin} label="Safari Zone">
+      {safariZone || "Not specified"}
+    </DetailRow>
+
+    <DetailRow icon={CalendarDays} label="Safari Date">
+      {formatDate(safariDate)}
+    </DetailRow>
+
+    {safariId && (
+      <DetailRow icon={Ticket} label="Safari ID">
+        {safariId}
+      </DetailRow>
+    )}
+
+    <DetailRow icon={Users} label="Adults">
+      {getAdults(booking)}
+    </DetailRow>
+
+    <DetailRow icon={Users} label="Children">
+      {getChildren(booking)}
+    </DetailRow>
+  </>
+)}
+
+
 
             <DetailRow icon={Users} label="Guests">
               {getGuestCount(booking) || "—"}

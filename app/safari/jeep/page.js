@@ -14,7 +14,7 @@ const safaris = [
     {
         name: "Dhikala Zone Safari",
         zone: "Dhikala",
-        image: "/safari/dhikala1.jpg",
+        image: "/safari/dhikala1.webp",
         duration: "Full Day (6-7 hrs)",
         price: "₹4,500",
         group: "Up to 6",
@@ -22,7 +22,7 @@ const safaris = [
     {
         name: "Bijrani Zone Safari",
         zone: "Bijrani",
-        image: "/safari/bijrani.jpg",
+        image: "/safari/bijrani.webp",
         duration: "Half Day (3-4 hrs)",
         price: "₹3,200",
         group: "Up to 6",
@@ -30,7 +30,7 @@ const safaris = [
     {
         name: "Jhirna Zone Safari",
         zone: "Jhirna",
-        image: "/safari/jhirna.jpg",
+        image: "/safari/jhirna.webp",
         duration: "Half Day (3-4 hrs)",
         price: "₹3,000",
         group: "Up to 6",
@@ -38,7 +38,7 @@ const safaris = [
     {
         name: "Dhela Zone Safari",
         zone: "Dhela",
-        image: "/safari/dhela.jpg",
+        image: "/safari/dhela.webp",
         duration: "Half Day (3-4 hrs)",
         price: "₹2,800",
         group: "Up to 6",
@@ -46,7 +46,7 @@ const safaris = [
     {
         name: "Sitabani Zone Safari",
         zone: "Sitabani",
-        image: "/safari/sitabani.jpg",
+        image: "/safari/sitabani.webp",
         duration: "Half Day (3-4 hrs)",
         price: "₹2,500",
         group: "Up to 6",
@@ -66,7 +66,7 @@ export default function SafariPage() {
                     <div className="relative h-[300px] overflow-hidden sm:h-[420px] md:h-[470px] lg:h-[560px]">
 
                         <Image
-                            src="/safari/safari-hero.jpg"
+                            src="/safari/safari-hero.webp"
                             alt="Jeep Safari in Jim Corbett"
                             fill
                             priority

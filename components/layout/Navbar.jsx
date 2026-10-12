@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Menu,
@@ -12,21 +12,34 @@ import {
 } from "lucide-react";
 import { navigation } from "@/data/navigation";
 import EnquiryWidget from "@/components/EnquiryWidget";
+import { useOrganisationProfile } from "@/hooks/useOrganisationProfile";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [mobileDropdown, setMobileDropdown] = useState(null);
   const [enquiryOpen, setEnquiryOpen] = useState(false);
 
-  const phoneNumber = "+919205299338";
-  const whatsappNumber = "919205299338";
+
+  const { profile } = useOrganisationProfile();
+
+const phoneNumber = (profile.phone || "").replace(/[^\d+]/g, "");
+
+  /* Bottom nav "Quick Quote" button fires this event */
+  useEffect(() => {
+    const handler = () => {
+      setOpen(false);
+      setEnquiryOpen(true);
+    };
+    window.addEventListener("open-quick-enquiry", handler);
+    return () => window.removeEventListener("open-quick-enquiry", handler);
+  }, []);
 
   return (
     <>
       {/* ================= NAVBAR ================= */}
       <header className="sticky top-0 z-50 overflow-visible bg-white/60 backdrop-blur-2xl border-b border-white/70 shadow-[0_8px_30px_rgba(23,32,51,0.08)]">
         {/* ================= NAVBAR CONTAINER ================= */}
-        <div className="max-w-7xl mx-auto px-2.5 sm:px-5 py-1.5 flex items-center justify-between gap-1.5 sm:gap-2">
+        <div className="max-w-7xl mx-auto px-3 sm:px-5 py-2 sm:py-1.5 flex items-center justify-between gap-2">
 
           {/* ================= LOGO ================= */}
           <Link
@@ -34,25 +47,41 @@ export default function Navbar() {
             className="flex items-center min-w-0 shrink"
             onClick={() => setOpen(false)}
           >
-            <div className="group relative flex items-center gap-1 sm:gap-2 cursor-pointer min-w-0">
+            <div className="group relative flex items-center gap-2 sm:gap-2.5 cursor-pointer min-w-0">
 
-              {/* LOGO IMAGE */}
-              <div className="relative h-8 w-8 sm:h-10 sm:w-10 shrink-0 overflow-hidden rounded-lg sm:rounded-xl border border-[#C87532] shadow-sm transition-all duration-300 group-hover:scale-105">
+                            {/* LOGO IMAGE — ORGANIZATION PROFILE API */}
+              <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-xl border border-[#B96928] bg-white shadow-sm transition-all duration-300 group-hover:scale-105">
                 <img
-                  src="/logo/corbett-logo.jpeg"
-                  alt="Destination Corbett"
+                  src={profile.logo || "/logo/corbett-logo.jpeg"}
+                  alt={`${profile.name || "Destination Corbett"} logo`}
                   className="h-full w-full object-cover"
+                  onError={(event) => {
+                    event.currentTarget.onerror = null;
+                    event.currentTarget.src = "/logo/corbett-logo.jpeg";
+                  }}
                 />
               </div>
 
               {/* LOGO TEXT */}
-  <div className="flex flex-col min-w-0 leading-none">
-  <span className="text-[8px] xs:text-[9px] sm:text-xs font-black tracking-[0.06em] sm:tracking-[0.10em] text-[#18352A] uppercase truncate">
-  DESTINATION
-</span>
+<div className="flex flex-col min-w-0 leading-none">
+  <span className="text-[12px] sm:text-xs font-black tracking-[0.08em] sm:tracking-[0.10em] text-[#18352A] uppercase whitespace-nowrap">
+    {profile.name
+      ? profile.name.split(" ").slice(0, -1).join(" ") || profile.name
+      : "DESTINATION"}
+  </span>
 
-  <span className="mt-0.5 text-[9px] xs:text-[10px] sm:text-[11px] font-black tracking-[0.09em] sm:tracking-[0.12em] text-[#B96928] uppercase truncate">
-    CORBETT
+  <span className="mt-0.5 text-[16px] sm:text-[13px] font-black tracking-[0.1em] sm:tracking-[0.12em] text-[#B96928] uppercase whitespace-nowrap">
+    {profile.name?.split(" ").slice(-1)[0] || "CORBETT"}
+  </span>
+
+  <span className="mt-1 flex items-center whitespace-nowrap text-[10px] sm:text-[11px] font-semibold tracking-normal text-[#18352A]/80">
+    <span>Stay</span>
+    <span className="mx-0.5 text-[#B96928]">•</span>
+    <span>Resort</span>
+    <span className="mx-0.5 text-[#B96928]">•</span>
+    <span>Safari</span>
+    <span className="mx-0.5 text-[#B96928]">•</span>
+    <span>Events</span>
   </span>
 </div>
 
@@ -303,97 +332,81 @@ export default function Navbar() {
           </div>
 
           {/* ================= MOBILE CONTACT + MENU ================= */}
-          {/* ================= MOBILE CONTACT + MENU ================= */}
-<div className="md:hidden flex items-center gap-1 sm:gap-1.5 shrink-0">
+          <div className="md:hidden flex items-center gap-1.5 sm:gap-1.5 shrink-0">
 
-  {/* CALL */}
-  <a
-    href={`tel:${phoneNumber}`}
-    aria-label="Call Destination Corbett"
-    className="
-      flex items-center justify-center
-      h-8 w-8
-      sm:h-9 sm:w-9
-      shrink-0
-      rounded-full
-      bg-white/60
-      backdrop-blur-xl
-      border border-white/80
-      text-[#172033]
-      shadow-sm
-      hover:bg-white/80
-      hover:text-[#C87532]
-      transition-all
-    "
-  >
-    <Phone
-      size={16}
-      className="sm:w-[18px] sm:h-[18px]"
-      strokeWidth={2.2}
-    />
-  </a>
+            {/* CALL */}
+            <a
+              href={`tel:${phoneNumber}`}
+              aria-label="Call Destination Corbett"
+              className="
+                flex items-center justify-center
+                h-9 w-9
+                shrink-0
+                rounded-full
+                bg-white/60
+                backdrop-blur-xl
+                border border-white/80
+                text-[#172033]
+                shadow-sm
+                hover:bg-white/80
+                hover:text-[#C87532]
+                transition-all
+              "
+            >
+              <Phone size={17} strokeWidth={2.2} />
+            </a>
 
-  {/* WHATSAPP */}
-  <a
-    href={`https://wa.me/${whatsappNumber}`}
-    target="_blank"
-    rel="noopener noreferrer"
-    aria-label="Chat on WhatsApp"
-    className="
-      flex items-center justify-center
-      h-8 w-8
-      sm:h-9 sm:w-9
-      shrink-0
-      rounded-full
-      bg-white/60
-      backdrop-blur-xl
-      border border-white/80
-      shadow-sm
-      hover:bg-white/80
-      transition-all
-    "
-  >
-    <MessageCircle
-      size={17}
-      className="sm:w-[19px] sm:h-[19px] text-[#25D366]"
-      strokeWidth={2.2}
-    />
-  </a>
+            
 
-  {/* MOBILE MENU */}
-  <button
-    type="button"
-    onClick={() => setOpen(!open)}
-    className="
-      flex items-center justify-center
-      h-8 w-8
-      sm:h-9 sm:w-9
-      shrink-0
-      rounded-full
-      bg-white/50
-      backdrop-blur-xl
-      border border-white/80
-      text-[#172033]
-      shadow-sm
-      hover:bg-white/70
-      transition-all
-    "
-    aria-label="Toggle menu"
-  >
-    {open ? (
-      <X
-        size={20}
-        className="sm:w-[21px] sm:h-[21px]"
-      />
-    ) : (
-      <Menu
-        size={20}
-        className="sm:w-[21px] sm:h-[21px]"
-      />
-    )}
-  </button>
+            {/* WHATSAPP 
+            <a
+              href={`https://wa.me/${whatsappNumber}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Chat on WhatsApp"
+              className="
+                flex items-center justify-center
+                h-9 w-9
+                shrink-0
+                rounded-full
+                bg-white/60
+                backdrop-blur-xl
+                border border-white/80
+                shadow-sm
+                hover:bg-white/80
+                transition-all
+              "
+            >
+              <MessageCircle
+                size={18}
+                className="text-[#25D366]"
+                strokeWidth={2.2}
+              />
+            </a> */}
 
-</div>
+            {/* MOBILE MENU */}
+            <button
+              type="button"
+              onClick={() => setOpen(!open)}
+              className="
+                flex items-center justify-center
+                h-9 w-9
+                shrink-0
+                rounded-full
+                bg-white/50
+                backdrop-blur-xl
+                border border-white/80
+                text-[#172033]
+                shadow-sm
+                hover:bg-white/70
+                transition-all
+              "
+              aria-label="Toggle menu"
+            >
+              {open ? <X size={21} /> : <Menu size={21} />}
+            </button>
+
+          </div>
         </div>
 
         {/* ================= MOBILE NAVIGATION ================= */}
@@ -489,10 +502,9 @@ export default function Navbar() {
                           className={`
                             transition-transform
                             duration-300
-                            ${
-                              mobileDropdown === item.name
-                                ? "rotate-180"
-                                : ""
+                            ${mobileDropdown === item.name
+                              ? "rotate-180"
+                              : ""
                             }
                           `}
                         />

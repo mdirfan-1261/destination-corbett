@@ -405,6 +405,7 @@ export default function AdminSidebar({
                   {departmentsOpen && (
                     <div className="ml-3 space-y-1 border-l border-white/10 pl-3">
                       {[
+                        ["Manage All Departments", "/admin/organisation/departments"],
                         ["Safari", "/admin/organisation/departments/safari"],
                         ["Stay", "/admin/organisation/departments/stay"],
                         ["Events", "/admin/organisation/departments/events"],
@@ -819,6 +820,7 @@ export default function AdminSidebar({
                 {departmentsOpen && (
                   <div className="ml-3 space-y-1 border-l border-white/10 pl-3">
                     {[
+                      ["Manage All Departments", "/admin/organisation/departments"],
                       ["Safari", "/admin/organisation/departments/safari"],
                       ["Stay", "/admin/organisation/departments/stay"],
                       ["Events", "/admin/organisation/departments/events"],

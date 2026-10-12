@@ -161,7 +161,9 @@ export default function StayPage() {
                     {/* View Stay */}
                     <Link
                       href={category.href}
-                      className="inline-flex h-6 min-w-0 flex-1 items-center justify-center gap-0.5 rounded-full bg-white px-1 text-[7px] font-semibold whitespace-nowrap text-[#172033] transition-all duration-300 hover:bg-[#C87532] hover:text-white sm:h-9 sm:flex-none sm:gap-1.5 sm:px-3 sm:text-xs md:h-10 md:px-4 md:text-sm"
+
+                      className="inline-flex h-8 min-w-0 flex-1 items-center justify-center gap-1 rounded-full bg-white px-1 text-[10px] font-semibold whitespace-nowrap text-[#172033] transition-all duration-300 hover:bg-[#B96928] hover:text-white sm:h-9 sm:gap-1.5 sm:px-3 sm:text-xs md:h-10 md:px-4 md:text-sm"
+
                     >
                       View Stay
 
@@ -180,7 +182,9 @@ export default function StayPage() {
                       )}&location=${encodeURIComponent(
                         "Jim Corbett, Uttarakhand"
                       )}`}
-                      className="inline-flex h-6 min-w-0 flex-1 items-center justify-center gap-0.5 rounded-full bg-[#C87532] px-1 text-[7px] font-semibold whitespace-nowrap text-white transition-all duration-300 hover:bg-[#B96928] sm:h-9 sm:flex-none sm:gap-1.5 sm:px-3 sm:text-xs md:h-10 md:px-4 md:text-sm"
+
+                      className="inline-flex h-8 min-w-0 flex-1 items-center justify-center gap-1 rounded-full bg-[#B96928] px-1 text-[10px] font-semibold whitespace-nowrap text-white transition-all duration-300 hover:bg-[#A85C22] sm:h-9 sm:gap-1.5 sm:px-3 sm:text-xs md:h-10 md:px-4 md:text-sm"
+
                     >
                       Enquire
 

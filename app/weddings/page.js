@@ -20,7 +20,7 @@ const weddingPageData = {
     highlight: "Surrounded by Nature.",
     description:
       "Celebrate your special day in the heart of Jim Corbett with beautiful venues, comfortable stays, curated experiences and complete wedding planning support.",
-    image: "/weddings/wedding-hero1.jpg",
+    image: "/weddings/wedding-hero1.webp",
   },
 
   introduction: {
@@ -40,7 +40,7 @@ const weddingPageData = {
       location: "Dhikuli, Jim Corbett",
       guests: "100–300 Guests",
       price: "Custom Quote",
-      image: "/weddings/venue-1.jpg",
+      image: "/weddings/venue-1.webp",
     },
     {
       id: "riverside-wedding",
@@ -48,7 +48,7 @@ const weddingPageData = {
       location: "Near Kosi River",
       guests: "150–500 Guests",
       price: "Custom Quote",
-      image: "/weddings/venue-2.jpg",
+      image: "/weddings/venue-2.webp",
     },
     {
       id: "luxury-jungle-resort",
@@ -56,48 +56,48 @@ const weddingPageData = {
       location: "Ramnagar, Corbett",
       guests: "100–400 Guests",
       price: "Custom Quote",
-      image: "/weddings/venue-3.jpg",
+      image: "/weddings/venue-3.webp",
     },
   ],
 
   services: [
     {
-      image: "/weddings/venue-stay.jpg",
+      image: "/weddings/venue-stay.webp",
       title: "Venue & Stay",
       text: "Beautiful wedding venues with comfortable accommodation for your guests.",
     },
     {
-      image: "/weddings/catering.jpg",
+      image: "/weddings/catering.webp",
       title: "Catering",
       text: "Curated menus, local flavours and customised dining experiences.",
     },
     {
-      image: "/weddings/decor-styling.jpg",
+      image: "/weddings/decor-styling.webp",
       title: "Decor & Styling",
       text: "Wedding decor designed around your theme, colours and celebration style.",
     },
     {
-      image: "/weddings/photography.jpg",
+      image: "/weddings/photography.webp",
       title: "Photography & Films",
       text: "Capture every meaningful moment with professional wedding photography and films.",
     },
     {
-      image: "/weddings/entertainment.jpg",
+      image: "/weddings/entertainment.webp",
       title: "Entertainment",
       text: "Music, DJ, performances and entertainment for every wedding function.",
     },
     {
-      image: "/weddings/guest-transport.jpg",
+      image: "/weddings/guest-transport.webp",
       title: "Guest Transport",
       text: "Comfortable transportation arrangements for your family and guests.",
     },
     {
-      image: "/weddings/mehndi-makeup.jpg",
+      image: "/weddings/mehndi-makeup.webp",
       title: "Mehndi & Makeup",
       text: "Bridal makeup, mehndi and beauty services for your special celebrations.",
     },
     {
-      image: "/weddings/wedding-planning.jpg",
+      image: "/weddings/wedding-planning.webp",
       title: "Wedding Planning",
       text: "Complete planning, coordination and on-ground support for your wedding.",
     },
@@ -109,7 +109,7 @@ const weddingPageData = {
     highlight: "Corbett experience.",
     description:
       "Give your guests more than a wedding. Combine your celebration with jungle experiences, nature, local culture, comfortable stays and unforgettable moments.",
-    image: "/weddings/wedding-experience.jpg",
+    image: "/weddings/wedding-experience.webp",
   },
 
   packages: [

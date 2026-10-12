@@ -21,7 +21,7 @@ const aboutData = {
     highlight: "Corbett experiences.",
     description:
       "A travel facilitation platform that makes planning your Corbett journey easier, from the right stay to safaris, packages, celebrations and events.",
-    image: "/images/about/corbett-about.jpg",
+    image: "/images/about/corbett-about.webp",
     location: "Jim Corbett, Uttarakhand",
     tagline: "Explore. Experience. Connect.",
   },

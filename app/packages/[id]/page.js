@@ -21,7 +21,7 @@ const packagesData = [
     location: "Bijrani & Garjiya Zones",
     price: "₹12,499",
     priceUnit: "per person",
-    image: "/images/packages/safari-expedition.jpg",
+    image: "/images/packages/safari-expedition.webp",
     description:
       "Immerse yourself in the wilderness of Corbett with jeep safari slots, premium resort stays, guided nature experiences and comfortable hospitality.",
     inclusions: [
@@ -43,7 +43,7 @@ const packagesData = [
     location: "Kosi River Bank, Corbett",
     price: "₹18,999",
     priceUnit: "per person",
-    image: "/images/packages/luxury-resort1.jpg",
+    image: "/images/packages/luxury-resort1.webp",
     description:
       "Unwind in absolute luxury with private pool villas, spa therapy vouchers, gourmet dining, and exclusive riverfront experiences.",
     inclusions: [
@@ -65,7 +65,7 @@ const packagesData = [
     location: "Jim Corbett National Park",
     price: "₹14,500",
     priceUnit: "per delegate",
-    image: "/images/packages/corporate-retreat1.jpg",
+    image: "/images/packages/corporate-retreat1.webp",
     description:
       "Seamlessly blend corporate meetings with team building, safari experiences and event support.",
     inclusions: [
@@ -87,7 +87,7 @@ const packagesData = [
     location: "Dhikala Core Zone",
     price: "₹8,999",
     priceUnit: "per person",
-    image: "/images/packages/dhikala-zone.jpg",
+    image: "/images/packages/dhikala-zone.webp",
     description:
       "Deep forest core zone experience designed for wildlife photographers, bird watchers and nature lovers.",
     inclusions: [
@@ -109,7 +109,7 @@ const packagesData = [
     location: "Sitabani & Dhikuli",
     price: "₹10,999",
     priceUnit: "per person",
-    image: "/images/packages/family-package.jpg",
+    image: "/images/packages/family-package.webp",
     description:
       "A complete family vacation with resort relaxation, wildlife experiences and memorable Corbett activities.",
     inclusions: [
@@ -131,7 +131,7 @@ const packagesData = [
     location: "Kosi River & Marchula",
     price: "₹11,800",
     priceUnit: "per person",
-    image: "/images/packages/adventure-package.jpg",
+    image: "/images/packages/adventure-package.webp",
     description:
       "A thrill-filled Corbett experience combining river rafting, ziplining, trekking and jungle safari.",
     inclusions: [

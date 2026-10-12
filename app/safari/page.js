@@ -26,7 +26,7 @@ export default function SafariPage() {
                     <div className="relative h-[300px] sm:h-[420px] md:h-[470px] lg:h-[560px] overflow-hidden">
 
                         <Image
-                            src="/safari/safari-hero.jpg"
+                            src="/safari/safari-hero.webp"
                             alt="Safari in Jim Corbett"
                             fill
                             priority

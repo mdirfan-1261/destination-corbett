@@ -808,8 +808,10 @@ export default function EventsPage() {
             </p>
 
             <h2 className="mt-1.5 text-[24px] font-bold leading-[1.15] sm:text-3xl">
-              Meetings â€¢ Retreats â€¢ Conferences â€¢ Celebrations
-            </h2>
+  Meetings <span aria-hidden="true">{"\u2022"}</span> Retreats{" "}
+  <span aria-hidden="true">{"\u2022"}</span> Conferences{" "}
+  <span aria-hidden="true">{"\u2022"}</span> Celebrations
+</h2>
 
             <p className="mx-auto mt-2.5 max-w-xl text-[13px] leading-5.5 text-white/60 sm:mt-3 sm:text-sm sm:leading-6">
 

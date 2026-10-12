@@ -13,7 +13,7 @@ import {
 
 const canterSafari = {
     name: "Canter Safari",
-    image: "/safari/canter.jpg",
+    image: "/safari/canter.webp",
     duration: "3–4 hrs",
     price: "₹1,500",
     group: "Up to 16",

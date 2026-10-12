@@ -3,7 +3,7 @@ const safariOptions = [
         id: 1,
         name: "Jeep Safari",
         location: "Jim Corbett National Park",
-        image: "/safari/jeep-safari.jpg",
+        image: "/safari/jeep-safari.webp",
         description:
             "Explore the wilderness of Jim Corbett in an open gypsy with an experienced naturalist and driver.",
         price: "₹5,500",
@@ -15,7 +15,7 @@ const safariOptions = [
         id: 2,
         name: "Canter Safari",
         location: "Jim Corbett National Park",
-        image: "/safari/canter-safari.jpg",
+        image: "/safari/canter-safari.webp",
         description:
             "Enjoy a shared safari experience through Corbett's forest zones with fellow wildlife enthusiasts.",
         price: "₹1,500",
@@ -27,7 +27,7 @@ const safariOptions = [
         id: 3,
         name: "Elephant Safari",
         location: "Corbett Forest Area",
-        image: "/safari/elephant-safari1.jpg",
+        image: "/safari/elephant-safari1.webp",
         description:
             "Experience the forest from a unique perspective with a memorable elephant safari adventure.",
         price: "₹2,500",
