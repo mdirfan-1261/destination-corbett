@@ -194,7 +194,7 @@ export default function AdminSidebar({
     false
   )}
 >
-  <Images size={17} />
+  <ImagePlus size={17} />
   <span>Media Library</span>
 </Link>
               {/* ADMINISTRATION */}
