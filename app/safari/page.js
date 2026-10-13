@@ -1,433 +1,1084 @@
+
 "use client";
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
-import { ArrowRight, MapPin, ChevronDown } from "lucide-react";
-import safariOptions from "@/data/safari";
+import { useCallback, useEffect, useState } from "react";
+import { useOrganisationProfile } from "@/hooks/useOrganisationProfile";
+import {
+    ArrowRight,
+    Sparkles,
+    CalendarDays,
+    MapPin,
+    ShieldCheck,
+    Plus,
+    PhoneCall,
+    SlidersHorizontal,
+    Users,
+    MessageCircle,
+    RefreshCw,
+    ChevronDown,
+} from "lucide-react";
 
+const API_BASE = (
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+).replace(/\/$/, "");
 
-export default function SafariPage() {
-    const [expanded, setExpanded] = useState(null);
+const FALLBACK_IMAGE = "/safari/safari-hero.webp";
 
-    const handleToggle = (id) => {
-        setExpanded(expanded === id ? null : id);
-    };
+// =====================================================
+// HELPERS
+// =====================================================
+
+function formatPrice(value) {
+    if (value === null || value === undefined || value === "") {
+        return "Price on request";
+    }
+
+    const amount = Number(value);
+
+    if (!Number.isFinite(amount)) {
+        return "Price on request";
+    }
+
+    return new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+        maximumFractionDigits: 0,
+    }).format(amount);
+}
+
+function normalisePhoneNumber(value) {
+    let digits = String(value || "").replace(/\D/g, "");
+
+    if (!digits) return "";
+
+    if (digits.length === 10) {
+        digits = `91${digits}`;
+    }
+
+    if (digits.startsWith("0091")) {
+        digits = digits.slice(2);
+    }
+
+    return digits;
+}
+
+function getWhatsAppUrl(message, number) {
+    const whatsappNumber = normalisePhoneNumber(number);
+
+    if (!whatsappNumber || whatsappNumber.length < 10) {
+        return "";
+    }
+
+    return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
+        message
+    )}`;
+}
+
+function WhatsAppLink({
+    message,
+    number,
+    className = "",
+    children,
+    label,
+}) {
+    const url = getWhatsAppUrl(message, number);
 
     return (
-        <main className="bg-white">
+        <a
+            href={url || undefined}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={label || "Contact us on WhatsApp"}
+            aria-disabled={!url}
+            onClick={(event) => {
+                event.stopPropagation();
 
-            {/* ================= HERO ================= */}
+                if (!url) {
+                    event.preventDefault();
+                }
+            }}
+            className={`${className} ${!url ? "cursor-not-allowed opacity-60" : ""
+                }`}
+        >
+            {children}
+        </a>
+    );
+}
 
-            <section className="bg-[#F7F5F0] px-1.5 py-1.5 sm:px-4 sm:py-4 md:px-6 md:py-5">
+function getImageUrl(image) {
+    if (!image || typeof image !== "string") {
+        return FALLBACK_IMAGE;
+    }
 
-                <div className="relative mx-auto max-w-7xl overflow-hidden rounded-xl sm:rounded-[24px] md:rounded-[28px] bg-[#172033] text-white">
+    const value = image.trim();
 
-                    <div className="relative h-[300px] sm:h-[420px] md:h-[470px] lg:h-[560px] overflow-hidden">
+    if (!value) return FALLBACK_IMAGE;
 
-                        <Image
-                            src="/safari/safari-hero.webp"
-                            alt="Safari in Jim Corbett"
-                            fill
-                            priority
-                            quality={75}
-                            sizes="100vw"
-                            className="object-cover"
-                        />
+    if (/^https?:\/\//i.test(value)) {
+        return value;
+    }
 
-                        {/* DARK OVERLAY */}
-                        <div className="absolute inset-0 bg-black/25" />
-                        <div className="absolute inset-0 bg-gradient-to-r from-[#172033]/85 via-[#172033]/50 to-transparent" />
+    if (
+        value.startsWith("/safari/") ||
+        value.startsWith("/images/") ||
+        value.startsWith("/logo/")
+    ) {
+        return value;
+    }
 
-                        {/* HERO CONTENT */}
+    if (
+        value.startsWith("/uploads/") ||
+        value.startsWith("/api/uploads/")
+    ) {
+        return `${API_BASE}${value}`;
+    }
 
-                        <div className="relative z-10 flex h-full items-center px-5 sm:px-8 md:px-12 lg:px-16">
+    return value.startsWith("/") ? value : `/${value}`;
+}
 
-                            <div className="max-w-2xl">
+function getZoneNames(zones) {
+    if (!Array.isArray(zones)) return [];
 
-                                <p className="mb-2 text-[9px] font-semibold tracking-[2px] text-[#C87532] sm:mb-3 sm:text-xs sm:tracking-[3px] md:text-sm">
-                                    WILDLIFE & ADVENTURE
-                                </p>
+    return zones
+        .map((zone) => {
+            if (typeof zone === "string") return zone;
 
-                                <h1 className="text-[27px] font-bold leading-[1.08] sm:text-4xl md:text-5xl lg:text-6xl">
-                                    Safari in{" "}
-                                    <span className="text-[#C87532]">
-                                        Jim Corbett
-                                    </span>
-                                </h1>
+            return zone?.name || zone?.zoneName || "";
+        })
+        .filter(Boolean);
+}
 
-                                <p className="mt-2 max-w-xl text-[11px] leading-[1.55] text-white/85 sm:mt-4 sm:text-base sm:leading-7 md:mt-5 md:text-lg">
-                                    Discover the wild side of Jim Corbett with
-                                    unforgettable safari experiences through its
-                                    forests, grasslands and wildlife zones.
-                                </p>
+function getDefaultImage(service) {
+    const name = String(
+        service?.name || service?.serviceCode || ""
+    ).toLowerCase();
 
-                                <Link
-                                    href="#safari-options"
-                                    className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-[#C87532] px-4 py-2 text-[11px] font-semibold text-white transition hover:bg-[#B96928] sm:mt-6 sm:gap-2 sm:px-6 sm:py-3 sm:text-sm"
-                                >
-                                    Explore Safaris
-                                    <ArrowRight size={15} />
-                                </Link>
+    const code = String(service?.serviceCode || "").toLowerCase();
 
-                                {/* MOBILE HIGHLIGHTS */}
+    if (name.includes("canter") || code.includes("canter")) {
+        return "/safari/canter-safari.webp";
+    }
 
-                                <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-[9px] text-white/75 sm:hidden">
-                                    <span className="flex items-center gap-1.5">
-                                        <span className="h-1.5 w-1.5 rounded-full bg-[#C87532]" />
-                                        Jeep Safari
-                                    </span>
+    if (name.includes("elephant") || code.includes("elephant")) {
+        return "/safari/elephant-safari1.webp";
+    }
 
-                                    <span className="flex items-center gap-1.5">
-                                        <span className="h-1.5 w-1.5 rounded-full bg-[#C87532]" />
-                                        Canter Safari
-                                    </span>
+    if (name.includes("jeep") || code.includes("jeep")) {
+        return "/safari/jeep-safari.webp";
+    }
 
-                                    <span className="flex items-center gap-1.5">
-                                        <span className="h-1.5 w-1.5 rounded-full bg-[#C87532]" />
-                                        Wildlife
-                                    </span>
-                                </div>
+    return FALLBACK_IMAGE;
+}
 
+function mapSafariService(service, index) {
+    const zones = getZoneNames(service?.zones);
+
+    const rawImage =
+        service?.image ||
+        service?.imageUrl ||
+        service?.imageURL ||
+        "";
+
+    const capacity = Number(service?.capacity);
+
+    return {
+        id: String(
+            service?._id ||
+            service?.id ||
+            service?.serviceCode ||
+            index
+        ),
+
+        serviceCode: service?.serviceCode || "",
+        name: service?.name || "Safari Experience",
+
+        category: String(
+            service?.category ||
+            service?.serviceType ||
+            service?.serviceCode ||
+            service?.name ||
+            "other"
+        ).toLowerCase(),
+
+        location:
+            service?.location ||
+            service?.area ||
+            (zones.length
+                ? zones.join(", ")
+                : "Jim Corbett National Park"),
+
+        image: getImageUrl(rawImage || getDefaultImage(service)),
+
+        description:
+            service?.description ||
+            "Explore the wildlife of Jim Corbett.",
+
+        price: formatPrice(service?.price),
+
+        duration:
+            service?.duration !== undefined &&
+                service?.duration !== null &&
+                service?.duration !== ""
+                ? String(service.duration)
+                : "Contact for details",
+
+        capacity:
+            service?.capacity !== null &&
+                service?.capacity !== undefined &&
+                service?.capacity !== "" &&
+                Number.isFinite(capacity) &&
+                capacity > 0
+                ? capacity
+                : null,
+
+        guests:
+            service?.capacity !== null &&
+                service?.capacity !== undefined &&
+                service?.capacity !== "" &&
+                Number.isFinite(capacity) &&
+                capacity > 0
+                ? `Up to ${capacity} Guests`
+                : "Capacity on request",
+    };
+}
+
+// =====================================================
+// CATEGORY HELPERS
+// =====================================================
+
+function getSafariCategory(safari) {
+    const value = `${safari.name} ${safari.serviceCode} ${safari.category}`
+        .toLowerCase()
+        .replace(/[_-]/g, " ");
+
+    if (value.includes("jeep")) return "jeep";
+    if (value.includes("canter")) return "canter";
+    if (value.includes("elephant")) return "elephant";
+
+    return "other";
+}
+
+function getSafariEnquiryUrl(safari) {
+    return `/contact?type=safari&safari=${encodeURIComponent(
+        safari.name
+    )}&service_code=${encodeURIComponent(safari.serviceCode)}`;
+}
+
+function getSafariBookingUrl(safari) {
+    return `/booking?type=safari&safari_id=${encodeURIComponent(
+        safari.id
+    )}&service_code=${encodeURIComponent(
+        safari.serviceCode
+    )}&safari=${encodeURIComponent(safari.name)}`;
+}
+
+// =====================================================
+// PAGE
+// =====================================================
+
+export default function SafariPage() {
+    const { profile } = useOrganisationProfile();
+
+    const [safariOptions, setSafariOptions] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState("");
+    const [activeCategory, setActiveCategory] = useState("all");
+    const [expanded, setExpanded] = useState(null);
+    const [openFaq, setOpenFaq] = useState(null);
+
+    const whatsappNumber = profile?.whatsapp || profile?.phone || "";
+    const contactPhone = normalisePhoneNumber(profile?.phone);
+
+    // ===================================================
+    // BACKEND DATA
+    // ===================================================
+
+    const loadSafariServices = useCallback(async () => {
+        setLoading(true);
+        setLoadError("");
+
+        try {
+            const response = await fetch(
+                `${API_BASE}/api/public/safari/services`,
+                { cache: "no-store" }
+            );
+
+            if (!response.ok) {
+                throw new Error(
+                    `Safari services load nahi ho paayi. Server status: ${response.status}`
+                );
+            }
+
+            const result = await response.json();
+
+            if (result?.success === false) {
+                throw new Error(
+                    result.message || "Safari services load nahi ho paayi."
+                );
+            }
+
+            const services = Array.isArray(result)
+                ? result
+                : Array.isArray(result?.data)
+                    ? result.data
+                    : Array.isArray(result?.data?.services)
+                        ? result.data.services
+                        : Array.isArray(result?.services)
+                            ? result.services
+                            : [];
+
+            const activeServices = services.filter((service) => {
+                const status = String(
+                    service?.status || "active"
+                ).toLowerCase();
+
+                return ![
+                    "inactive",
+                    "disabled",
+                    "deleted",
+                    "archived",
+                ].includes(status);
+            });
+
+            setSafariOptions(
+                activeServices.map((service, index) =>
+                    mapSafariService(service, index)
+                )
+            );
+
+            setExpanded(null);
+        } catch (error) {
+            console.error("Safari services error:", error);
+
+            setLoadError(
+                error?.message ||
+                "Safari services load nahi ho paayi. Backend connection check karein."
+            );
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        loadSafariServices();
+    }, [loadSafariServices]);
+
+    // ===================================================
+    // WHATSAPP MESSAGES
+    // ===================================================
+
+    const generalMessage = [
+        "Hi Destination Corbett,",
+        "",
+        "I want to plan a Jim Corbett safari.",
+        "Please share available safari options, dates, prices and booking details.",
+    ].join("\n");
+
+    const helpMessage = [
+        "Hi Destination Corbett,",
+        "",
+        "Please help me choose a suitable Jim Corbett safari.",
+        "",
+        "Please share available safari types, zones, dates, group capacity and final pricing.",
+    ].join("\n");
+
+    const customMessage = [
+        "Hi Destination Corbett,",
+        "",
+        "I would like a customised safari enquiry.",
+        "Please help me with availability, suitable safari options and final pricing.",
+    ].join("\n");
+
+    function getSafariMessage(safari) {
+        return [
+            "Hi Destination Corbett,",
+            "",
+            "I am interested in this safari:",
+            `Safari: ${safari.name}`,
+            `Location: ${safari.location}`,
+            `Displayed price: ${safari.price}`,
+            `Duration: ${safari.duration}`,
+            `Group capacity: ${safari.guests}`,
+            "",
+            "Please confirm availability, applicable permits, final price and booking process.",
+        ].join("\n");
+    }
+
+    const filteredSafaris =
+        activeCategory === "all"
+            ? safariOptions
+            : safariOptions.filter(
+                (safari) =>
+                    getSafariCategory(safari) === activeCategory
+            );
+
+    const categories = [
+        { id: "all", label: "All Safaris" },
+        { id: "jeep", label: "Jeep Safari" },
+        { id: "canter", label: "Canter Safari" },
+        { id: "elephant", label: "Elephant Safari" },
+        { id: "other", label: "Other" },
+    ];
+
+    function handleToggle(id) {
+        setExpanded((current) =>
+            current === id ? null : id
+        );
+    }
+
+    return (
+        <main className="bg-[#F7F5F0] text-[#172033]">
+            {/* HERO */}
+
+            <section className="px-2 py-2 sm:px-4 sm:py-4 md:px-6">
+                <div className="relative mx-auto min-h-[260px] max-w-[1440px] overflow-hidden rounded-2xl bg-[#172033] text-white sm:min-h-[420px] sm:rounded-3xl lg:min-h-[500px]">
+                    <Image
+                        src="/safari/safari-hero.webp"
+                        alt="Safari adventure in Jim Corbett"
+                        fill
+                        priority
+                        quality={70}
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 1440px"
+                        className="object-cover"
+                    />
+
+                    <div className="absolute inset-0 bg-[#172033]/55" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#172033]/85 via-[#172033]/55 to-[#172033]/15" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#172033]/45 to-transparent" />
+
+                    <div className="relative z-10 flex min-h-[260px] items-center px-4 py-6 sm:min-h-[420px] sm:px-9 sm:py-12 lg:min-h-[500px] lg:px-14">
+                        <div className="max-w-2xl">
+                            <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md sm:mb-4 sm:gap-2 sm:py-2 sm:text-sm">
+                                <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                                Destination Corbett Safari
                             </div>
 
+                            <h1 className="text-[1.6rem] font-bold leading-tight tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
+                                Explore the Wild
+                                <span className="mt-0.5 block text-[#E6A76D] sm:mt-1">
+                                    Jim Corbett Safari
+                                </span>
+                            </h1>
+
+                            <p className="mt-3 max-w-xl text-sm leading-6 text-white/90 sm:mt-4 sm:text-base sm:leading-7">
+                                Compare safari experiences and enquire about dates,
+                                availability and pricing with our team.
+                            </p>
+
+                            <div className="mt-4 flex flex-wrap gap-2.5 sm:mt-6 sm:gap-3">
+                                <a
+                                    href="#safari-options"
+                                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#B96928] px-5 text-sm font-bold text-white transition hover:bg-[#9F5520] focus:outline-none focus:ring-2 focus:ring-white"
+                                >
+                                    Explore Safaris
+                                    <ArrowRight className="h-4 w-4" />
+                                </a>
+
+                                <Link
+                                    href="/contact?type=safari"
+                                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/40 bg-white/10 px-5 text-sm font-bold text-white backdrop-blur-md transition hover:bg-white/20"
+                                >
+                                    Send an Enquiry
+                                    <ArrowRight className="h-4 w-4" />
+                                </Link>
+                            </div>
+
+                            <div className="mt-5 hidden flex-wrap gap-x-5 gap-y-2 text-sm font-medium text-white/90 sm:flex">
+                                <span className="flex items-center gap-2">
+                                    <ShieldCheck className="h-4 w-4 text-[#E6A76D]" />
+                                    Booking Assistance
+                                </span>
+
+                                <span className="flex items-center gap-2">
+                                    <CheckCircle2Icon />
+                                    Multiple Experiences
+                                </span>
+
+                                <span className="flex items-center gap-2">
+                                    <MessageCircle className="h-4 w-4 text-[#E6A76D]" />
+                                    Quick Enquiry
+                                </span>
+                            </div>
                         </div>
-
                     </div>
-
                 </div>
-
             </section>
 
-            {/* ================= INTRO ================= */}
-
-            <section className="bg-white py-9 sm:py-12 md:py-14">
-
-                <div className="mx-auto max-w-7xl px-4 sm:px-5 md:px-6">
-
-                    <div className="max-w-2xl">
-
-                        <p className="mb-2 text-[10px] font-semibold tracking-[2.5px] text-[#C87532] sm:mb-3 sm:text-xs sm:tracking-[3px]">
-                            EXPERIENCE THE WILD
-                        </p>
-
-                        <h2 className="text-[25px] font-bold leading-[1.15] text-[#172033] sm:text-3xl md:text-4xl">
-                            Your Journey Into the Jungle
-                        </h2>
-
-                        <p className="mt-2 text-[13px] leading-5 text-gray-600 sm:mt-3 sm:text-sm sm:leading-6 md:text-base">
-                            Discover Jim Corbett through unforgettable safari
-                            experiences, from thrilling jeep rides to scenic
-                            canter journeys across the wild.
-                        </p>
-
-                    </div>
-
-                </div>
-
-            </section>
-
-            {/* ================= SAFARI OPTIONS ================= */}
+            {/* SAFARI LIST */}
 
             <section
                 id="safari-options"
-                className="bg-[#F7F5F0] py-10 sm:py-14 md:py-18"
+                className="scroll-mt-20 px-3 py-6 sm:px-6 sm:py-10 md:px-8"
             >
+                <div className="mx-auto max-w-7xl">
+                    <div className="flex items-end justify-between gap-3">
+                        <div className="min-w-0">
+                            <p className="hidden text-sm font-bold uppercase tracking-wider text-[#B96928] sm:block">
+                                Find Your Experience
+                            </p>
 
-                <div className="mx-auto max-w-7xl px-4 sm:px-5 md:px-6">
+                            <h2 className="text-xl font-bold leading-tight sm:mt-2 sm:text-3xl md:text-4xl">
+                                Explore Safari Options
+                            </h2>
 
-                    <div className="mb-6 max-w-2xl sm:mb-8 md:mb-10">
+                            <p className="mt-1 text-sm leading-5 text-[#4B5563] sm:mt-2 sm:text-base sm:leading-6">
+                                Select a safari to see details and enquire.
+                            </p>
+                        </div>
 
-                        <p className="mb-2 text-[10px] font-semibold tracking-[2.5px] text-[#C87532] sm:mb-3 sm:text-xs sm:tracking-[3px]">
-                            EXPLORE SAFARI EXPERIENCES
-                        </p>
-
-                        <h2 className="text-[25px] font-bold leading-[1.15] text-[#172033] sm:text-3xl md:text-4xl">
-                            Choose Your Safari
-                        </h2>
-
-                        <p className="mt-2 text-[13px] leading-5.5 text-gray-600 sm:mt-3 sm:text-base sm:leading-6">
-                            Select the safari experience that suits your group,
-                            schedule and adventure preferences.
-                        </p>
-
+                        <WhatsAppLink
+                            number={whatsappNumber}
+                            message={helpMessage}
+                            label="Get safari recommendations on WhatsApp"
+                            className="inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-[#172033] px-3 text-xs font-bold text-white transition hover:bg-[#26344D] sm:min-h-11 sm:gap-2 sm:px-5 sm:text-sm"
+                        >
+                            <MessageCircle className="h-4 w-4" />
+                            <span className="hidden sm:inline">Help Me Choose</span>
+                            <span className="sm:hidden">Help</span>
+                        </WhatsAppLink>
                     </div>
 
-                    {/* ================= CARDS ================= */}
+                    {/* FILTERS */}
 
-                    <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 md:gap-6">
+                    <div className="-mx-3 mt-4 flex gap-2 overflow-x-auto px-3 pb-1 [scrollbar-width:none] sm:mx-0 sm:mt-5 sm:flex-wrap sm:px-0 sm:pb-2 [&::-webkit-scrollbar]:hidden">
+                        {categories
+                            .filter(
+                                (category) =>
+                                    category.id === "all" ||
+                                    category.id === "other" ||
+                                    safariOptions.some(
+                                        (safari) =>
+                                            getSafariCategory(safari) === category.id
+                                    )
+                            )
+                            .map((category) => {
+                                const active =
+                                    activeCategory === category.id;
 
-                        {safariOptions.map((safari) => (
+                                return (
+                                    <button
+                                        key={category.id}
+                                        type="button"
+                                        onClick={() =>
+                                            setActiveCategory(category.id)
+                                        }
+                                        aria-pressed={active}
+                                        className={`min-h-10 shrink-0 rounded-full px-4 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-[#B96928] focus:ring-offset-2 ${active
+                                                ? "bg-[#B96928] text-white shadow-sm"
+                                                : "border border-black/10 bg-white text-[#374151] hover:border-[#B96928] hover:text-[#9F5520]"
+                                            }`}
+                                    >
+                                        {category.label}
+                                    </button>
+                                );
+                            })}
+                    </div>
 
-                            <div
-                                key={safari.id}
-                                onClick={() => handleToggle(safari.id)}
-                                className={`group cursor-pointer overflow-hidden rounded-xl bg-white shadow-sm transition-all duration-300 hover:shadow-xl sm:rounded-2xl ${
-                                    expanded === safari.id
-                                        ? "shadow-xl"
-                                        : ""
-                                }`}
+                    {/* LOADING */}
+
+                    {loading && (
+                        <div
+                            role="status"
+                            className="mt-4 rounded-xl border border-black/10 bg-white p-8 text-center sm:mt-6 sm:rounded-2xl"
+                        >
+                            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[#B96928]/20 border-t-[#B96928]" />
+
+                            <p className="mt-3 text-sm font-medium text-[#172033]">
+                                Loading safari experiences...
+                            </p>
+                        </div>
+                    )}
+
+                    {/* ERROR */}
+
+                    {!loading && loadError && (
+                        <div
+                            role="alert"
+                            className="mt-4 rounded-xl border border-black/10 bg-white p-5 text-center sm:mt-6 sm:rounded-2xl sm:p-8"
+                        >
+                            <h3 className="text-base font-bold sm:text-lg">
+                                Safari services unavailable
+                            </h3>
+
+                            <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-[#4B5563]">
+                                {loadError}
+                            </p>
+
+                            <button
+                                type="button"
+                                onClick={loadSafariServices}
+                                className="mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#B96928] px-5 text-sm font-bold text-white transition hover:bg-[#9F5520]"
                             >
+                                <RefreshCw className="h-4 w-4" />
+                                Try Again
+                            </button>
+                        </div>
+                    )}
 
-                                {/* ================= IMAGE ================= */}
+                    {/* EMPTY */}
 
-                                <div className="h-[120px] overflow-hidden sm:h-[155px] md:h-[210px] lg:h-[230px]">
+                    {!loading &&
+                        !loadError &&
+                        safariOptions.length === 0 && (
+                            <div className="mt-4 rounded-xl border border-black/10 bg-white p-6 text-center sm:mt-6 sm:rounded-2xl sm:p-8">
+                                <h3 className="text-base font-bold sm:text-lg">
+                                    No safari services available
+                                </h3>
 
-                                    <Image
-                                        src={safari.image}
-                                        alt={safari.name}
-                                        width={600}
-                                        height={400}
-                                        sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 33vw"
-                                        className={`h-full w-full transition-transform duration-700 group-hover:scale-105 ${
-                                            safari.id === 3
-                                                ? "bg-gray-100 object-contain"
-                                                : "object-cover"
-                                        }`}
-                                    />
+                                <p className="mt-2 text-sm leading-6 text-[#4B5563]">
+                                    Please contact our team to enquire about safari options.
+                                </p>
 
-                                </div>
+                                <WhatsAppLink
+                                    number={whatsappNumber}
+                                    message={generalMessage}
+                                    label="Ask about safari availability on WhatsApp"
+                                    className="mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#16794B] px-5 text-sm font-bold text-white transition hover:bg-[#126640]"
+                                >
+                                    <MessageCircle className="h-4 w-4" />
+                                    WhatsApp Enquiry
+                                </WhatsAppLink>
+                            </div>
+                        )}
 
-                                {/* ================= CARD CONTENT ================= */}
+                    {/* COMPACT SAFARI CARDS */}
 
-                                <div className="p-3 sm:p-4 md:p-5">
+                    {!loading &&
+                        !loadError &&
+                        filteredSafaris.length > 0 && (
+                            <div className="mt-4 grid gap-3 sm:mt-6 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+                                {filteredSafaris.map((safari) => {
+                                    const isExpanded =
+                                        expanded === safari.id;
 
-                                    {/* NAME + ICON */}
+                                    const category =
+                                        getSafariCategory(safari);
 
-                                    <div className="flex items-start justify-between gap-2 sm:gap-3">
+                                    const categoryLabel =
+                                        category === "jeep"
+                                            ? "Jeep Safari"
+                                            : category === "canter"
+                                                ? "Canter Safari"
+                                                : category === "elephant"
+                                                    ? "Elephant Safari"
+                                                    : "Safari Experience";
 
-                                        <div className="min-w-0 flex-1">
+                                    return (
+                                        <article
+                                            key={safari.id}
+                                            className="group flex min-w-0 items-stretch overflow-hidden rounded-xl border border-black/10 bg-white shadow-sm transition duration-200 hover:shadow-md sm:flex-col"
+                                        >
+                                            {/* IMAGE: CLICK OPENS ENQUIRY */}
+                                            <Link
+                                                href={getSafariEnquiryUrl(safari)}
+                                                aria-label={`Enquire about ${safari.name}`}
+                                                className="relative block min-h-[180px] w-[132px] shrink-0 self-stretch overflow-hidden bg-[#E8E3DA] sm:aspect-[16/9] sm:min-h-0 sm:w-full sm:self-auto"
+                                            >
+                                                <img
+                                                    src={safari.image}
+                                                    alt={safari.name}
+                                                    loading="lazy"
+                                                    decoding="async"
+                                                    onError={(event) => {
+                                                        const image = event.currentTarget;
 
-                                            {/* LOCATION */}
-
-                                            <div className="flex items-center gap-1 text-[9px] font-medium text-[#C87532] sm:text-xs md:text-sm">
-
-                                                <MapPin
-                                                    size={12}
-                                                    className="shrink-0 sm:h-[14px] sm:w-[14px]"
+                                                        if (!image.dataset.fallbackApplied) {
+                                                            image.dataset.fallbackApplied = "true";
+                                                            image.src = FALLBACK_IMAGE;
+                                                        }
+                                                    }}
+                                                    className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
                                                 />
 
-                                                <span className="truncate">
-                                                    {safari.location}
+                                                <span className="absolute left-1 top-1 max-w-[calc(100%-0.5rem)] truncate rounded-full bg-[#B96928] px-1.5 py-1 text-[9px] font-bold leading-none text-white shadow sm:left-2 sm:top-2 sm:px-2 sm:text-xs">
+                                                    {categoryLabel}
                                                 </span>
+                                            </Link>
 
-                                            </div>
 
-                                            {/* NAME */}
+                                            {/* CARD CONTENT */}
 
-                                            <h3 className="mt-1 text-[15px] font-bold leading-tight text-[#172033] sm:mt-1.5 sm:text-lg md:text-xl">
-                                                {safari.name}
-                                            </h3>
+                                            <div className="flex min-w-0 flex-1 flex-col p-2.5 sm:p-4">
+                                                <div className="flex min-w-0 items-center gap-1 text-[10px] leading-4 text-[#4B5563] sm:text-xs">
+                                                    <MapPin className="h-3 w-3 shrink-0 text-[#B96928] sm:h-3.5 sm:w-3.5" />
 
-                                        </div>
-
-                                        {/* CHEVRON */}
-
-                                        <div
-                                            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#F7F5F0] text-[#172033] transition-transform duration-300 sm:h-8 sm:w-8 ${
-                                                expanded === safari.id
-                                                    ? "rotate-180"
-                                                    : ""
-                                            }`}
-                                        >
-                                            <ChevronDown size={15} />
-                                        </div>
-
-                                    </div>
-
-                                    {/* ================= SHORT DESCRIPTION ================= */}
-
-                                    {expanded !== safari.id && (
-
-                                        <p className="mt-2 line-clamp-1 text-[10px] leading-4 text-gray-600 sm:text-sm sm:leading-5">
-                                            {safari.description}
-                                        </p>
-
-                                    )}
-
-                                    {/* ================= CLOSED CARD PRICE ================= */}
-
-                                    {expanded !== safari.id && (
-
-                                        <div className="mt-3 flex items-center justify-between gap-2 sm:mt-4">
-
-                                            {/* PRICE */}
-
-                                            <div>
-
-                                                <p className="text-[9px] text-gray-500 sm:text-xs">
-                                                    Starting from
-                                                </p>
-
-                                                <p className="text-[17px] font-bold text-[#172033] sm:text-xl md:text-2xl">
-                                                    {safari.price}
-                                                </p>
-
-                                            </div>
-
-                                            {/* ENQUIRE */}
-
-                                            <Link
-  href={`/booking?type=safari&safari_id=${encodeURIComponent(
-    safari.id
-  )}&safari=${encodeURIComponent(safari.name)}&image=${encodeURIComponent(
-    safari.image
-  )}`}
-  onClick={(e) => e.stopPropagation()}
-  className="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-[#C87532] px-2.5 py-1.5 text-[10px] font-semibold text-white transition hover:bg-[#B96928] sm:gap-2 sm:px-4 sm:py-2.5 sm:text-xs md:text-sm"
->
-  Book Safari
-  <ArrowRight size={13} />
-</Link>
-
-                                        </div>
-
-                                    )}
-
-                                    {/* ================= EXPANDED CONTENT ================= */}
-
-                                    <div
-                                        className={`grid transition-all duration-500 ease-in-out ${
-                                            expanded === safari.id
-                                                ? "mt-4 grid-rows-[1fr] opacity-100 sm:mt-5"
-                                                : "grid-rows-[0fr] opacity-0"
-                                        }`}
-                                    >
-
-                                        <div className="overflow-hidden">
-
-                                            {/* FULL DESCRIPTION */}
-
-                                            <p className="text-[11px] leading-5 text-gray-600 sm:text-sm sm:leading-6">
-                                                {safari.description}
-                                            </p>
-
-                                            {/* DETAILS */}
-
-                                            <div className="mt-4 space-y-2 border-t border-gray-100 pt-4 sm:mt-5 sm:space-y-3 sm:pt-5">
-
-                                                {/* DURATION */}
-
-                                                <div className="flex justify-between gap-3 text-[11px] sm:text-sm">
-
-                                                    <span className="text-gray-500">
-                                                        Duration
+                                                    <span className="truncate">
+                                                        {safari.location}
                                                     </span>
-
-                                                    <span className="text-right font-medium text-[#172033]">
-                                                        {safari.duration}
-                                                    </span>
-
                                                 </div>
 
-                                                {/* CAPACITY */}
+                                                <h3 className="mt-1 line-clamp-2 text-sm font-bold leading-snug text-[#172033] sm:text-base">
+                                                    {safari.name}
+                                                </h3>
 
-                                                <div className="flex justify-between gap-3 text-[11px] sm:text-sm">
-
-                                                    <span className="text-gray-500">
-                                                        Capacity
-                                                    </span>
-
-                                                    <span className="text-right font-medium text-[#172033]">
-                                                        {safari.guests}
-                                                    </span>
-
-                                                </div>
-
-                                            </div>
-
-                                            {/* PRICE + ENQUIRE */}
-
-                                            <div className="mt-4 flex items-end justify-between gap-2 sm:mt-5 sm:gap-4">
-
-                                                {/* PRICE */}
-
-                                                <div>
-
-                                                    <p className="text-[9px] text-gray-500 sm:text-xs">
-                                                        Starting from
-                                                    </p>
-
-                                                    <p className="text-[17px] font-bold text-[#172033] sm:text-xl md:text-2xl">
-                                                        {safari.price}
-                                                    </p>
-
-                                                    <p className="mt-1 text-[9px] font-medium text-green-600 sm:text-xs">
-                                                        + taxes
-                                                    </p>
-
-                                                </div>
-
-                                                {/* ENQUIRE */}
-
-                                                <Link
-                                                    href={`/contact?safari=${encodeURIComponent(
-                                                        safari.name
-                                                    )}&image=${encodeURIComponent(
-                                                        safari.image
-                                                    )}`}
-                                                    onClick={(e) =>
-                                                        e.stopPropagation()
-                                                    }
-                                                    className="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-[#C87532] px-2.5 py-1.5 text-[10px] font-semibold text-white transition hover:bg-[#B96928] sm:gap-2 sm:px-4 sm:py-2.5 sm:text-xs md:text-sm"
+                                                <p
+                                                    className={`mt-1 text-xs leading-4 text-[#4B5563] sm:text-sm sm:leading-5 ${isExpanded ? "" : "line-clamp-2"
+                                                        }`}
                                                 >
-                                                    Enquire
-                                                    <ArrowRight size={13} />
-                                                </Link>
+                                                    {safari.description}
+                                                </p>
 
+                                                {/* EXPANDED DETAILS */}
+
+                                                {isExpanded && (
+                                                    <div className="mt-2 space-y-2 border-t border-black/10 pt-2">
+                                                        <div className="flex items-start justify-between gap-2 text-xs">
+                                                            <span className="text-[#6B7280]">
+                                                                Duration
+                                                            </span>
+
+                                                            <span className="text-right font-semibold text-[#172033]">
+                                                                {safari.duration}
+                                                            </span>
+                                                        </div>
+
+                                                        <div className="flex items-start justify-between gap-2 text-xs">
+                                                            <span className="text-[#6B7280]">
+                                                                Capacity
+                                                            </span>
+
+                                                            <span className="text-right font-semibold text-[#172033]">
+                                                                {safari.guests}
+                                                            </span>
+                                                        </div>
+
+                                                        <p className="text-xs leading-5 text-[#6B7280]">
+                                                            Availability, permits and final charges must
+                                                            be confirmed before booking.
+                                                        </p>
+                                                    </div>
+                                                )}
+
+                                                {/* PRICE AND DETAILS */}
+
+                                                <div className="mt-auto border-t border-black/10 pt-2">
+                                                    <div className="flex min-w-0 items-center justify-between gap-1.5">
+                                                        <div className="min-w-0">
+                                                            <p className="text-[9px] leading-3 text-[#6B7280] sm:text-xs sm:leading-4">
+                                                                Starting from
+                                                            </p>
+
+                                                            <p className="mt-0.5 break-words text-sm font-bold leading-tight text-[#172033] sm:text-xl">
+                                                                {safari.price}
+                                                            </p>
+                                                        </div>
+
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                                handleToggle(safari.id)
+                                                            }
+                                                            aria-expanded={isExpanded}
+                                                            className="inline-flex min-h-8 shrink-0 items-center gap-0.5 rounded-lg px-1 text-[11px] font-semibold text-[#9F5520] hover:bg-[#F7F5F0] sm:min-h-9 sm:gap-1 sm:px-2 sm:text-sm"
+                                                        >
+                                                            {isExpanded ? "Less" : "Details"}
+
+                                                            <ChevronDown
+                                                                className={`h-3.5 w-3.5 transition-transform sm:h-4 sm:w-4 ${isExpanded ? "rotate-180" : ""
+                                                                    }`}
+                                                            />
+                                                        </button>
+                                                    </div>
+
+                                                    {/* ALL THREE ACTIONS IN ONE ROW */}
+
+                                                    <div className="mt-2 grid grid-cols-[minmax(0,1fr)_34px_minmax(0,0.82fr)] items-center gap-1 sm:mt-3 sm:grid-cols-[minmax(0,1fr)_44px_minmax(0,1fr)] sm:gap-2">
+                                                        {/* BOOK SAFARI */}
+
+                                                        <Link
+                                                            href={getSafariBookingUrl(safari)}
+                                                            className="inline-flex h-9 min-w-0 items-center justify-center gap-1 rounded-lg bg-[#B96928] px-1 text-[10px] font-bold text-white transition hover:bg-[#9F5520] focus:outline-none focus:ring-2 focus:ring-[#B96928] focus:ring-offset-1 sm:h-11 sm:gap-1.5 sm:px-2.5 sm:text-sm"
+                                                        >
+                                                            <CalendarDays className="h-3 w-3 shrink-0 sm:h-4 sm:w-4" />
+
+                                                            <span className="sm:hidden">Book</span>
+                                                            <span className="hidden sm:inline">Book Safari</span>
+                                                        </Link>
+
+                                                        {/* WHATSAPP */}
+
+                                                        <WhatsAppLink
+                                                            number={whatsappNumber}
+                                                            message={getSafariMessage(safari)}
+                                                            label={`WhatsApp enquiry for ${safari.name}`}
+                                                            className="inline-flex h-9 w-[34px] shrink-0 items-center justify-center rounded-lg border border-[#16794B]/30 bg-[#16794B]/5 text-[#126640] transition hover:bg-[#16794B]/10 sm:h-11 sm:w-11"
+                                                        >
+                                                            <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5" />
+                                                        </WhatsAppLink>
+
+                                                        {/* ENQUIRY */}
+
+                                                        <Link
+                                                            href={getSafariEnquiryUrl(safari)}
+                                                            className="inline-flex h-9 min-w-0 items-center justify-center gap-0.5 rounded-lg border border-black/10 bg-white px-1 text-[10px] font-bold text-[#172033] transition hover:bg-[#F7F5F0] focus:outline-none focus:ring-2 focus:ring-[#B96928] focus:ring-offset-1 sm:h-11 sm:gap-1.5 sm:px-2.5 sm:text-sm"
+                                                        >
+                                                            <MessageCircle className="h-3 w-3 shrink-0 sm:h-4 sm:w-4" />
+
+                                                            <span className="truncate">
+                                                                Enquiry
+                                                            </span>
+                                                        </Link>
+                                                    </div>
+                                                </div>
                                             </div>
-
-                                        </div>
-
-                                    </div>
-
-                                </div>
-
+                                        </article>
+                                    );
+                                })}
                             </div>
+                        )}
 
-                        ))}
+                    {/* FILTER EMPTY STATE */}
 
-                    </div>
+                    {!loading &&
+                        !loadError &&
+                        safariOptions.length > 0 &&
+                        filteredSafaris.length === 0 && (
+                            <div className="mt-4 rounded-xl border border-black/10 bg-white p-6 text-center sm:mt-6 sm:rounded-2xl sm:p-8">
+                                <p className="text-base font-semibold">
+                                    No safaris found in this category.
+                                </p>
 
+                                <button
+                                    type="button"
+                                    onClick={() => setActiveCategory("all")}
+                                    className="mt-3 min-h-11 rounded-xl bg-[#B96928] px-5 text-sm font-bold text-white hover:bg-[#9F5520]"
+                                >
+                                    View All Safaris
+                                </button>
+                            </div>
+                        )}
+
+                    <p className="mt-4 text-xs leading-5 text-[#6B7280]">
+                        Safari prices and availability are subject to confirmation.
+                        Official permits and zone access depend on the applicable
+                        booking process.
+                    </p>
                 </div>
-
             </section>
 
-            {/* ================= BOTTOM CTA ================= */}
+            {/* QUICK HELP */}
 
-            <section className="bg-white py-9 sm:py-12 md:py-16">
+            <section className="px-4 py-4 sm:px-6 sm:py-8 md:px-8">
+                <div className="mx-auto max-w-7xl overflow-hidden rounded-2xl bg-[#172033] px-4 py-6 text-white sm:px-8 sm:py-9">
+                    <div className="grid gap-5 sm:gap-7 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
+                        <div>
+                            <p className="hidden text-sm font-bold uppercase tracking-wider text-[#E6A76D] sm:block">
+                                Safari Assistance
+                            </p>
 
-                <div className="mx-auto max-w-7xl px-4 sm:px-5 md:px-6">
+                            <h2 className="text-xl font-bold leading-tight sm:mt-2 sm:text-3xl">
+                                Need Help Choosing a Safari?
+                            </h2>
 
-                    <div className="relative overflow-hidden rounded-2xl bg-[#172033] px-5 py-8 text-center text-white sm:px-8 sm:py-10 md:px-12 md:py-12">
+                            <p className="mt-2 text-sm leading-6 text-white/85 sm:mt-3 sm:text-base sm:leading-7">
+                                Share your dates, group size and preferences. Our team
+                                can help you enquire about suitable options.
+                            </p>
 
-                        <p className="text-[10px] font-semibold tracking-[2.5px] text-[#C87532] sm:text-xs md:tracking-[3px]">
-                            PLAN YOUR ADVENTURE
+                            <WhatsAppLink
+                                number={whatsappNumber}
+                                message={customMessage}
+                                label="Request customised safari assistance"
+                                className="mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#B96928] px-5 text-sm font-bold text-white transition hover:bg-[#9F5520] sm:mt-5"
+                            >
+                                <MessageCircle className="h-4 w-4" />
+                                Get Safari Assistance
+                            </WhatsAppLink>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+                            {[
+                                {
+                                    title: "Safari Options",
+                                    description: "Compare available experiences.",
+                                    icon: SlidersHorizontal,
+                                },
+                                {
+                                    title: "Group Capacity",
+                                    description: "Discuss your group requirements.",
+                                    icon: Users,
+                                },
+                                {
+                                    title: "Booking Support",
+                                    description: "Ask about the booking process.",
+                                    icon: ShieldCheck,
+                                },
+                                {
+                                    title: "Quick Enquiry",
+                                    description: "Connect with our team.",
+                                    icon: MessageCircle,
+                                },
+                            ].map((item) => {
+                                const Icon = item.icon;
+
+                                return (
+                                    <div
+                                        key={item.title}
+                                        className="rounded-xl border border-white/15 bg-white/[0.06] p-3 sm:p-4"
+                                    >
+                                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#B96928]/20 text-[#F0B77F] sm:h-10 sm:w-10 sm:rounded-xl">
+                                            <Icon className="h-[18px] w-[18px] sm:h-5 sm:w-5" />
+                                        </div>
+
+                                        <h3 className="mt-2.5 text-sm font-bold sm:mt-3 sm:text-base">
+                                            {item.title}
+                                        </h3>
+
+                                        <p className="mt-1 text-xs leading-5 text-white/80 sm:text-sm sm:leading-6">
+                                            {item.description}
+                                        </p>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* FAQ */}
+
+            <section className="px-4 py-6 sm:px-6 sm:py-10 md:px-8">
+                <div className="mx-auto max-w-4xl">
+                    <div className="text-center">
+                        <p className="hidden text-sm font-bold uppercase tracking-wider text-[#B96928] sm:block">
+                            Before You Book
                         </p>
 
-                        <h2 className="mt-2 text-[25px] font-bold leading-[1.15] sm:mt-3 sm:text-3xl md:text-4xl">
-                            Ready to Explore Corbett?
+                        <h2 className="text-xl font-bold sm:mt-2 sm:text-3xl">
+                            Safari FAQs
                         </h2>
+                    </div>
 
-                        <p className="mx-auto mt-2.5 max-w-2xl text-[13px] leading-5.5 text-white/70 sm:mt-3 sm:text-base sm:leading-6">
-                            Tell us your travel plans and let us help you create
-                            an unforgettable Corbett safari experience.
-                        </p>
+                    <div className="mt-4 space-y-2 sm:mt-6 sm:space-y-3">
+                        {[
+                            {
+                                question: "Are safari permits guaranteed?",
+                                answer:
+                                    "No. Permit approval and availability depend on the applicable official booking process and selected dates.",
+                            },
+                            {
+                                question: "Is the displayed price final?",
+                                answer:
+                                    "Displayed prices are indicative. Confirm the final price, inclusions, applicable charges and availability with the team.",
+                            },
+                            {
+                                question: "Can I enquire about a particular safari?",
+                                answer:
+                                    "Yes. Click Enquiry or the safari image to open the contact form for that safari. You can also use the WhatsApp button.",
+                            },
+                            {
+                                question: "Can I request help with booking?",
+                                answer:
+                                    "Yes. Use Help Me Choose or Send an Enquiry to discuss your requirements.",
+                            },
+                        ].map((faq, index) => {
+                            const isOpen = openFaq === index;
 
+                            return (
+                                <div
+                                    key={faq.question}
+                                    className="rounded-xl border border-black/10 bg-white px-4 py-1.5 sm:p-5"
+                                >
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setOpenFaq(isOpen ? null : index)
+                                        }
+                                        aria-expanded={isOpen}
+                                        className="flex min-h-11 w-full items-center justify-between gap-4 text-left"
+                                    >
+                                        <span className="text-sm font-bold leading-5 text-[#172033] sm:text-base sm:leading-6">
+                                            {faq.question}
+                                        </span>
+
+                                        <Plus
+                                            className={`h-5 w-5 shrink-0 text-[#B96928] transition-transform ${isOpen ? "rotate-45" : ""
+                                                }`}
+                                        />
+                                    </button>
+
+                                    {isOpen && (
+                                        <p className="pb-3 text-sm leading-6 text-[#4B5563] sm:mt-3 sm:pb-0">
+                                            {faq.answer}
+                                        </p>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            </section>
+
+            {/* FINAL CTA */}
+
+            <section className="px-4 pb-8 sm:px-6 sm:pb-14 md:px-8">
+                <div className="mx-auto max-w-7xl rounded-2xl bg-[#172033] px-4 py-6 text-center text-white sm:px-8 sm:py-10">
+                    <p className="hidden text-sm font-bold uppercase tracking-wider text-[#E6A76D] sm:block">
+                        Plan Your Adventure
+                    </p>
+
+                    <h2 className="mx-auto max-w-2xl text-xl font-bold leading-tight sm:mt-2 sm:text-3xl">
+                        Ready to Explore Jim Corbett?
+                    </h2>
+
+                    <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-white/85 sm:mt-3 sm:text-base sm:leading-7">
+                        Tell us your travel dates and group size to discuss available
+                        safari experiences.
+                    </p>
+
+                    <div className="mx-auto mt-5 grid max-w-md grid-cols-2 gap-2.5 sm:mt-6 sm:flex sm:max-w-none sm:flex-wrap sm:justify-center sm:gap-3">
                         <Link
-                            href="/contact?safari=Safari%20Experience"
-                            className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#C87532] px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-[#B96928] sm:mt-5 sm:px-6 sm:py-3 sm:text-sm"
+                            href="/contact?type=safari"
+                            className="col-span-2 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#B96928] px-6 text-sm font-bold text-white transition hover:bg-[#9F5520] sm:col-span-1 sm:min-h-12"
                         >
-                            Plan Your Safari
-                            <ArrowRight size={17} />
+                            Send an Enquiry
+                            <ArrowRight className="h-4 w-4" />
                         </Link>
 
+                        <WhatsAppLink
+                            number={whatsappNumber}
+                            message={generalMessage}
+                            label="Plan your safari on WhatsApp"
+                            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/30 bg-white/10 px-4 text-sm font-bold text-white transition hover:bg-white/20 sm:min-h-12 sm:px-6"
+                        >
+                            <MessageCircle className="h-4 w-4" />
+                            WhatsApp Now
+                        </WhatsAppLink>
+
+                        <a
+                            href={
+                                contactPhone
+                                    ? `tel:+${contactPhone}`
+                                    : undefined
+                            }
+                            aria-disabled={!contactPhone}
+                            onClick={(event) => {
+                                if (!contactPhone) event.preventDefault();
+                            }}
+                            className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/30 px-4 text-sm font-bold text-white transition hover:bg-white/10 sm:min-h-12 sm:px-6 ${!contactPhone
+                                    ? "cursor-not-allowed opacity-60"
+                                    : ""
+                                }`}
+                        >
+                            <PhoneCall className="h-4 w-4" />
+                            Call Us
+                        </a>
                     </div>
 
+                    {!normalisePhoneNumber(whatsappNumber) && (
+                        <p className="mt-4 text-xs leading-5 text-white/70">
+                            WhatsApp is not configured. Add the WhatsApp or phone number
+                            in Organization Profile.
+                        </p>
+                    )}
                 </div>
-
             </section>
-
         </main>
     );
+}
+
+function CheckCircle2Icon() {
+    return <ShieldCheck className="h-4 w-4 text-[#E6A76D]" />;
 }

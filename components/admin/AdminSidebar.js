@@ -24,6 +24,7 @@ import {
   Network,
   ClipboardList,
   Settings2,
+  ImagePlus,
 } from "lucide-react";
 
 export default function AdminSidebar({
@@ -185,6 +186,17 @@ export default function AdminSidebar({
                 <ClipboardList size={17} />
                 <span>Bookings</span>
               </Link>
+{/* MEDIA LIBRARY */}
+<Link
+  href="/admin/media"
+  className={getLinkClass(
+    pathname.startsWith("/admin/media"),
+    false
+  )}
+>
+  <Images size={17} />
+  <span>Media Library</span>
+</Link>
               {/* ADMINISTRATION */}
               <button
                 type="button"
@@ -608,6 +620,20 @@ export default function AdminSidebar({
                 <span className="truncate">Bookings</span>
               )}
             </Link>
+{/* MEDIA LIBRARY */}
+<Link
+  href="/admin/media"
+  className={getLinkClass(
+    pathname.startsWith("/admin/media"),
+    sidebarCollapsed
+  )}
+  title={sidebarCollapsed ? "Media Library" : ""}
+>
+  <ImagePlus size={17} />
+  {!sidebarCollapsed && (
+    <span className="truncate">Media Library</span>
+  )}
+</Link>
             {/* ADMINISTRATION */}
             <button
               type="button"

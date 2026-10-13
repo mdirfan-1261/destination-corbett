@@ -102,14 +102,4 @@ export const navigation = [
     name: "Packages",
     href: "/packages",
   },
-
-  {
-    name: "About",
-    href: "/about",
-  },
-
-  {
-    name: "Contact",
-    href: "/contact",
-  },
 ];

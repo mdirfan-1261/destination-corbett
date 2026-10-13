@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -128,6 +127,11 @@ function useSearchForm() {
     childCount === 1 ? "Child" : "Children"
   }, ${rooms} ${rooms === 1 ? "Room" : "Rooms"}`;
 
+  const totalGuests = adults + childCount;
+  const guestShort = `${totalGuests} ${
+    totalGuests === 1 ? "Guest" : "Guests"
+  }, ${rooms} ${rooms === 1 ? "Room" : "Rooms"}`;
+
   const selectItem = (item) => {
     setQuery(item.name);
     setSelected(item);
@@ -232,6 +236,7 @@ function useSearchForm() {
     guestOpen,
     setGuestOpen,
     guestSummary,
+    guestShort,
     selectItem,
     clearQuery,
     onQueryChange,
@@ -276,19 +281,19 @@ export default function Hero() {
       {/* HERO IMAGE AND CONTENT */}
       <div className="relative mx-auto min-h-[250px] max-w-[1440px] overflow-hidden rounded-xl bg-[#172033] text-white sm:min-h-[420px] sm:rounded-[24px] md:min-h-[470px] md:rounded-[28px] lg:min-h-[560px]">
         {/* OPTIMIZED HERO IMAGE — LOAD ONLY THE ACTIVE SLIDE */}
-{heroData.images[currentImage] && (
-  <Image
-    key={heroData.images[currentImage]}
-    src={heroData.images[currentImage]}
-    alt="Jim Corbett National Park"
-    fill
-    sizes="(max-width: 640px) 100vw, (max-width: 1440px) calc(100vw - 32px), 1400px"
-    quality={70}
-    priority={currentImage === 0}
-    loading={currentImage === 0 ? "eager" : "lazy"}
-    className="object-cover object-center transition-opacity duration-700"
-  />
-)}
+        {heroData.images[currentImage] && (
+          <Image
+            key={heroData.images[currentImage]}
+            src={heroData.images[currentImage]}
+            alt="Jim Corbett National Park"
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1440px) calc(100vw - 32px), 1400px"
+            quality={70}
+            priority={currentImage === 0}
+            loading={currentImage === 0 ? "eager" : "lazy"}
+            className="object-cover object-center transition-opacity duration-700"
+          />
+        )}
 
         <div className="absolute inset-0 bg-black/10" />
 
@@ -296,7 +301,7 @@ export default function Hero() {
 
         <div className="absolute inset-0 bg-gradient-to-t from-[#172033]/80 via-transparent to-black/10" />
 
-        <div className="relative z-10 flex min-h-[250px] items-center px-3 py-4 sm:min-h-[420px] sm:px-8 sm:py-10 md:min-h-[470px] md:px-10 lg:min-h-[560px] lg:px-14">
+        <div className="relative z-10 flex min-h-[250px] items-center px-3 pb-10 pt-4 sm:min-h-[420px] sm:px-8 sm:py-10 md:min-h-[470px] md:px-10 lg:min-h-[560px] lg:px-14">
           <div className="max-w-2xl">
             <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-white/90 backdrop-blur-xl sm:mb-4 sm:py-1.5 sm:text-[11px]">
               <span className="h-1.5 w-1.5 rounded-full bg-[#B96928]" />
@@ -403,7 +408,7 @@ export default function Hero() {
 
       {/* MOBILE SEARCH BAR */}
       <div className="relative z-30 mx-auto -mt-7 max-w-5xl px-2 sm:-mt-10 sm:px-3 md:hidden">
-        <div className="overflow-visible rounded-xl border border-gray-200 bg-white p-2 shadow-xl">
+        <div className="overflow-visible rounded-xl border border-gray-200 bg-white p-1.5 shadow-xl sm:p-2">
           <SearchForm f={form} variant="mobile" />
         </div>
       </div>
@@ -423,31 +428,29 @@ function SearchForm({ f, variant }) {
       onSubmit={f.submit}
       className={
         mobile
-          ? "grid grid-cols-2 items-stretch gap-2"
+          ? "grid grid-cols-2 items-stretch gap-1.5"
           : "grid grid-cols-[1.3fr_1fr_1fr_auto] items-center gap-1.5"
       }
     >
       {/* SEARCH FIELD */}
       <div
-        className={`relative min-w-0 ${
-          mobile ? "col-span-2" : ""
-        }`}
+        className={`relative min-w-0 ${mobile ? "col-span-2" : ""}`}
         data-search-box
       >
         <div
-          className={`flex min-h-[50px] items-center gap-2 rounded-lg border bg-[#EEF5F2] px-2.5 py-2 focus-within:ring-2 focus-within:ring-[#B96928] sm:gap-2.5 sm:px-3 ${
+          className={`flex min-h-[40px] items-center gap-2 rounded-lg border bg-[#EEF5F2] px-2.5 py-1 focus-within:ring-2 focus-within:ring-[#B96928] sm:min-h-[50px] sm:gap-2.5 sm:px-3 sm:py-2 ${
             f.error ? "border-red-400" : "border-[#D5E6DF]"
           }`}
         >
           <Search
-            size={18}
-            className="shrink-0 text-[#18352A]"
+            size={16}
+            className="shrink-0 text-[#18352A] sm:h-[18px] sm:w-[18px]"
           />
 
           <div className="flex w-full min-w-0 flex-col">
             <label
               htmlFor={`${variant}-query`}
-              className={`text-[10px] font-bold uppercase tracking-wide sm:text-[11px] ${
+              className={`text-[9px] font-bold uppercase leading-[11px] tracking-wide sm:text-[11px] sm:leading-normal ${
                 f.error ? "text-red-600" : "text-[#385247]"
               }`}
             >
@@ -461,12 +464,8 @@ function SearchForm({ f, variant }) {
               autoComplete="off"
               onFocus={() => f.setOpen(true)}
               onChange={(e) => f.onQueryChange(e.target.value)}
-              placeholder={
-                mobile
-                  ? "Choose safari or stay"
-                  : "Dhikuli, Bijrani, Jhirna..."
-              }
-              className="w-full min-w-0 truncate bg-transparent text-[14px] font-semibold text-[#172033] placeholder:text-[#5F7A6E] focus:outline-none sm:text-[15px]"
+              placeholder="Dhikuli, Bijrani, Jhirna..."
+              className="w-full min-w-0 truncate bg-transparent p-0 text-[13px] font-semibold leading-5 text-[#172033] placeholder:text-[#5F7A6E] focus:outline-none sm:text-[15px]"
             />
           </div>
 
@@ -475,9 +474,9 @@ function SearchForm({ f, variant }) {
               type="button"
               onClick={f.clearQuery}
               aria-label="Clear search"
-              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/70 text-gray-500"
+              className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/70 text-gray-500 sm:h-7 sm:w-7"
             >
-              <X size={14} />
+              <X size={12} />
             </button>
           )}
         </div>
@@ -494,7 +493,7 @@ function SearchForm({ f, variant }) {
 
       {/* DATES */}
       {mobile ? (
-        <div className="col-span-2 grid grid-cols-2 gap-2">
+        <div className="col-span-2 grid grid-cols-2 gap-1.5">
           <MobileDate
             id="mobile-check-in"
             label="Check In"
@@ -565,22 +564,24 @@ function SearchForm({ f, variant }) {
           type="button"
           onClick={() => f.setGuestOpen(!f.guestOpen)}
           aria-expanded={f.guestOpen}
-          className={`flex min-h-[50px] w-full min-w-0 items-center gap-2 rounded-lg border border-gray-200 bg-white px-2.5 py-2 text-left transition hover:bg-gray-50 sm:gap-2.5 sm:px-3 ${
+          className={`flex min-h-[40px] w-full min-w-0 items-center gap-2 rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-left transition hover:bg-gray-50 sm:min-h-[50px] sm:gap-2.5 sm:px-3 sm:py-2 ${
             mobile ? "h-full" : ""
           }`}
         >
           <Users2
-            size={18}
-            className="shrink-0 text-[#172033]"
+            size={16}
+            className="shrink-0 text-[#172033] sm:h-[18px] sm:w-[18px]"
           />
 
           <div className="min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-wide text-gray-700 sm:text-[11px]">
-              Guests & Rooms
+            <p className="text-[9px] font-bold uppercase leading-[11px] tracking-wide text-gray-700 sm:text-[11px] sm:leading-normal">
+              <span className="sm:hidden">Guests</span>
+              <span className="hidden sm:inline">Guests & Rooms</span>
             </p>
 
-            <p className="truncate text-[12px] font-semibold text-[#172033] sm:text-[14px]">
-              {f.guestSummary}
+            <p className="truncate text-[12px] font-semibold leading-4 text-[#172033] sm:text-[14px] sm:leading-normal">
+              <span className="sm:hidden">{f.guestShort}</span>
+              <span className="hidden sm:inline">{f.guestSummary}</span>
             </p>
           </div>
         </button>
@@ -597,11 +598,11 @@ function SearchForm({ f, variant }) {
       {/* SEARCH BUTTON */}
       <button
         type="submit"
-        className={`flex min-h-[50px] items-center justify-center gap-1.5 rounded-lg bg-[#B96928] px-3 text-[14px] font-bold text-white shadow-md shadow-[#B96928]/20 transition hover:bg-[#A65C22] active:scale-[0.98] sm:gap-2 sm:px-6 sm:text-[15px] ${
+        className={`flex min-h-[40px] items-center justify-center gap-1.5 rounded-lg bg-[#B96928] px-3 text-[13px] font-bold text-white shadow-md shadow-[#B96928]/20 transition hover:bg-[#A65C22] active:scale-[0.98] sm:min-h-[50px] sm:gap-2 sm:px-6 sm:text-[15px] ${
           mobile ? "w-full" : ""
         }`}
       >
-        <Search size={17} />
+        <Search size={16} />
         <span>Search</span>
       </button>
     </form>
@@ -622,21 +623,21 @@ function MobileDate({ id, label, value, onChange, min }) {
   };
 
   return (
-    <div className="flex min-h-[50px] min-w-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2 py-2 sm:gap-2 sm:px-2.5">
+    <div className="flex min-h-[40px] min-w-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2 py-1 sm:min-h-[50px] sm:gap-2 sm:px-2.5 sm:py-2">
       <CalendarDays
-        size={16}
+        size={15}
         className="shrink-0 text-[#172033]"
       />
 
       <div className="min-w-0 flex-1">
         <label
           htmlFor={id}
-          className="block text-[10px] font-bold uppercase tracking-wide text-gray-700 sm:text-[11px]"
+          className="block text-[9px] font-bold uppercase leading-[11px] tracking-wide text-gray-700 sm:text-[11px] sm:leading-normal"
         >
           {label}
         </label>
 
-        <div className="relative mt-0.5 h-[22px] min-w-0">
+        <div className="relative h-[18px] min-w-0 sm:mt-0.5 sm:h-[22px]">
           <span
             className={`pointer-events-none absolute inset-0 flex items-center truncate text-[12px] font-semibold sm:text-[14px] ${
               value ? "text-[#172033]" : "text-gray-400"

@@ -1,4 +1,9 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* =========================================
+   BASE
+   ========================================= */
 
 * {
   box-sizing: border-box;
@@ -6,12 +11,594 @@
 
 html {
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
   margin: 0;
   padding: 0;
-  background: #ffffff;
-  color: #1f2937;
+  background: var(--bg, #ffffff);
+  color: var(--text, #172033);
   font-family: Arial, Helvetica, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  transition: background-color 0.3s, color 0.3s;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+:root {
+  --bg: #ffffff;
+  --text: #172033;
+  --card: #f6f6f6;
+  --border: #e3e3e3;
+  --primary: #B96928;
+
+  --dc-text: #172033;
+  --dc-text-muted: #525b6b;
+  --dc-primary: #B96928;
+  --dc-primary-hover: #9D5721;
+}
+
+/* =========================================
+   THEME
+   ========================================= */
+
+[data-theme="dark"] {
+  --bg: #0e1210;
+  --text: #f0f0f0;
+  --card: #181d1a;
+  --border: #2a322d;
+  --primary: #3fbf68;
+}
+
+.theme-toggle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--card);
+  font-size: 18px;
+  cursor: pointer;
+}
+
+/* =========================================
+   DARK MODE: NAVY THEME
+   ========================================= */
+
+.dark {
+  color-scheme: dark;
+}
+
+.dark body {
+  background-color: #070d1f;
+  color: #f1f5f9;
+}
+
+/* Light section backgrounds */
+.dark :is(
+  .bg-gray-50,
+  .bg-slate-50,
+  .bg-stone-50,
+  .bg-neutral-50,
+  [class*="bg-[#f" i],
+  [class*="bg-[#e" i]
+):not([class*="dark:"]) {
+  background-color: #070d1f;
+}
+
+/* White cards */
+.dark :is(
+  .bg-white,
+  .bg-gray-100,
+  .bg-slate-100
+):not([class*="dark:"]) {
+  background-color: #0f1830;
+}
+
+/* NEW: translucent white cards (bg-white/80, bg-white/90 etc.)
+   Without this they stay light in dark mode and white text becomes unreadable */
+.dark :is(
+  [class*="bg-white/50"],
+  [class*="bg-white/60"],
+  [class*="bg-white/70"],
+  [class*="bg-white/75"],
+  [class*="bg-white/80"],
+  [class*="bg-white/85"],
+  [class*="bg-white/90"],
+  [class*="bg-white/95"],
+  [class*="bg-gray-50/"],
+  [class*="bg-slate-50/"]
+):not([class*="dark:"]) {
+  background-color: rgba(15, 24, 48, 0.92);
+}
+
+/* NEW: light gradients (e.g. welcome card with from-white / from-[#EEF5F2]) */
+.dark :is(
+  [class*="from-white"],
+  [class*="from-gray-50"],
+  [class*="from-slate-50"],
+  [class*="from-stone-50"],
+  [class*="from-[#EEF5F2" i],
+  [class*="from-[#F7F5F0" i]
+):not([class*="dark:"]) {
+  --tw-gradient-from: #0f1830;
+}
+
+.dark :is(
+  [class*="via-white"],
+  [class*="via-gray-50"],
+  [class*="via-slate-50"],
+  [class*="via-[#EEF5F2" i],
+  [class*="via-[#F7F5F0" i]
+):not([class*="dark:"]) {
+  --tw-gradient-via: #0f1830;
+}
+
+.dark :is(
+  [class*="to-white"],
+  [class*="to-gray-50"],
+  [class*="to-slate-50"],
+  [class*="to-stone-50"],
+  [class*="to-[#EEF5F2" i],
+  [class*="to-[#F7F5F0" i]
+):not([class*="dark:"]) {
+  --tw-gradient-to: #0f1830;
+}
+
+/* Light tinted badges */
+.dark :is(
+  .bg-orange-50,
+  .bg-amber-50,
+  .bg-yellow-50
+):not([class*="dark:"]) {
+  background-color: rgba(185, 105, 40, 0.18);
+}
+
+/* Headings and primary text */
+.dark :is(
+  .text-black,
+  .text-gray-900,
+  .text-gray-800,
+  .text-slate-900,
+  .text-slate-800,
+  [class*="text-[#172033" i],
+  [class*="text-[#18352A" i]
+):not([class*="dark:"]) {
+  color: #f1f5f9;
+}
+
+/* Secondary text */
+.dark :is(
+  .text-gray-700,
+  .text-gray-600,
+  .text-slate-700,
+  .text-slate-600
+):not([class*="dark:"]) {
+  color: #cbd5e1;
+}
+
+.dark :is(
+  .text-gray-500,
+  .text-gray-400,
+  .text-slate-500,
+  .text-slate-400
+):not([class*="dark:"]) {
+  color: #b8c4d6;
+}
+
+/* Borders */
+.dark :is(
+  .border-gray-100,
+  .border-gray-200,
+  .border-gray-300,
+  .border-slate-100,
+  .border-slate-200,
+  [class*="border-[#e" i]
+):not([class*="dark:"]) {
+  border-color: rgba(148, 163, 184, 0.22);
+}
+
+/* Form fields */
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: #131c36;
+  color: #f1f5f9;
+  border-color: rgba(148, 163, 184, 0.3);
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #aab6c9;
+  opacity: 1;
+}
+
+/* =========================================
+   GLOBAL TEXT READABILITY
+   (inside @layer base so Tailwind classes like
+   text-sm / leading-5 can override them)
+   ========================================= */
+
+@layer base {
+  p {
+    line-height: 1.7;
+  }
+
+  li {
+    line-height: 1.65;
+  }
+}
+
+input,
+select,
+textarea {
+  max-width: 100%;
+}
+
+input::placeholder,
+textarea::placeholder {
+  opacity: 1;
+}
+
+/* Keyboard accessibility */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--dc-primary);
+  outline-offset: 3px;
+}
+
+/* =========================================
+   MOBILE: ALL PAGES
+   (inside @layer base: elements WITHOUT Tailwind
+   classes keep these defaults, elements WITH
+   classes use their own sizes)
+   ========================================= */
+
+@layer base {
+  @media (max-width: 767px) {
+    /* Main headings */
+    h1 {
+      font-size: clamp(30px, 8vw, 38px);
+      line-height: 1.2;
+      letter-spacing: -0.45px;
+    }
+
+    h2 {
+      font-size: clamp(25px, 6.5vw, 30px);
+      line-height: 1.3;
+    }
+
+    h3 {
+      font-size: 20px;
+      line-height: 1.4;
+    }
+
+    h4 {
+      font-size: 18px;
+      line-height: 1.45;
+    }
+
+    /* Paragraphs */
+    p {
+      font-size: 16px;
+      line-height: 1.75;
+    }
+
+    /* Lists */
+    li {
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    /* Buttons */
+    button,
+    a[role="button"],
+    input[type="button"],
+    input[type="submit"] {
+      min-height: 44px;
+    }
+
+    /* Forms */
+    input,
+    select,
+    textarea {
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    label {
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    /* Supporting text */
+    small {
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* Prevent overflow */
+    h1,
+    h2,
+    h3,
+    h4,
+    p,
+    li {
+      overflow-wrap: anywhere;
+    }
+  }
+
+  /* =========================================
+     VERY SMALL MOBILE
+     ========================================= */
+
+  @media (max-width: 374px) {
+    h1 {
+      font-size: 29px;
+    }
+
+    h2 {
+      font-size: 24px;
+    }
+
+    h3 {
+      font-size: 19px;
+    }
+  }
+
+  /* =========================================
+     TABLET
+     ========================================= */
+
+  @media (min-width: 768px) and (max-width: 1023px) {
+    body {
+      font-size: 16px;
+    }
+
+    p {
+      line-height: 1.7;
+    }
+
+    input,
+    select,
+    textarea {
+      font-size: 16px;
+    }
+  }
+}
+
+/* =========================================
+   DARK MODE - TEXT VISIBILITY FIX
+   ========================================= */
+
+.dark body {
+  color: #f1f5f9;
+}
+
+/* Main text and headings
+   (in @layer base so orange / white / custom text classes still win) */
+@layer base {
+  .dark h1,
+  .dark h2,
+  .dark h3,
+  .dark h4,
+  .dark h5,
+  .dark h6,
+  .dark p,
+  .dark li,
+  .dark label,
+  .dark dt,
+  .dark dd,
+  .dark figcaption {
+    color: #f1f5f9;
+  }
+
+  /* Links */
+  .dark a:not([class*="bg-"]) {
+    color: #f1f5f9;
+  }
+}
+
+/* Secondary text */
+.dark small,
+.dark .text-gray-500,
+.dark .text-gray-600,
+.dark .text-gray-700,
+.dark .text-slate-500,
+.dark .text-slate-600,
+.dark .text-slate-700 {
+  color: #cbd5e1;
+}
+
+/* Cards and content panels */
+.dark .bg-white,
+.dark .bg-gray-50,
+.dark .bg-gray-100,
+.dark .bg-slate-50,
+.dark .bg-slate-100 {
+  color: #f1f5f9;
+}
+
+/* Form labels and controls */
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: #131c36;
+  color: #f8fafc;
+  border-color: #475569;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #aab6c9;
+  opacity: 1;
+}
+
+/* Tables */
+.dark table,
+.dark thead,
+.dark tbody,
+.dark tr,
+.dark th,
+.dark td {
+  border-color: #334155;
+}
+
+.dark th {
+  color: #f8fafc;
+}
+
+.dark td {
+  color: #e2e8f0;
+}
+
+/* Disabled text */
+.dark :disabled {
+  opacity: 0.75;
+}
+
+/* Keep primary orange buttons readable */
+.dark button[class*="bg-[#B96928]"],
+.dark a[class*="bg-[#B96928]"] {
+  color: #ffffff;
+}
+
+
+/* =========================================
+   MOBILE BOTTOM NAV - DARK MODE FIX
+   ========================================= */
+
+@media (max-width: 767px) {
+  .dark nav.fixed,
+  .dark nav[class*="bottom-0"],
+  .dark [class*="fixed"][class*="bottom-0"] {
+    color: #f8fafc;
+  }
+
+  .dark nav.fixed a,
+  .dark nav.fixed button,
+  .dark nav[class*="bottom-0"] a,
+  .dark nav[class*="bottom-0"] button,
+  .dark [class*="fixed"][class*="bottom-0"] a,
+  .dark [class*="fixed"][class*="bottom-0"] button {
+    color: #f8fafc;
+  }
+
+  .dark nav.fixed svg,
+  .dark nav[class*="bottom-0"] svg,
+  .dark [class*="fixed"][class*="bottom-0"] svg {
+    color: inherit;
+  }
+}
+
+/* MOBILE BOTTOM BAR - STRONG DARK MODE VISIBILITY */
+
+@media (max-width: 767px) {
+  .dark nav.fixed,
+  .dark nav[class*="bottom-0"],
+  .dark [class*="fixed"][class*="bottom-0"] {
+    background-color: #111827 !important;
+    color: #ffffff !important;
+    border-color: #475569 !important;
+    opacity: 1 !important;
+  }
+
+  .dark nav.fixed a,
+  .dark nav.fixed button,
+  .dark nav[class*="bottom-0"] a,
+  .dark nav[class*="bottom-0"] button,
+  .dark [class*="fixed"][class*="bottom-0"] a,
+  .dark [class*="fixed"][class*="bottom-0"] button {
+    color: #ffffff !important;
+    opacity: 1 !important;
+    text-shadow: none !important;
+  }
+
+  .dark nav.fixed svg,
+  .dark nav[class*="bottom-0"] svg,
+  .dark [class*="fixed"][class*="bottom-0"] svg {
+    color: #ffffff !important;
+    opacity: 1 !important;
+    stroke: currentColor;
+  }
+
+  .dark nav.fixed span,
+  .dark nav[class*="bottom-0"] span,
+  .dark [class*="fixed"][class*="bottom-0"] span {
+    color: #ffffff !important;
+    opacity: 1 !important;
+  }
+
+  /* Quote CTA */
+  .dark nav.fixed a[class*="B96928"],
+  .dark nav.fixed button[class*="B96928"] {
+    background-color: #B96928 !important;
+    color: #ffffff !important;
+  }
+
+  /* WhatsApp */
+  .dark nav.fixed a[href*="wa.me"],
+  .dark nav.fixed a[href*="whatsapp"] {
+    color: #4ade80 !important;
+  }
+
+  .dark nav.fixed a[href*="wa.me"] svg,
+  .dark nav.fixed a[href*="whatsapp"] svg {
+    color: #4ade80 !important;
+  }
+}
+
+/* =========================================
+   NAVBAR / ADMIN HEADER — MOBILE TEXT FIX
+   (covers both <nav> and <header>; inside @layer base
+   so Tailwind size classes on the brand/heading can
+   still override when needed)
+   ========================================= */
+
+@layer base {
+  @media (max-width: 767px) {
+    nav a,
+    nav button,
+    header a,
+    header button {
+      font-size: 13px;
+      line-height: 1.3;
+    }
+
+    nav h1,
+    nav h2,
+    nav h3,
+    nav h4,
+    nav p,
+    nav span,
+    header h1,
+    header h2,
+    header h3,
+    header h4,
+    header p,
+    header span {
+      font-size: 12px;
+      line-height: 1.35;
+      letter-spacing: normal;
+    }
+
+    nav .font-black,
+    nav .font-extrabold,
+    nav .font-bold,
+    header .font-black,
+    header .font-extrabold,
+    header .font-bold {
+      font-size: 12px;
+    }
+
+    nav svg,
+    header svg {
+      flex-shrink: 0;
+    }
+  }
 }

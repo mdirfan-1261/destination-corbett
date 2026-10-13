@@ -13,16 +13,16 @@ import {
 import { navigation } from "@/data/navigation";
 import EnquiryWidget from "@/components/EnquiryWidget";
 import { useOrganisationProfile } from "@/hooks/useOrganisationProfile";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [mobileDropdown, setMobileDropdown] = useState(null);
   const [enquiryOpen, setEnquiryOpen] = useState(false);
 
-
   const { profile } = useOrganisationProfile();
 
-const phoneNumber = (profile.phone || "").replace(/[^\d+]/g, "");
+  const phoneNumber = (profile.phone || "").replace(/[^\d+]/g, "");
 
   /* Bottom nav "Quick Quote" button fires this event */
   useEffect(() => {
@@ -37,7 +37,7 @@ const phoneNumber = (profile.phone || "").replace(/[^\d+]/g, "");
   return (
     <>
       {/* ================= NAVBAR ================= */}
-      <header className="sticky top-0 z-50 overflow-visible bg-white/60 backdrop-blur-2xl border-b border-white/70 shadow-[0_8px_30px_rgba(23,32,51,0.08)]">
+      <header className="sticky top-0 z-50 overflow-visible bg-white/60 dark:bg-[#0e1210]/75 backdrop-blur-2xl border-b border-white/70 dark:border-white/10 shadow-[0_8px_30px_rgba(23,32,51,0.08)] dark:shadow-black/40">
         {/* ================= NAVBAR CONTAINER ================= */}
         <div className="max-w-7xl mx-auto px-3 sm:px-5 py-2 sm:py-1.5 flex items-center justify-between gap-2">
 
@@ -49,8 +49,8 @@ const phoneNumber = (profile.phone || "").replace(/[^\d+]/g, "");
           >
             <div className="group relative flex items-center gap-2 sm:gap-2.5 cursor-pointer min-w-0">
 
-                            {/* LOGO IMAGE — ORGANIZATION PROFILE API */}
-              <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-xl border border-[#B96928] bg-white shadow-sm transition-all duration-300 group-hover:scale-105">
+              {/* LOGO IMAGE — ORGANIZATION PROFILE API */}
+              <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-xl border border-[#B96928] bg-white dark:bg-[#1a1f1c] shadow-sm transition-all duration-300 group-hover:scale-105">
                 <img
                   src={profile.logo || "/logo/corbett-logo.jpeg"}
                   alt={`${profile.name || "Destination Corbett"} logo`}
@@ -63,27 +63,27 @@ const phoneNumber = (profile.phone || "").replace(/[^\d+]/g, "");
               </div>
 
               {/* LOGO TEXT */}
-<div className="flex flex-col min-w-0 leading-none">
-  <span className="text-[12px] sm:text-xs font-black tracking-[0.08em] sm:tracking-[0.10em] text-[#18352A] uppercase whitespace-nowrap">
-    {profile.name
-      ? profile.name.split(" ").slice(0, -1).join(" ") || profile.name
-      : "DESTINATION"}
-  </span>
+              <div className="flex flex-col min-w-0 leading-none">
+                <span className="text-[12px] sm:text-xs font-black tracking-[0.08em] sm:tracking-[0.10em] text-[#18352A] dark:text-[#e8f3ec] uppercase whitespace-nowrap">
+                  {profile.name
+                    ? profile.name.split(" ").slice(0, -1).join(" ") || profile.name
+                    : "DESTINATION"}
+                </span>
 
-  <span className="mt-0.5 text-[16px] sm:text-[13px] font-black tracking-[0.1em] sm:tracking-[0.12em] text-[#B96928] uppercase whitespace-nowrap">
-    {profile.name?.split(" ").slice(-1)[0] || "CORBETT"}
-  </span>
+                <span className="mt-0.5 text-[16px] sm:text-[13px] font-black tracking-[0.1em] sm:tracking-[0.12em] text-[#B96928] dark:text-[#E0924F] uppercase whitespace-nowrap">
+                  {profile.name?.split(" ").slice(-1)[0] || "CORBETT"}
+                </span>
 
-  <span className="mt-1 flex items-center whitespace-nowrap text-[10px] sm:text-[11px] font-semibold tracking-normal text-[#18352A]/80">
-    <span>Stay</span>
-    <span className="mx-0.5 text-[#B96928]">•</span>
-    <span>Resort</span>
-    <span className="mx-0.5 text-[#B96928]">•</span>
-    <span>Safari</span>
-    <span className="mx-0.5 text-[#B96928]">•</span>
-    <span>Events</span>
-  </span>
-</div>
+                <span className="mt-1 flex items-center whitespace-nowrap text-[10px] sm:text-[11px] font-semibold tracking-normal text-[#18352A]/80 dark:text-white/70">
+                  <span>Stay</span>
+                  <span className="mx-0.5 text-[#B96928]">•</span>
+                  <span>Resort</span>
+                  <span className="mx-0.5 text-[#B96928]">•</span>
+                  <span>Safari</span>
+                  <span className="mx-0.5 text-[#B96928]">•</span>
+                  <span>Events</span>
+                </span>
+              </div>
 
             </div>
           </Link>
@@ -100,11 +100,11 @@ const phoneNumber = (profile.phone || "").replace(/[^\d+]/g, "");
                     flex items-center gap-1
                     px-3.5 py-2
                     rounded-full
-                    text-[#172033]
-                    hover:text-[#C87532]
-                    hover:bg-white/50
+                    text-[#172033] dark:text-gray-100
+                    hover:text-[#C87532] dark:hover:text-[#E0924F]
+                    hover:bg-white/50 dark:hover:bg-white/10
                     border border-transparent
-                    hover:border-white/80
+                    hover:border-white/80 dark:hover:border-white/15
                     backdrop-blur-xl
                     whitespace-nowrap
                     transition-all
@@ -146,19 +146,19 @@ const phoneNumber = (profile.phone || "").replace(/[^\d+]/g, "");
                           ? `
                             w-[520px]
                             rounded-3xl
-                            bg-white/60
+                            bg-white/60 dark:bg-[#161b18]/90
                             backdrop-blur-3xl
-                            border border-white/80
-                            shadow-[0_20px_60px_rgba(23,32,51,0.16)]
+                            border border-white/80 dark:border-white/10
+                            shadow-[0_20px_60px_rgba(23,32,51,0.16)] dark:shadow-black/50
                             p-4
                           `
                           : `
                             w-64
                             rounded-2xl
-                            bg-white/60
+                            bg-white/60 dark:bg-[#161b18]/90
                             backdrop-blur-3xl
-                            border border-white/80
-                            shadow-[0_20px_50px_rgba(23,32,51,0.14)]
+                            border border-white/80 dark:border-white/10
+                            shadow-[0_20px_50px_rgba(23,32,51,0.14)] dark:shadow-black/50
                             p-2
                           `
                       }
@@ -170,7 +170,7 @@ const phoneNumber = (profile.phone || "").replace(/[^\d+]/g, "");
                               Events
                             </p>
 
-                            <h3 className="text-xl font-semibold text-[#172033] mt-1">
+                            <h3 className="text-xl font-semibold text-[#172033] dark:text-gray-100 mt-1">
                               Create unforgettable experiences
                             </h3>
                           </div>
@@ -184,10 +184,10 @@ const phoneNumber = (profile.phone || "").replace(/[^\d+]/g, "");
                                   group/item
                                   rounded-2xl
                                   px-4 py-4
-                                  bg-white/35
-                                  hover:bg-white/75
-                                  border border-white/40
-                                  hover:border-white/90
+                                  bg-white/35 dark:bg-white/5
+                                  hover:bg-white/75 dark:hover:bg-white/10
+                                  border border-white/40 dark:border-white/10
+                                  hover:border-white/90 dark:hover:border-white/20
                                   shadow-sm
                                   hover:shadow-md
                                   transition-all
@@ -195,7 +195,7 @@ const phoneNumber = (profile.phone || "").replace(/[^\d+]/g, "");
                                 "
                               >
                                 <div className="flex items-center justify-between gap-3">
-                                  <span className="text-sm font-semibold text-[#172033] group-hover/item:text-[#C87532] transition">
+                                  <span className="text-sm font-semibold text-[#172033] dark:text-gray-100 group-hover/item:text-[#C87532] dark:group-hover/item:text-[#E0924F] transition">
                                     {dropdownItem.name}
                                   </span>
 
@@ -215,13 +215,13 @@ const phoneNumber = (profile.phone || "").replace(/[^\d+]/g, "");
                               items-center
                               justify-between
                               rounded-2xl
-                              bg-[#172033]/90
+                              bg-[#172033]/90 dark:bg-[#232b27]
                               backdrop-blur-xl
                               border border-white/20
                               text-white
                               px-5 py-4
                               shadow-lg
-                              hover:bg-[#172033]
+                              hover:bg-[#172033] dark:hover:bg-[#2c3631]
                               hover:shadow-xl
                               transition-all
                               duration-300
@@ -252,9 +252,9 @@ const phoneNumber = (profile.phone || "").replace(/[^\d+]/g, "");
                                 rounded-xl
                                 text-sm
                                 font-medium
-                                text-[#172033]
-                                hover:bg-white/70
-                                hover:text-[#C87532]
+                                text-[#172033] dark:text-gray-100
+                                hover:bg-white/70 dark:hover:bg-white/10
+                                hover:text-[#C87532] dark:hover:text-[#E0924F]
                                 hover:shadow-sm
                                 transition-all
                                 duration-200
@@ -304,7 +304,10 @@ const phoneNumber = (profile.phone || "").replace(/[^\d+]/g, "");
               </span>
             </Link>
 
-            <div className="h-4 w-px bg-black/10 mx-0.5" />
+            <div className="h-4 w-px bg-black/10 dark:bg-white/20 mx-0.5" />
+
+            {/* THEME TOGGLE */}
+            <ThemeToggle />
 
             {/* ENQUIRE NOW */}
             <button
@@ -334,6 +337,9 @@ const phoneNumber = (profile.phone || "").replace(/[^\d+]/g, "");
           {/* ================= MOBILE CONTACT + MENU ================= */}
           <div className="md:hidden flex items-center gap-1.5 sm:gap-1.5 shrink-0">
 
+            {/* THEME TOGGLE */}
+            <ThemeToggle />
+
             {/* CALL */}
             <a
               href={`tel:${phoneNumber}`}
@@ -343,20 +349,18 @@ const phoneNumber = (profile.phone || "").replace(/[^\d+]/g, "");
                 h-9 w-9
                 shrink-0
                 rounded-full
-                bg-white/60
+                bg-white/60 dark:bg-white/10
                 backdrop-blur-xl
-                border border-white/80
-                text-[#172033]
+                border border-white/80 dark:border-white/15
+                text-[#172033] dark:text-gray-100
                 shadow-sm
-                hover:bg-white/80
-                hover:text-[#C87532]
+                hover:bg-white/80 dark:hover:bg-white/20
+                hover:text-[#C87532] dark:hover:text-[#E0924F]
                 transition-all
               "
             >
               <Phone size={17} strokeWidth={2.2} />
             </a>
-
-            
 
             {/* WHATSAPP 
             <a
@@ -393,12 +397,12 @@ const phoneNumber = (profile.phone || "").replace(/[^\d+]/g, "");
                 h-9 w-9
                 shrink-0
                 rounded-full
-                bg-white/50
+                bg-white/50 dark:bg-white/10
                 backdrop-blur-xl
-                border border-white/80
-                text-[#172033]
+                border border-white/80 dark:border-white/15
+                text-[#172033] dark:text-gray-100
                 shadow-sm
-                hover:bg-white/70
+                hover:bg-white/70 dark:hover:bg-white/20
                 transition-all
               "
               aria-label="Toggle menu"
@@ -417,17 +421,17 @@ const phoneNumber = (profile.phone || "").replace(/[^\d+]/g, "");
               mx-2.5 sm:mx-3
               mb-2.5 sm:mb-3
               rounded-2xl sm:rounded-3xl
-              bg-white/65
+              bg-white/65 dark:bg-[#161b18]/90
               backdrop-blur-3xl
-              border border-white/80
-              shadow-[0_20px_50px_rgba(23,32,51,0.15)]
+              border border-white/80 dark:border-white/10
+              shadow-[0_20px_50px_rgba(23,32,51,0.15)] dark:shadow-black/50
               overflow-hidden
             "
           >
             <nav className="px-2.5 sm:px-4 py-2.5 sm:py-3">
 
               {/* MOBILE OFFERS */}
-              <div className="pb-2.5 mb-1.5 border-b border-white/50">
+              <div className="pb-2.5 mb-1.5 border-b border-white/50 dark:border-white/10">
                 <Link
                   href="/offers"
                   onClick={() => setOpen(false)}
@@ -451,7 +455,7 @@ const phoneNumber = (profile.phone || "").replace(/[^\d+]/g, "");
               {navigation.map((item) => (
                 <div
                   key={item.name}
-                  className="border-b border-white/50 last:border-b-0"
+                  className="border-b border-white/50 dark:border-white/10 last:border-b-0"
                 >
                   <div className="flex items-center justify-between">
 
@@ -469,9 +473,9 @@ const phoneNumber = (profile.phone || "").replace(/[^\d+]/g, "");
                         rounded-xl
                         text-[13px] sm:text-sm
                         font-semibold
-                        text-[#172033]
-                        hover:text-[#C88A3D]
-                        hover:bg-white/40
+                        text-[#172033] dark:text-gray-100
+                        hover:text-[#C88A3D] dark:hover:text-[#E0924F]
+                        hover:bg-white/40 dark:hover:bg-white/10
                         transition-all
                       "
                     >
@@ -491,8 +495,8 @@ const phoneNumber = (profile.phone || "").replace(/[^\d+]/g, "");
                         className="
                           p-2 sm:p-3
                           rounded-xl
-                          text-[#172033]
-                          hover:bg-white/50
+                          text-[#172033] dark:text-gray-100
+                          hover:bg-white/50 dark:hover:bg-white/10
                           transition
                         "
                         aria-label={`Toggle ${item.name} menu`}
@@ -522,9 +526,9 @@ const phoneNumber = (profile.phone || "").replace(/[^\d+]/g, "");
                           mb-2.5 sm:mb-3
                           p-1.5 sm:p-2
                           rounded-xl sm:rounded-2xl
-                          bg-white/40
+                          bg-white/40 dark:bg-white/5
                           backdrop-blur-xl
-                          border border-white/60
+                          border border-white/60 dark:border-white/10
                         "
                       >
                         {item.dropdown.map((dropdownItem) => (
@@ -537,9 +541,9 @@ const phoneNumber = (profile.phone || "").replace(/[^\d+]/g, "");
                               px-3 py-2.5 sm:px-4 sm:py-3
                               rounded-lg sm:rounded-xl
                               text-[13px] sm:text-sm
-                              text-gray-700
-                              hover:bg-white/60
-                              hover:text-[#C88A3D]
+                              text-gray-700 dark:text-gray-300
+                              hover:bg-white/60 dark:hover:bg-white/10
+                              hover:text-[#C88A3D] dark:hover:text-[#E0924F]
                               transition-all
                             "
                           >
