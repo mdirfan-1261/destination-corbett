@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -35,17 +34,41 @@ export default function AdminSidebar({
 }) {
   const pathname = usePathname();
 
-  const [administrationOpen, setAdministrationOpen] =
-    useState(false);
+  const [administrationOpen, setAdministrationOpen] = useState(false);
+  const [organisationOpen, setOrganisationOpen] = useState(false);
+  const [departmentsOpen, setDepartmentsOpen] = useState(false);
+  const [safariOpen, setSafariOpen] = useState(false);
 
-  const [organisationOpen, setOrganisationOpen] =
-    useState(false);
+  // Department navigation: only top-level departments
+  const departmentLinks = [
+    ["Manage All Departments", "/admin/organisation/departments"],
+    ["Safari", "/admin/organisation/departments/safari"],
+    ["Stay", "/admin/organisation/departments/stay"],
+    ["Events", "/admin/organisation/departments/events"],
+    ["Weddings", "/admin/organisation/departments/weddings"],
+    ["Packages", "/admin/organisation/departments/packages"],
+  ];
 
-  const [departmentsOpen, setDepartmentsOpen] =
-    useState(false);
+  // Safari sub-departments
+  const safariLinks = [
+    ["Jeep Safari", "/admin/organisation/departments/safari/jeep"],
+    ["Canter Safari", "/admin/organisation/departments/safari/canter"],
+    ["Safari Zones", "/admin/organisation/departments/safari/zones"],
+    [
+      "Nature Activities",
+      "/admin/organisation/departments/safari/nature-activities",
+    ],
+    [
+      "Sightseeing",
+      "/admin/organisation/departments/safari/sightseeing",
+    ],
+    [
+      "Local Experiences",
+      "/admin/organisation/departments/safari/local-experiences",
+    ],
+  ];
 
   // Automatically open Administration
-  // when user is inside Administration pages
   useEffect(() => {
     if (pathname.startsWith("/admin/administration")) {
       setAdministrationOpen(true);
@@ -53,7 +76,6 @@ export default function AdminSidebar({
   }, [pathname]);
 
   // Automatically open Organisation
-  // when user is inside Organisation pages
   useEffect(() => {
     if (pathname.startsWith("/admin/organisation")) {
       setOrganisationOpen(true);
@@ -61,14 +83,20 @@ export default function AdminSidebar({
   }, [pathname]);
 
   // Automatically open Departments & Groups
-  // when user is inside a department page
+  useEffect(() => {
+    if (pathname.startsWith("/admin/organisation/departments")) {
+      setDepartmentsOpen(true);
+    }
+  }, [pathname]);
+
+  // Automatically expand Safari on its pages
   useEffect(() => {
     if (
       pathname.startsWith(
-        "/admin/organisation/departments"
+        "/admin/organisation/departments/safari"
       )
     ) {
-      setDepartmentsOpen(true);
+      setSafariOpen(true);
     }
   }, [pathname]);
 
@@ -95,6 +123,90 @@ export default function AdminSidebar({
     }`;
   };
 
+  // Shared nested department navigation.
+  // Safari sub-items appear immediately below Safari.
+  const renderDepartmentLinks = (collapsed = false) => (
+    <div
+      className={`space-y-1 ${
+        collapsed ? "" : "ml-3 border-l border-white/10 pl-3"
+      }`}
+    >
+      {departmentLinks.map(([name, href]) => {
+        const isSafari = name === "Safari";
+
+        const isActive =
+          pathname === href ||
+          (isSafari &&
+            pathname.startsWith(
+              "/admin/organisation/departments/safari/"
+            ));
+
+        return (
+          <div key={name}>
+            <div className="flex items-center gap-1">
+              <Link
+                href={href}
+                title={collapsed ? name : ""}
+                className={`min-w-0 flex-1 rounded-lg px-2.5 py-2 transition ${
+                  isActive
+                    ? "bg-[#C87532] font-bold text-white shadow-md"
+                    : "text-[#C7D0BC] hover:bg-white/10 hover:text-white"
+                }`}
+              >
+                <span className="block truncate">{name}</span>
+              </Link>
+
+              {isSafari && !collapsed && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSafariOpen((prev) => !prev)
+                  }
+                  aria-label={
+                    safariOpen
+                      ? "Collapse Safari options"
+                      : "Expand Safari options"
+                  }
+                  aria-expanded={safariOpen}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[#C7D0BC] transition hover:bg-white/10 hover:text-white"
+                >
+                  <ChevronDown
+                    size={14}
+                    className={`transition-transform ${
+                      safariOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+              )}
+            </div>
+
+            {isSafari && !collapsed && safariOpen && (
+              <div className="ml-3 mt-1 space-y-1 border-l border-white/10 pl-3">
+                {safariLinks.map(([childName, childHref]) => {
+                  const childActive = pathname === childHref;
+
+                  return (
+                    <Link
+                      key={childName}
+                      href={childHref}
+                      className={`block rounded-lg px-2.5 py-2 text-[11px] transition ${
+                        childActive
+                          ? "bg-[#C87532] font-bold text-white shadow-md"
+                          : "text-[#C7D0BC] hover:bg-white/10 hover:text-white"
+                      }`}
+                    >
+                      {childName}
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+
   return (
     <>
       {/* =====================================================
@@ -103,7 +215,6 @@ export default function AdminSidebar({
 
       {sidebarOpen && (
         <div className="fixed inset-0 z-[999] md:hidden">
-
           {/* OVERLAY */}
           <div
             onClick={() => setSidebarOpen(false)}
@@ -112,10 +223,8 @@ export default function AdminSidebar({
 
           {/* DRAWER */}
           <div className="absolute left-0 top-0 flex h-full w-64 max-w-[85%] flex-col border-r border-white/20 bg-[#142019] p-4 text-white shadow-2xl">
-
             {/* DRAWER HEADER */}
             <div className="mb-4 flex items-center justify-between border-b border-white/10 pb-3">
-
               <div>
                 <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-[#B8C19F]">
                   Admin Navigation
@@ -133,12 +242,10 @@ export default function AdminSidebar({
               >
                 <X size={16} />
               </button>
-
             </div>
 
             {/* MOBILE NAV */}
             <nav className="space-y-1 overflow-y-auto text-xs font-semibold">
-
               {/* DASHBOARD */}
               <Link
                 href="/admin/dashboard"
@@ -186,17 +293,19 @@ export default function AdminSidebar({
                 <ClipboardList size={17} />
                 <span>Bookings</span>
               </Link>
-{/* MEDIA LIBRARY */}
-<Link
-  href="/admin/media"
-  className={getLinkClass(
-    pathname.startsWith("/admin/media"),
-    false
-  )}
->
-  <ImagePlus size={17} />
-  <span>Media Library</span>
-</Link>
+
+              {/* MEDIA LIBRARY */}
+              <Link
+                href="/admin/media"
+                className={getLinkClass(
+                  pathname.startsWith("/admin/media"),
+                  false
+                )}
+              >
+                <ImagePlus size={17} />
+                <span>Media Library</span>
+              </Link>
+
               {/* ADMINISTRATION */}
               <button
                 type="button"
@@ -225,8 +334,6 @@ export default function AdminSidebar({
               {/* ADMINISTRATION CHILDREN */}
               {administrationOpen && (
                 <div className="ml-4 space-y-1 border-l border-white/10 pl-3">
-
-                  {/* USER MANAGEMENT */}
                   <Link
                     href="/admin/administration/users"
                     className={`flex items-center gap-2 rounded-lg px-3 py-2 transition ${
@@ -241,7 +348,6 @@ export default function AdminSidebar({
                     <span>User Management</span>
                   </Link>
 
-                  {/* ROLES */}
                   <Link
                     href="/admin/administration/roles"
                     className={`flex items-center gap-2 rounded-lg px-3 py-2 transition ${
@@ -256,7 +362,6 @@ export default function AdminSidebar({
                     <span>Roles & Permissions</span>
                   </Link>
 
-                  {/* GROUPS */}
                   <Link
                     href="/admin/administration/groups"
                     className={`flex items-center gap-2 rounded-lg px-3 py-2 transition ${
@@ -271,7 +376,6 @@ export default function AdminSidebar({
                     <span>Groups & Departments</span>
                   </Link>
 
-                  {/* RECOVERY BIN */}
                   <Link
                     href="/admin/administration/recovery"
                     className={`flex items-center gap-2 rounded-lg px-3 py-2 transition ${
@@ -285,7 +389,6 @@ export default function AdminSidebar({
                     <Archive size={15} />
                     <span>Recovery Bin</span>
                   </Link>
-
                 </div>
               )}
 
@@ -337,7 +440,7 @@ export default function AdminSidebar({
                 <span>Weddings</span>
               </Link>
 
-              {/* ORGANISATION MOBILE DROPDOWN */}
+              {/* ORGANISATION */}
               <button
                 type="button"
                 onClick={() =>
@@ -362,10 +465,9 @@ export default function AdminSidebar({
                 />
               </button>
 
-              {/* ORGANISATION MOBILE CHILDREN */}
+              {/* ORGANISATION CHILDREN */}
               {organisationOpen && (
                 <div className="ml-4 space-y-1 border-l border-white/10 pl-3">
-
                   <Link
                     href="/admin/organisation"
                     className={`flex items-center gap-2 rounded-lg px-3 py-2 transition ${
@@ -413,32 +515,10 @@ export default function AdminSidebar({
                     />
                   </button>
 
-                  {/* DEPARTMENT LINKS */}
-                  {departmentsOpen && (
-                    <div className="ml-3 space-y-1 border-l border-white/10 pl-3">
-                      {[
-                        ["Manage All Departments", "/admin/organisation/departments"],
-                        ["Safari", "/admin/organisation/departments/safari"],
-                        ["Stay", "/admin/organisation/departments/stay"],
-                        ["Events", "/admin/organisation/departments/events"],
-                        ["Weddings", "/admin/organisation/departments/weddings"],
-                        ["Packages", "/admin/organisation/departments/packages"],
-                      ].map(([name, href]) => (
-                        <Link
-                          key={name}
-                          href={href}
-                          className={`block rounded-lg px-3 py-2 transition ${
-                            pathname === href
-                              ? "bg-[#C87532] font-bold text-white"
-                              : "text-[#C7D0BC] hover:bg-white/10 hover:text-white"
-                          }`}
-                        >
-                          {name}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
+                  {/* DEPARTMENT LINKS + NESTED SAFARI */}
+                  {departmentsOpen && renderDepartmentLinks(false)}
 
+                  {/* MEMBERS */}
                   <Link
                     href="/admin/organisation/members"
                     className={`flex items-center gap-2 rounded-lg px-3 py-2 transition ${
@@ -453,6 +533,7 @@ export default function AdminSidebar({
                     <span>Members</span>
                   </Link>
 
+                  {/* BOOKING POLICIES */}
                   <Link
                     href="/admin/organisation/policies"
                     className={`flex items-center gap-2 rounded-lg px-3 py-2 transition ${
@@ -467,6 +548,7 @@ export default function AdminSidebar({
                     <span>Booking Policies</span>
                   </Link>
 
+                  {/* ACTIVITY LOGS */}
                   <Link
                     href="/admin/organisation/activity-logs"
                     className={`flex items-center gap-2 rounded-lg px-3 py-2 transition ${
@@ -480,11 +562,8 @@ export default function AdminSidebar({
                     <ClipboardList size={15} />
                     <span>Activity Logs</span>
                   </Link>
-
                 </div>
               )}
-
-              
 
               {/* ANALYTICS */}
               <Link
@@ -497,7 +576,6 @@ export default function AdminSidebar({
                 <BarChart3 size={17} />
                 <span>Analytics</span>
               </Link>
-
             </nav>
           </div>
         </div>
@@ -513,7 +591,6 @@ export default function AdminSidebar({
         }`}
       >
         <div className="relative flex h-full flex-col p-2.5">
-
           {/* SIDEBAR HEADER */}
           <div
             className={`mb-4 flex items-center ${
@@ -556,7 +633,6 @@ export default function AdminSidebar({
 
           {/* DESKTOP NAV */}
           <nav className="space-y-1 overflow-y-auto text-xs font-semibold">
-
             {/* DASHBOARD */}
             <Link
               href="/admin/dashboard"
@@ -567,7 +643,6 @@ export default function AdminSidebar({
               title={sidebarCollapsed ? "Dashboard" : ""}
             >
               <LayoutDashboard size={17} />
-
               {!sidebarCollapsed && (
                 <span className="truncate">Dashboard</span>
               )}
@@ -583,7 +658,6 @@ export default function AdminSidebar({
               title={sidebarCollapsed ? "Enquiries" : ""}
             >
               <Mail size={17} />
-
               {!sidebarCollapsed && (
                 <span className="truncate">Enquiries</span>
               )}
@@ -599,7 +673,6 @@ export default function AdminSidebar({
               title={sidebarCollapsed ? "Customers" : ""}
             >
               <Users size={17} />
-
               {!sidebarCollapsed && (
                 <span className="truncate">Customers</span>
               )}
@@ -615,25 +688,26 @@ export default function AdminSidebar({
               title={sidebarCollapsed ? "Bookings" : ""}
             >
               <ClipboardList size={17} />
-
               {!sidebarCollapsed && (
                 <span className="truncate">Bookings</span>
               )}
             </Link>
-{/* MEDIA LIBRARY */}
-<Link
-  href="/admin/media"
-  className={getLinkClass(
-    pathname.startsWith("/admin/media"),
-    sidebarCollapsed
-  )}
-  title={sidebarCollapsed ? "Media Library" : ""}
->
-  <ImagePlus size={17} />
-  {!sidebarCollapsed && (
-    <span className="truncate">Media Library</span>
-  )}
-</Link>
+
+            {/* MEDIA LIBRARY */}
+            <Link
+              href="/admin/media"
+              className={getLinkClass(
+                pathname.startsWith("/admin/media"),
+                sidebarCollapsed
+              )}
+              title={sidebarCollapsed ? "Media Library" : ""}
+            >
+              <ImagePlus size={17} />
+              {!sidebarCollapsed && (
+                <span className="truncate">Media Library</span>
+              )}
+            </Link>
+
             {/* ADMINISTRATION */}
             <button
               type="button"
@@ -659,7 +733,6 @@ export default function AdminSidebar({
                 }`}
               >
                 <ShieldCheck size={17} />
-
                 {!sidebarCollapsed && (
                   <span className="truncate">
                     Administration
@@ -680,8 +753,6 @@ export default function AdminSidebar({
             {/* ADMINISTRATION CHILDREN */}
             {!sidebarCollapsed && administrationOpen && (
               <div className="ml-3 space-y-1 border-l border-white/10 pl-3">
-
-                {/* USER MANAGEMENT */}
                 <Link
                   href="/admin/administration/users"
                   className={`flex items-center gap-2 rounded-lg px-2.5 py-2 transition ${
@@ -696,7 +767,6 @@ export default function AdminSidebar({
                   <span className="truncate">User Management</span>
                 </Link>
 
-                {/* ROLES */}
                 <Link
                   href="/admin/administration/roles"
                   className={`flex items-center gap-2 rounded-lg px-2.5 py-2 transition ${
@@ -713,7 +783,6 @@ export default function AdminSidebar({
                   </span>
                 </Link>
 
-                {/* GROUPS */}
                 <Link
                   href="/admin/administration/groups"
                   className={`flex items-center gap-2 rounded-lg px-2.5 py-2 transition ${
@@ -730,7 +799,6 @@ export default function AdminSidebar({
                   </span>
                 </Link>
 
-                {/* RECOVERY BIN */}
                 <Link
                   href="/admin/administration/recovery"
                   className={`flex items-center gap-2 rounded-lg px-2.5 py-2 transition ${
@@ -744,7 +812,6 @@ export default function AdminSidebar({
                   <Archive size={15} />
                   <span className="truncate">Recovery Bin</span>
                 </Link>
-
               </div>
             )}
 
@@ -773,7 +840,6 @@ export default function AdminSidebar({
                 }`}
               >
                 <Building2 size={17} />
-
                 {!sidebarCollapsed && (
                   <span className="truncate">Organisation</span>
                 )}
@@ -792,7 +858,6 @@ export default function AdminSidebar({
             {/* ORGANISATION CHILDREN */}
             {!sidebarCollapsed && organisationOpen && (
               <div className="ml-3 space-y-1 border-l border-white/10 pl-3">
-
                 {/* OVERVIEW */}
                 <Link
                   href="/admin/organisation"
@@ -842,31 +907,8 @@ export default function AdminSidebar({
                   />
                 </button>
 
-                {/* DEPARTMENT LINKS */}
-                {departmentsOpen && (
-                  <div className="ml-3 space-y-1 border-l border-white/10 pl-3">
-                    {[
-                      ["Manage All Departments", "/admin/organisation/departments"],
-                      ["Safari", "/admin/organisation/departments/safari"],
-                      ["Stay", "/admin/organisation/departments/stay"],
-                      ["Events", "/admin/organisation/departments/events"],
-                      ["Weddings", "/admin/organisation/departments/weddings"],
-                      ["Packages", "/admin/organisation/departments/packages"],
-                    ].map(([name, href]) => (
-                      <Link
-                        key={name}
-                        href={href}
-                        className={`block rounded-lg px-2.5 py-2 transition ${
-                          pathname === href
-                            ? "bg-[#C87532] font-bold text-white shadow-md"
-                            : "text-[#C7D0BC] hover:bg-white/10 hover:text-white"
-                        }`}
-                      >
-                        {name}
-                      </Link>
-                    ))}
-                  </div>
-                )}
+                {/* DEPARTMENT LINKS + NESTED SAFARI */}
+                {departmentsOpen && renderDepartmentLinks(false)}
 
                 {/* MEMBERS */}
                 <Link
@@ -912,7 +954,6 @@ export default function AdminSidebar({
                   <ClipboardList size={15} />
                   <span className="truncate">Activity Logs</span>
                 </Link>
-
               </div>
             )}
 
@@ -926,7 +967,6 @@ export default function AdminSidebar({
               title={sidebarCollapsed ? "Hotels & Stays" : ""}
             >
               <Hotel size={17} />
-
               {!sidebarCollapsed && (
                 <span className="truncate">Hotels & Stays</span>
               )}
@@ -942,7 +982,6 @@ export default function AdminSidebar({
               title={sidebarCollapsed ? "Safari" : ""}
             >
               <Trees size={17} />
-
               {!sidebarCollapsed && (
                 <span className="truncate">Safari</span>
               )}
@@ -958,7 +997,6 @@ export default function AdminSidebar({
               title={sidebarCollapsed ? "Events" : ""}
             >
               <CalendarDays size={17} />
-
               {!sidebarCollapsed && (
                 <span className="truncate">Events</span>
               )}
@@ -974,7 +1012,6 @@ export default function AdminSidebar({
               title={sidebarCollapsed ? "Weddings" : ""}
             >
               <CalendarDays size={17} />
-
               {!sidebarCollapsed && (
                 <span className="truncate">Weddings</span>
               )}
@@ -990,16 +1027,13 @@ export default function AdminSidebar({
               title={sidebarCollapsed ? "Analytics" : ""}
             >
               <BarChart3 size={17} />
-
               {!sidebarCollapsed && (
                 <span className="truncate">Analytics</span>
               )}
             </Link>
-
           </nav>
         </div>
       </aside>
     </>
   );
 }
-
