@@ -23,7 +23,7 @@ function getOwnerToken() {
     return t && t !== "null" && t !== "undefined" ? t : null;
   };
 
-  const direct = clean(localStorage.getItem("ownerToken"));
+  const direct = clean(localStorage.getItem("destin_owner_token"));
   if (direct) return direct;
 
   for (let i = 0; i < localStorage.length; i++) {

@@ -42,7 +42,7 @@ export default function OwnerREPropertiesPage() {
   const fetchProperties = async () => {
     setLoading(true); setError("");
     try {
-      const token = localStorage.getItem("ownerToken");
+      const token = localStorage.getItem("destin_owner_token");
       const res = await fetch(`${API_BASE}/api/re/properties/my`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -62,7 +62,7 @@ export default function OwnerREPropertiesPage() {
     if (!confirm("Delete this property?")) return;
     setDeleting(id);
     try {
-      const token = localStorage.getItem("ownerToken");
+      const token = localStorage.getItem("destin_owner_token");
       const res = await fetch(`${API_BASE}/api/re/properties/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
