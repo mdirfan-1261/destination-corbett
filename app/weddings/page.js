@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useMemo } from "react";
-import { Cormorant_Garamond } from "next/font/google";
+
 import { useOrganisationProfile } from "@/hooks/useOrganisationProfile";
 import {
   ArrowRight,
@@ -25,12 +25,7 @@ import {
   Mail,
 } from "lucide-react";
 
-const serif = Cormorant_Garamond({
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-  variable: "--font-serif",
-  display: "swap",
-});
+
 
 /* ================= ORGANISATION CONTACT HELPERS ================= */
 function getContactDetails(profile) {
@@ -313,7 +308,7 @@ export default function WeddingsPage() {
 
   return (
     <main
-      className={`${serif.variable} min-h-screen bg-[#F7F5F0] text-[#172033] dark:bg-[#0e1210] dark:text-gray-100`}
+      className="min-h-screen bg-[#F7F5F0] text-[#172033] dark:bg-[#0e1210] dark:text-gray-100"
     >
       {/* ================= BREADCRUMB ================= */}
       <nav
