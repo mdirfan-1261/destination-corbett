@@ -16,9 +16,10 @@ const serviceLinks = [
   { name: "Events", href: "/events" },
   { name: "Destination Weddings", href: "/weddings" },
   { name: "Transportation", href: "/transport" },
-  { name: "Add Your Property", href: "/add-property" },
+  { name: "List Your Resort (Partner Login)", href: "/owner/login" }, 
   { name: "Contact Us", href: "/contact" },
 ];
+
 const socials = [
   {
     label: "Texora AI on LinkedIn",
@@ -106,52 +107,15 @@ function ContactRow({ icon: Icon, children, align = "center" }) {
 
 export default function Footer() {
   const { profile } = useOrganisationProfile();
-
   const phoneLink = (profile.phone || "").replace(/[^\d+]/g, "");
-  const waLink = `https://wa.me/${phoneLink.replace(/\D/g, "")}?text=${encodeURIComponent(
-    "Hi Destination Corbett, I would like to plan a trip."
-  )}`;
 
   return (
     <footer className="relative overflow-hidden bg-[#172033] pb-20 text-white md:pb-0 dark:border-t dark:border-white/10 dark:bg-[#0a1226]">
-      {/* top accent line + soft glow */}
+      {/* top accent line */}
       <div className="h-px bg-gradient-to-r from-transparent via-[#C87532]/70 to-transparent" />
       <div className="pointer-events-none absolute -top-24 right-0 h-64 w-64 rounded-full bg-[#C87532]/10 blur-3xl" />
 
       <div className="relative mx-auto max-w-7xl px-4 pb-8 pt-10 sm:px-6 sm:pt-14">
-        {/* ============ CTA BAND ============ */}
-        {/*{profile.phone && (
-          <div className="mb-12 flex flex-col gap-5 rounded-3xl border border-white/10 bg-gradient-to-r from-[#C87532]/25 via-white/5 to-transparent p-5 sm:mb-14 sm:flex-row sm:items-center sm:justify-between sm:p-7">
-            <div>
-              <h3 className="text-lg font-bold sm:text-xl">
-                Planning your Jim Corbett trip?
-              </h3>
-              <p className="mt-1 text-sm text-white/65">
-                Tell us your dates and we&apos;ll share the best stay and safari options.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 sm:flex sm:shrink-0">
-              <a
-                href={waLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-[#25D366] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-[#25D366]/20 transition hover:scale-105"
-              >
-                <MessageCircle size={17} />
-                WhatsApp
-              </a>
-
-              <a
-                href={`tel:${phoneLink}`}
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/20 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
-              >
-                <Phone size={16} />
-                Call Now
-              </a>
-            </div>
-          </div>
-        )}*/}
         {/* ============ MAIN GRID ============ */}
         <div className="grid grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-12 lg:gap-x-8">
 
@@ -212,20 +176,18 @@ export default function Footer() {
           </div>
 
           {/* SERVICES */}
-          {/* SERVICES */}
-<div className="lg:col-span-2">
-  <FooterHeading>Services</FooterHeading>
+          <div className="lg:col-span-2">
+            <FooterHeading>Services</FooterHeading>
+            <div className="space-y-3">
+              {serviceLinks.map((link) => (
+                <FooterLink key={link.name} href={link.href}>
+                  {link.name}
+                </FooterLink>
+              ))}
+            </div>
+          </div>
 
-  <div className="space-y-3">
-    {serviceLinks.map((link) => (
-      <FooterLink key={link.name} href={link.href}>
-        {link.name}
-      </FooterLink>
-    ))}
-  </div>
-</div>
-
-          {/* CONTACT — Organization Profile API */}
+          {/* CONTACT */}
           <div className="col-span-2 min-w-0 lg:col-span-4">
             <FooterHeading>Contact</FooterHeading>
 
@@ -256,15 +218,6 @@ export default function Footer() {
                     {profile.email}
                   </a>
                 </ContactRow>
-              )}
-
-              {!profile.phone && !profile.email && !profile.address && (
-                <Link
-                  href="/contact"
-                  className="text-sm text-white/70 transition-colors hover:text-[#E0924F]"
-                >
-                  Contact Us
-                </Link>
               )}
             </div>
           </div>

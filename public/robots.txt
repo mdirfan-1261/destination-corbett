@@ -1,0 +1,5 @@
+
+User-agent: *
+Allow: /
+
+Sitemap: https://destination-corbett.vercel.app/sitemap.xml

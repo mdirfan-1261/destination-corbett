@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
@@ -232,8 +231,7 @@ function getBookingUrl(safari) {
 export default function JeepSafariPage() {
   const { profile } = useOrganisationProfile();
 
-  // No hardcoded default service cards.
-  // Public cards come only from active API records.
+  // Services come only from active API records.
   const [safariOptions, setSafariOptions] = useState([]);
 
   const [loading, setLoading] = useState(true);
@@ -277,8 +275,6 @@ export default function JeepSafariPage() {
         );
       }
 
-      // Strict status check:
-      // only records explicitly marked active are public.
       const activeServices = result.data.filter((service) => {
         const status = String(service?.status || "")
           .trim()
@@ -296,8 +292,6 @@ export default function JeepSafariPage() {
     } catch (error) {
       console.error("Public Jeep Safari load error:", error);
 
-      // Do not show defaults when the API fails.
-      // This prevents stale/hardcoded cards from appearing.
       setSafariOptions([]);
 
       setLoadError(
@@ -355,74 +349,120 @@ export default function JeepSafariPage() {
   }
 
   return (
-    <main className="bg-[#F7F5F0] text-[#172033]">
-      {/* HERO */}
+    <main className="min-h-screen bg-[#F7F5F0] text-[#172033] dark:bg-[#0e1210]">
+      {/* =================================================
+          BREADCRUMB — SAME STYLE AS RESORTS PAGE
+      ================================================= */}
 
-      <section className="px-2 py-2 sm:px-4 sm:py-4 md:px-6">
-        <div className="relative mx-auto min-h-[260px] max-w-[1440px] overflow-hidden rounded-2xl bg-[#172033] text-white sm:min-h-[420px] sm:rounded-3xl lg:min-h-[500px]">
-          <Image
-            src="/safari/safari-hero.webp"
-            alt="Jeep Safari adventure in Jim Corbett"
-            fill
-            priority
-            quality={70}
-            sizes="100vw"
-            className="object-cover"
-          />
+      <nav
+        aria-label="Breadcrumb"
+        className="mx-auto max-w-6xl px-3 pt-3 text-xs sm:px-5 sm:pt-4 sm:text-sm md:px-6"
+      >
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href="/"
+            className="text-[#B96928] transition-colors hover:underline"
+          >
+            Home
+          </Link>
 
-          <div className="absolute inset-0 bg-[#172033]/55" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#172033]/85 via-[#172033]/55 to-[#172033]/15" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#172033]/45 to-transparent" />
+          <span className="text-gray-400">›</span>
 
-          <div className="relative z-10 flex min-h-[260px] items-center px-4 py-6 sm:min-h-[420px] sm:px-9 sm:py-12 lg:min-h-[500px] lg:px-14">
-            <div className="max-w-2xl">
-              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md sm:mb-4 sm:py-2 sm:text-sm">
-                <Trees className="h-4 w-4 text-[#E6A76D]" />
+          <Link
+            href="/safari"
+            className="text-[#B96928] transition-colors hover:underline"
+          >
+            Safari
+          </Link>
+
+          <span className="text-gray-400">›</span>
+
+          <span
+            aria-current="page"
+            className="font-medium text-[#172033] dark:text-gray-100"
+          >
+            Jeep Safari
+          </span>
+        </div>
+      </nav>
+
+      {/* =================================================
+          COMPACT HERO — SAME SIZE AS STAY PAGE
+      ================================================= */}
+
+      <section className="px-3 pt-3 sm:px-5 sm:pt-4 md:px-6">
+        <div className="relative mx-auto min-h-[150px] max-w-6xl overflow-hidden rounded-xl bg-[#172033] text-white sm:min-h-[180px] sm:rounded-2xl lg:min-h-[210px]">
+          {/* Hero Image */}
+
+          <div className="absolute inset-0 lg:left-auto lg:w-[55%]">
+            <Image
+              src="/safari/safari-hero.webp"
+              alt="Jeep Safari adventure in Jim Corbett"
+              fill
+              priority
+              quality={70}
+              sizes="(max-width: 1023px) 100vw, 700px"
+              className="object-cover object-center brightness-110"
+            />
+          </div>
+
+          {/* Image Overlays */}
+
+          <div className="pointer-events-none absolute inset-y-0 left-[45%] hidden w-[15%] bg-gradient-to-r from-[#172033] to-transparent lg:block" />
+
+          <div className="absolute inset-0 bg-gradient-to-r from-[#172033]/90 via-[#172033]/55 to-transparent" />
+
+          {/* Hero Content */}
+
+          <div className="relative z-10 flex min-h-[150px] items-center px-4 py-5 sm:min-h-[180px] sm:px-8 lg:min-h-[210px] lg:px-10">
+            <div className="max-w-xl">
+              <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-white/85 backdrop-blur-xl">
+                <Trees className="h-3 w-3 text-[#E0924F]" />
                 Destination Corbett Safari
               </div>
 
-              <h1 className="text-[1.6rem] font-bold leading-tight tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
-                Explore the Wild
-                <span className="mt-1 block text-[#E6A76D]">
+              <h1 className="text-xl font-bold leading-tight tracking-tight sm:text-2xl md:text-3xl lg:text-4xl">
+                Explore the Wild{" "}
+                <span className="text-[#E0924F]">
                   Jeep Safari
                 </span>
               </h1>
 
-              <p className="mt-3 max-w-xl text-sm leading-6 text-white/90 sm:mt-4 sm:text-base sm:leading-7">
+              <p className="mt-2 hidden max-w-md text-xs leading-5 text-white/80 sm:block sm:text-sm">
                 Explore available Jeep Safari services, compare prices and
                 enquire about dates and availability with our team.
               </p>
 
-              <div className="mt-4 flex flex-wrap gap-2.5 sm:mt-6 sm:gap-3">
+              <div className="mt-3 flex flex-wrap items-center gap-2">
                 <a
                   href="#jeep-options"
-                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#B96928] px-5 text-sm font-bold text-white transition hover:bg-[#9F5520]"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-full bg-[#B96928] px-4 py-2 text-xs font-semibold text-white shadow-md transition-all duration-200 hover:bg-[#A85C22] sm:text-sm"
                 >
                   Explore Safaris
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight size={13} />
                 </a>
 
                 <Link
                   href="/contact?type=safari"
-                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/40 bg-white/10 px-5 text-sm font-bold text-white backdrop-blur-md transition hover:bg-white/20"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-full border border-white/30 bg-white/10 px-4 py-2 text-xs font-semibold text-white backdrop-blur transition hover:bg-white/20 sm:text-sm"
                 >
                   Send an Enquiry
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight size={13} />
                 </Link>
               </div>
 
-              <div className="mt-5 hidden flex-wrap gap-x-5 gap-y-2 text-sm font-medium text-white/90 sm:flex">
-                <span className="flex items-center gap-2">
+              <div className="mt-3 hidden flex-wrap gap-x-4 gap-y-2 text-xs font-medium text-white/90 sm:flex">
+                <span className="flex items-center gap-1.5">
                   <ShieldCheck className="h-4 w-4 text-[#E6A76D]" />
                   Booking Assistance
                 </span>
 
-                <span className="flex items-center gap-2">
+                <span className="flex items-center gap-1.5">
                   <Users className="h-4 w-4 text-[#E6A76D]" />
                   Group Capacity
                 </span>
 
-                <span className="flex items-center gap-2">
+                <span className="flex items-center gap-1.5">
                   <MessageCircle className="h-4 w-4 text-[#E6A76D]" />
                   Quick Enquiry
                 </span>
@@ -432,24 +472,26 @@ export default function JeepSafariPage() {
         </div>
       </section>
 
-      {/* JEEP SAFARI LIST */}
+      {/* =================================================
+          JEEP SAFARI LIST
+      ================================================= */}
 
       <section
         id="jeep-options"
-        className="scroll-mt-20 px-3 py-6 sm:px-6 sm:py-10 md:px-8"
+        className="scroll-mt-20 px-3 py-5 sm:px-5 sm:py-6 md:px-6 md:py-8"
       >
-        <div className="mx-auto max-w-7xl">
+        <div className="mx-auto max-w-6xl">
           <div className="flex items-end justify-between gap-3">
             <div className="min-w-0">
-              <p className="hidden text-sm font-bold uppercase tracking-wider text-[#B96928] sm:block">
+              <p className="hidden text-xs font-bold uppercase tracking-wider text-[#B96928] sm:block">
                 Available Services
               </p>
 
-              <h2 className="text-xl font-bold leading-tight sm:mt-2 sm:text-3xl md:text-4xl">
+              <h2 className="text-lg font-bold leading-tight text-[#172033] dark:text-gray-100 sm:mt-1 sm:text-2xl">
                 Jeep Safari Options
               </h2>
 
-              <p className="mt-1 text-sm leading-5 text-[#4B5563] sm:mt-2 sm:text-base sm:leading-6">
+              <p className="mt-1 text-xs leading-5 text-[#4B5563] dark:text-gray-300 sm:text-sm">
                 Compare available services, prices, duration and capacity.
               </p>
             </div>
@@ -458,7 +500,7 @@ export default function JeepSafariPage() {
               number={whatsappNumber}
               message={helpMessage}
               label="Get Jeep Safari recommendations on WhatsApp"
-              className="inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-[#172033] px-3 text-xs font-bold text-white transition hover:bg-[#26344D] sm:min-h-11 sm:gap-2 sm:px-5 sm:text-sm"
+              className="inline-flex min-h-9 shrink-0 items-center justify-center gap-1.5 rounded-full bg-[#172033] px-3 text-xs font-bold text-white transition hover:bg-[#26344D] sm:min-h-10 sm:gap-2 sm:px-4 sm:text-sm"
             >
               <MessageCircle className="h-4 w-4" />
               <span className="hidden sm:inline">Help Me Choose</span>
@@ -471,11 +513,11 @@ export default function JeepSafariPage() {
           {loading && (
             <div
               role="status"
-              className="mt-4 rounded-xl border border-black/10 bg-white p-8 text-center sm:mt-6 sm:rounded-2xl"
+              className="mt-4 rounded-xl border border-black/10 bg-white p-8 text-center dark:border-white/10 dark:bg-[#171c19] sm:mt-5 sm:rounded-2xl"
             >
               <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[#B96928]/20 border-t-[#B96928]" />
 
-              <p className="mt-3 text-sm font-medium">
+              <p className="mt-3 text-sm font-medium text-[#172033] dark:text-gray-100">
                 Loading Jeep Safari services...
               </p>
             </div>
@@ -486,9 +528,9 @@ export default function JeepSafariPage() {
           {!loading && loadError && (
             <div
               role="status"
-              className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#B96928]/20 bg-white p-4 sm:mt-6 sm:rounded-2xl sm:p-5"
+              className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#B96928]/20 bg-white p-4 dark:bg-[#171c19] sm:mt-5 sm:rounded-2xl sm:p-5"
             >
-              <p className="text-sm leading-5 text-[#4B5563]">
+              <p className="text-sm leading-5 text-[#4B5563] dark:text-gray-300">
                 Live Jeep Safari services could not be loaded. Please retry
                 or contact our team.
               </p>
@@ -507,14 +549,14 @@ export default function JeepSafariPage() {
           {/* ACTIVE SERVICE CARDS ONLY */}
 
           {!loading && !loadError && safariOptions.length > 0 && (
-            <div className="mt-4 grid gap-3 sm:mt-6 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+            <div className="mt-4 grid gap-3 sm:mt-5 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
               {safariOptions.map((safari) => {
                 const isExpanded = expanded === safari.id;
 
                 return (
                   <article
                     key={safari.id}
-                    className="group flex min-w-0 items-stretch overflow-hidden rounded-xl border border-black/10 bg-white shadow-sm transition duration-200 hover:shadow-md sm:flex-col"
+                    className="group flex min-w-0 items-stretch overflow-hidden rounded-xl border border-black/10 bg-white shadow-sm transition duration-200 hover:shadow-md dark:border-white/10 dark:bg-[#171c19] sm:flex-col"
                   >
                     {/* IMAGE */}
 
@@ -539,17 +581,17 @@ export default function JeepSafariPage() {
                     {/* CARD CONTENT */}
 
                     <div className="flex min-w-0 flex-1 flex-col p-2.5 sm:p-4">
-                      <div className="flex min-w-0 items-center gap-1 text-[10px] leading-4 text-[#4B5563] sm:text-xs">
+                      <div className="flex min-w-0 items-center gap-1 text-[10px] leading-4 text-[#4B5563] dark:text-gray-300 sm:text-xs">
                         <MapPin className="h-3 w-3 shrink-0 text-[#B96928] sm:h-3.5 sm:w-3.5" />
                         <span className="truncate">{safari.location}</span>
                       </div>
 
-                      <h3 className="mt-1 line-clamp-2 text-sm font-bold leading-snug text-[#172033] sm:text-base">
+                      <h3 className="mt-1 line-clamp-2 text-sm font-bold leading-snug text-[#172033] dark:text-gray-100 sm:text-base">
                         {safari.name}
                       </h3>
 
                       <p
-                        className={`mt-1 text-xs leading-4 text-[#4B5563] sm:text-sm sm:leading-5 ${
+                        className={`mt-1 text-xs leading-4 text-[#4B5563] dark:text-gray-300 sm:text-sm sm:leading-5 ${
                           isExpanded ? "" : "line-clamp-2"
                         }`}
                       >
@@ -557,12 +599,12 @@ export default function JeepSafariPage() {
                       </p>
 
                       {isExpanded && (
-                        <div className="mt-2 space-y-2 border-t border-black/10 pt-2">
+                        <div className="mt-2 space-y-2 border-t border-black/10 pt-2 dark:border-white/10">
                           {safari.zones.length > 0 && (
                             <div className="flex items-start justify-between gap-2 text-xs">
                               <span className="text-[#6B7280]">Zones</span>
 
-                              <span className="text-right font-semibold text-[#172033]">
+                              <span className="text-right font-semibold text-[#172033] dark:text-gray-100">
                                 {safari.zones.join(", ")}
                               </span>
                             </div>
@@ -571,7 +613,7 @@ export default function JeepSafariPage() {
                           <div className="flex items-start justify-between gap-2 text-xs">
                             <span className="text-[#6B7280]">Duration</span>
 
-                            <span className="text-right font-semibold text-[#172033]">
+                            <span className="text-right font-semibold text-[#172033] dark:text-gray-100">
                               {safari.duration}
                             </span>
                           </div>
@@ -579,12 +621,12 @@ export default function JeepSafariPage() {
                           <div className="flex items-start justify-between gap-2 text-xs">
                             <span className="text-[#6B7280]">Capacity</span>
 
-                            <span className="text-right font-semibold text-[#172033]">
+                            <span className="text-right font-semibold text-[#172033] dark:text-gray-100">
                               {safari.guests}
                             </span>
                           </div>
 
-                          <p className="text-xs leading-5 text-[#6B7280]">
+                          <p className="text-xs leading-5 text-[#6B7280] dark:text-gray-400">
                             Availability, permits and final charges must be
                             confirmed before booking.
                           </p>
@@ -593,14 +635,14 @@ export default function JeepSafariPage() {
 
                       {/* PRICE */}
 
-                      <div className="mt-auto border-t border-black/10 pt-2">
+                      <div className="mt-auto border-t border-black/10 pt-2 dark:border-white/10">
                         <div className="flex min-w-0 items-center justify-between gap-1.5">
                           <div className="min-w-0">
                             <p className="text-[9px] leading-3 text-[#6B7280] sm:text-xs sm:leading-4">
                               Starting from
                             </p>
 
-                            <p className="mt-0.5 break-words text-sm font-bold leading-tight text-[#172033] sm:text-xl">
+                            <p className="mt-0.5 break-words text-sm font-bold leading-tight text-[#172033] dark:text-gray-100 sm:text-xl">
                               {formatPrice(safari.price)}
                             </p>
                           </div>
@@ -611,7 +653,7 @@ export default function JeepSafariPage() {
                               setExpanded(isExpanded ? null : safari.id)
                             }
                             aria-expanded={isExpanded}
-                            className="inline-flex min-h-8 shrink-0 items-center gap-0.5 rounded-lg px-1 text-[11px] font-semibold text-[#9F5520] hover:bg-[#F7F5F0] sm:min-h-9 sm:gap-1 sm:px-2 sm:text-sm"
+                            className="inline-flex min-h-8 shrink-0 items-center gap-0.5 rounded-lg px-1 text-[11px] font-semibold text-[#9F5520] hover:bg-[#F7F5F0] dark:hover:bg-white/10 sm:min-h-9 sm:gap-1 sm:px-2 sm:text-sm"
                           >
                             {isExpanded ? "Less" : "Details"}
 
@@ -650,7 +692,7 @@ export default function JeepSafariPage() {
 
                           <Link
                             href={getEnquiryUrl(safari)}
-                            className="inline-flex h-9 min-w-0 items-center justify-center gap-0.5 rounded-lg border border-black/10 bg-white px-1 text-[10px] font-bold text-[#172033] transition hover:bg-[#F7F5F0] focus:outline-none focus:ring-2 focus:ring-[#B96928] focus:ring-offset-1 sm:h-11 sm:gap-1.5 sm:px-2.5 sm:text-sm"
+                            className="inline-flex h-9 min-w-0 items-center justify-center gap-0.5 rounded-lg border border-black/10 bg-white px-1 text-[10px] font-bold text-[#172033] transition hover:bg-[#F7F5F0] focus:outline-none focus:ring-2 focus:ring-[#B96928] focus:ring-offset-1 dark:border-white/10 dark:bg-[#171c19] dark:text-gray-100 dark:hover:bg-white/10 sm:h-11 sm:gap-1.5 sm:px-2.5 sm:text-sm"
                           >
                             <MessageCircle className="h-3 w-3 shrink-0 sm:h-4 sm:w-4" />
                             <span className="truncate">Enquiry</span>
@@ -667,27 +709,27 @@ export default function JeepSafariPage() {
           {/* NO ACTIVE SERVICES */}
 
           {!loading && !loadError && safariOptions.length === 0 && (
-            <div className="mt-6 rounded-2xl border border-black/10 bg-white px-5 py-10 text-center">
+            <div className="mt-5 rounded-xl border border-black/10 bg-white px-5 py-8 text-center dark:border-white/10 dark:bg-[#171c19] sm:rounded-2xl sm:py-10">
               <Trees className="mx-auto h-8 w-8 text-[#B96928]" />
 
-              <h3 className="mt-3 text-lg font-bold text-[#172033]">
+              <h3 className="mt-3 text-lg font-bold text-[#172033] dark:text-gray-100">
                 No Jeep Safaris Available
               </h3>
 
-              <p className="mt-2 text-sm leading-6 text-gray-600">
+              <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
                 Please contact our team for availability.
               </p>
 
               <Link
                 href="/contact?type=safari"
-                className="mt-5 inline-flex min-h-11 items-center justify-center rounded-full bg-[#B96928] px-5 text-sm font-bold text-white hover:bg-[#9F5520]"
+                className="mt-5 inline-flex min-h-10 items-center justify-center rounded-full bg-[#B96928] px-5 text-sm font-bold text-white hover:bg-[#9F5520]"
               >
                 Contact Us
               </Link>
             </div>
           )}
 
-          <p className="mt-4 text-xs leading-5 text-[#6B7280]">
+          <p className="mt-4 text-xs leading-5 text-[#6B7280] dark:text-gray-400">
             Safari prices and availability are subject to confirmation.
             Official permits and zone access depend on the applicable booking
             process.
@@ -695,21 +737,23 @@ export default function JeepSafariPage() {
         </div>
       </section>
 
-      {/* QUICK HELP */}
+      {/* =================================================
+          QUICK HELP
+      ================================================= */}
 
-      <section className="px-4 py-4 sm:px-6 sm:py-8 md:px-8">
-        <div className="mx-auto max-w-7xl overflow-hidden rounded-2xl bg-[#172033] px-4 py-6 text-white sm:px-8 sm:py-9">
-          <div className="grid gap-5 sm:gap-7 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
+      <section className="px-3 py-3 sm:px-5 sm:py-5 md:px-6">
+        <div className="mx-auto max-w-6xl overflow-hidden rounded-xl bg-[#172033] px-4 py-5 text-white sm:rounded-2xl sm:px-6 sm:py-7">
+          <div className="grid gap-4 sm:gap-6 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
             <div>
-              <p className="hidden text-sm font-bold uppercase tracking-wider text-[#E6A76D] sm:block">
+              <p className="hidden text-xs font-bold uppercase tracking-wider text-[#E6A76D] sm:block">
                 Safari Assistance
               </p>
 
-              <h2 className="text-xl font-bold leading-tight sm:mt-2 sm:text-3xl">
+              <h2 className="text-lg font-bold leading-tight sm:mt-2 sm:text-2xl">
                 Need Help Choosing a Jeep Safari?
               </h2>
 
-              <p className="mt-2 text-sm leading-6 text-white/85 sm:mt-3 sm:text-base sm:leading-7">
+              <p className="mt-2 text-xs leading-5 text-white/85 sm:text-sm sm:leading-6">
                 Share your dates and group size. Our team can help you enquire
                 about suitable options.
               </p>
@@ -718,14 +762,14 @@ export default function JeepSafariPage() {
                 number={whatsappNumber}
                 message={customMessage}
                 label="Request customised Jeep Safari assistance"
-                className="mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#B96928] px-5 text-sm font-bold text-white transition hover:bg-[#9F5520] sm:mt-5"
+                className="mt-3 inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-[#B96928] px-4 text-xs font-bold text-white transition hover:bg-[#9F5520] sm:mt-4 sm:min-h-11 sm:px-5 sm:text-sm"
               >
                 <MessageCircle className="h-4 w-4" />
                 Get Safari Assistance
               </WhatsAppLink>
             </div>
 
-            <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
               {[
                 {
                   title: "Safari Options",
@@ -753,17 +797,17 @@ export default function JeepSafariPage() {
                 return (
                   <div
                     key={item.title}
-                    className="rounded-xl border border-white/15 bg-white/[0.06] p-3 sm:p-4"
+                    className="rounded-lg border border-white/15 bg-white/[0.06] p-3 sm:rounded-xl sm:p-4"
                   >
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#B96928]/20 text-[#F0B77F] sm:h-10 sm:w-10 sm:rounded-xl">
-                      <Icon className="h-[18px] w-[18px] sm:h-5 sm:w-5" />
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#B96928]/20 text-[#F0B77F] sm:h-10 sm:w-10 sm:rounded-xl">
+                      <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                     </div>
 
-                    <h3 className="mt-2.5 text-sm font-bold sm:mt-3 sm:text-base">
+                    <h3 className="mt-2 text-xs font-bold sm:mt-3 sm:text-base">
                       {item.title}
                     </h3>
 
-                    <p className="mt-1 text-xs leading-5 text-white/80 sm:text-sm sm:leading-6">
+                    <p className="mt-1 text-[11px] leading-4 text-white/80 sm:text-sm sm:leading-6">
                       {item.description}
                     </p>
                   </div>
@@ -774,21 +818,23 @@ export default function JeepSafariPage() {
         </div>
       </section>
 
-      {/* FAQ */}
+      {/* =================================================
+          FAQ
+      ================================================= */}
 
-      <section className="px-4 py-6 sm:px-6 sm:py-10 md:px-8">
+      <section className="px-3 py-5 sm:px-5 sm:py-7 md:px-6">
         <div className="mx-auto max-w-4xl">
           <div className="text-center">
-            <p className="hidden text-sm font-bold uppercase tracking-wider text-[#B96928] sm:block">
+            <p className="hidden text-xs font-bold uppercase tracking-wider text-[#B96928] sm:block">
               Before You Book
             </p>
 
-            <h2 className="text-xl font-bold sm:mt-2 sm:text-3xl">
+            <h2 className="text-lg font-bold text-[#172033] dark:text-gray-100 sm:mt-1 sm:text-2xl">
               Jeep Safari FAQs
             </h2>
           </div>
 
-          <div className="mt-4 space-y-2 sm:mt-6 sm:space-y-3">
+          <div className="mt-4 space-y-2 sm:mt-5 sm:space-y-3">
             {[
               {
                 question: "Are safari permits guaranteed?",
@@ -816,27 +862,27 @@ export default function JeepSafariPage() {
               return (
                 <div
                   key={faq.question}
-                  className="rounded-xl border border-black/10 bg-white px-4 py-1.5 sm:p-5"
+                  className="rounded-xl border border-black/10 bg-white px-3 py-1.5 dark:border-white/10 dark:bg-[#171c19] sm:px-4 sm:py-2"
                 >
                   <button
                     type="button"
                     onClick={() => setOpenFaq(isOpen ? null : index)}
                     aria-expanded={isOpen}
-                    className="flex min-h-11 w-full items-center justify-between gap-4 text-left"
+                    className="flex min-h-10 w-full items-center justify-between gap-4 text-left sm:min-h-11"
                   >
-                    <span className="text-sm font-bold leading-5 text-[#172033] sm:text-base sm:leading-6">
+                    <span className="text-xs font-bold leading-5 text-[#172033] dark:text-gray-100 sm:text-sm">
                       {faq.question}
                     </span>
 
                     <Plus
-                      className={`h-5 w-5 shrink-0 text-[#B96928] transition-transform ${
+                      className={`h-4 w-4 shrink-0 text-[#B96928] transition-transform sm:h-5 sm:w-5 ${
                         isOpen ? "rotate-45" : ""
                       }`}
                     />
                   </button>
 
                   {isOpen && (
-                    <p className="pb-3 text-sm leading-6 text-[#4B5563] sm:mt-3 sm:pb-0">
+                    <p className="pb-3 text-xs leading-5 text-[#4B5563] dark:text-gray-300 sm:text-sm sm:leading-6">
                       {faq.answer}
                     </p>
                   )}
@@ -847,27 +893,29 @@ export default function JeepSafariPage() {
         </div>
       </section>
 
-      {/* FINAL CTA */}
+      {/* =================================================
+          FINAL CTA
+      ================================================= */}
 
-      <section className="px-4 pb-8 sm:px-6 sm:pb-14 md:px-8">
-        <div className="mx-auto max-w-7xl rounded-2xl bg-[#172033] px-4 py-6 text-center text-white sm:px-8 sm:py-10">
-          <p className="hidden text-sm font-bold uppercase tracking-wider text-[#E6A76D] sm:block">
+      <section className="px-3 pb-6 sm:px-5 sm:pb-8 md:px-6">
+        <div className="mx-auto max-w-6xl rounded-xl bg-[#172033] px-4 py-5 text-center text-white sm:rounded-2xl sm:px-6 sm:py-7">
+          <p className="hidden text-xs font-bold uppercase tracking-wider text-[#E6A76D] sm:block">
             Plan Your Adventure
           </p>
 
-          <h2 className="mx-auto max-w-2xl text-xl font-bold leading-tight sm:mt-2 sm:text-3xl">
+          <h2 className="mx-auto max-w-2xl text-lg font-bold leading-tight sm:mt-1 sm:text-2xl">
             Ready for a Jeep Safari?
           </h2>
 
-          <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-white/85 sm:mt-3 sm:text-base sm:leading-7">
+          <p className="mx-auto mt-2 max-w-xl text-xs leading-5 text-white/85 sm:text-sm sm:leading-6">
             Tell us your travel dates and group size to discuss available
             services.
           </p>
 
-          <div className="mx-auto mt-5 grid max-w-md grid-cols-2 gap-2.5 sm:mt-6 sm:flex sm:max-w-none sm:flex-wrap sm:justify-center sm:gap-3">
+          <div className="mx-auto mt-4 grid max-w-md grid-cols-2 gap-2 sm:mt-5 sm:flex sm:max-w-none sm:flex-wrap sm:justify-center sm:gap-3">
             <Link
               href="/contact?type=safari"
-              className="col-span-2 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#B96928] px-6 text-sm font-bold text-white transition hover:bg-[#9F5520] sm:col-span-1 sm:min-h-12"
+              className="col-span-2 inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-[#B96928] px-5 text-xs font-bold text-white transition hover:bg-[#9F5520] sm:col-span-1 sm:min-h-11 sm:px-6 sm:text-sm"
             >
               Send an Enquiry
               <ArrowRight className="h-4 w-4" />
@@ -877,7 +925,7 @@ export default function JeepSafariPage() {
               number={whatsappNumber}
               message={generalMessage}
               label="Plan your Jeep Safari on WhatsApp"
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/30 bg-white/10 px-4 text-sm font-bold text-white transition hover:bg-white/20 sm:min-h-12 sm:px-6"
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-white/30 bg-white/10 px-3 text-xs font-bold text-white transition hover:bg-white/20 sm:min-h-11 sm:px-5 sm:text-sm"
             >
               <MessageCircle className="h-4 w-4" />
               WhatsApp Now
@@ -889,7 +937,7 @@ export default function JeepSafariPage() {
               onClick={(event) => {
                 if (!contactPhone) event.preventDefault();
               }}
-              className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/30 px-4 text-sm font-bold text-white transition hover:bg-white/10 sm:min-h-12 sm:px-6 ${
+              className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-white/30 px-3 text-xs font-bold text-white transition hover:bg-white/10 sm:min-h-11 sm:px-5 sm:text-sm ${
                 !contactPhone ? "cursor-not-allowed opacity-60" : ""
               }`}
             >
@@ -899,7 +947,7 @@ export default function JeepSafariPage() {
           </div>
 
           {!normalisePhoneNumber(whatsappNumber) && (
-            <p className="mt-4 text-xs leading-5 text-white/70">
+            <p className="mt-3 text-xs leading-5 text-white/70">
               WhatsApp is not configured. Add the WhatsApp or phone number in
               Organization Profile.
             </p>

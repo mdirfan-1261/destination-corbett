@@ -98,8 +98,13 @@ export const navigation = [
     href: "/weddings",
   },
 
-  {
+   {
     name: "Packages",
     href: "/packages",
+  },
+
+  {
+    name: "Collab",
+    href: "/collab",
   },
 ];

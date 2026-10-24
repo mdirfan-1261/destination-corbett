@@ -1,205 +1,253 @@
 
 "use client";
 
-import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import { useState } from "react";
-import { useOrganisationProfile } from "@/hooks/useOrganisationProfile";
+import Link from "next/link";
 import {
   ArrowRight,
-  Sparkles,
-  Hotel,
-  CheckCircle2,
-  CalendarDays,
-  MapPin,
-  ShieldCheck,
-  Plus,
-  PhoneCall,
-  SlidersHorizontal,
-  Users,
-  MessageCircle,
   BedDouble,
+  CalendarDays,
+  Check,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  CircleHelp,
+  Clock,
+  Hotel,
+  MapPin,
+  MessageCircle,
+  Phone,
+  ShieldCheck,
+  Sparkles,
+  Users,
+  X,
 } from "lucide-react";
+import { useOrganisationProfile } from "@/hooks/useOrganisationProfile";
 
-// ================= ROOM DATA =================
+/* -------------------------------------------------------
+   CATEGORIES
+------------------------------------------------------- */
 
 const categories = [
   { id: "all", label: "All Rooms" },
-  { id: "luxury", label: "Luxury Rooms" },
-  { id: "deluxe", label: "Deluxe Rooms" },
-  { id: "family", label: "Family Rooms" },
+  { id: "luxury", label: "Luxury" },
+  { id: "deluxe", label: "Deluxe" },
+  { id: "family", label: "Family" },
   { id: "cottage", label: "Cottages" },
 ];
+
+/* -------------------------------------------------------
+   ROOMS DATA
+------------------------------------------------------- */
 
 const rooms = [
   {
     id: "luxury-forest-room",
-    title: "Luxury Forest Room",
+    name: "Luxury Forest Room",
     category: "luxury",
-    tag: "Luxury Stay",
-    location: "Jim Corbett",
-    price: "₹4,999",
+    tag: "Premium Stay",
+    location: "Jim Corbett, Uttarakhand",
+    price: 6499,
     priceUnit: "per night",
-    guests: "2–3 Guests",
+    guests: 2,
+    bedrooms: "1 Bedroom",
     image: "/stay/rooms-1.webp",
+    images: ["/stay/rooms-1.webp"],
     description:
-      "Enjoy a relaxing stay with comfortable interiors and a nature-inspired atmosphere.",
+      "Enjoy a relaxing forest-inspired stay with comfortable interiors and a peaceful atmosphere near Jim Corbett.",
     features: [
-      "Comfortable bedding",
+      "Comfortable king-size bed",
+      "Air-conditioned room",
       "Attached bathroom",
-      "Room service as per property policy",
+      "Seating area",
+      "Room service",
+      "Nature-inspired surroundings",
     ],
+    highlights: ["Couples", "Premium comfort"],
   },
   {
     id: "deluxe-nature-room",
-    title: "Deluxe Nature Room",
+    name: "Deluxe Nature Room",
     category: "deluxe",
-    tag: "Popular Choice",
-    location: "Jim Corbett",
-    price: "₹3,499",
+    tag: "Guest Favourite",
+    location: "Jim Corbett, Uttarakhand",
+    price: 4499,
     priceUnit: "per night",
-    guests: "2–3 Guests",
+    guests: 2,
+    bedrooms: "1 Bedroom",
     image: "/stay/rooms-2.webp",
+    images: ["/stay/rooms-2.webp"],
     description:
-      "A comfortable room option for couples and small groups exploring Corbett.",
+      "A comfortable accommodation option for travellers looking for a refreshing getaway with practical amenities and a relaxed setting.",
     features: [
-      "Comfortable sleeping space",
+      "Comfortable double bed",
+      "Air-conditioned room",
       "Attached bathroom",
-      "Resort facilities as available",
+      "Wardrobe",
+      "Seating space",
+      "Daily housekeeping",
     ],
+    highlights: ["Couples", "Short getaways"],
   },
   {
     id: "cozy-resort-room",
-    title: "Cozy Resort Room",
+    name: "Cozy Resort Room",
     category: "deluxe",
     tag: "Comfort Stay",
-    location: "Jim Corbett",
-    price: "₹2,999",
+    location: "Jim Corbett, Uttarakhand",
+    price: 3499,
     priceUnit: "per night",
-    guests: "2 Guests",
+    guests: 2,
+    bedrooms: "1 Bedroom",
     image: "/stay/rooms-3.webp",
+    images: ["/stay/rooms-3.webp"],
     description:
-      "A practical stay option for guests looking for comfort during their Corbett trip.",
+      "A welcoming room option for guests who want a comfortable base for exploring the Corbett region.",
     features: [
       "Comfortable bed",
-      "Private bathroom",
-      "Property amenities as available",
+      "Attached bathroom",
+      "Air-conditioning",
+      "Storage space",
+      "Seating area",
+      "Essential room amenities",
     ],
+    highlights: ["Couples", "Value stay"],
   },
   {
     id: "family-room",
-    title: "Family Room",
+    name: "Family Comfort Room",
     category: "family",
-    tag: "Family Favourite",
-    location: "Jim Corbett",
-    price: "₹5,499",
+    tag: "Family Friendly",
+    location: "Jim Corbett, Uttarakhand",
+    price: 5499,
     priceUnit: "per night",
-    guests: "4–5 Guests",
+    guests: 4,
+    bedrooms: "Family Room",
     image: "/stay/rooms-4.webp",
+    images: ["/stay/rooms-4.webp"],
     description:
-      "A spacious accommodation option for families travelling together.",
+      "A family-friendly room option with additional guest capacity and space to relax after a day of activities.",
     features: [
       "Family-friendly layout",
-      "Sleeping arrangements as confirmed",
-      "Resort facilities as available",
+      "Comfortable bedding",
+      "Attached bathroom",
+      "Air-conditioning",
+      "Storage space",
+      "Space for family luggage",
     ],
+    highlights: ["Families", "Group trips"],
   },
   {
     id: "forest-cottage",
-    title: "Forest Cottage",
+    name: "Forest View Cottage",
     category: "cottage",
     tag: "Nature Escape",
-    location: "Jim Corbett",
-    price: "₹6,499",
+    location: "Jim Corbett, Uttarakhand",
+    price: 7499,
     priceUnit: "per night",
-    guests: "2–4 Guests",
+    guests: 3,
+    bedrooms: "Private Cottage",
     image: "/stay/rooms-5.webp",
+    images: ["/stay/rooms-5.webp"],
     description:
-      "Enjoy a cottage-style stay for a relaxed break near the Corbett region.",
+      "Enjoy a cottage-style stay with a nature-inspired atmosphere and a little more privacy.",
     features: [
-      "Cottage-style accommodation",
-      "Comfortable sleeping space",
-      "Facilities as confirmed by the property",
+      "Private cottage-style accommodation",
+      "Comfortable bedding",
+      "Attached bathroom",
+      "Relaxing seating space",
+      "Nature-inspired setting",
+      "Ideal for a peaceful getaway",
     ],
+    highlights: ["Nature lovers", "Quiet getaway"],
   },
   {
     id: "balcony-room",
-    title: "Balcony Room",
+    name: "Balcony Retreat Room",
     category: "luxury",
-    tag: "Relaxing Stay",
-    location: "Jim Corbett",
-    price: "₹4,499",
+    tag: "Relax & Unwind",
+    location: "Jim Corbett, Uttarakhand",
+    price: 5999,
     priceUnit: "per night",
-    guests: "2–3 Guests",
+    guests: 2,
+    bedrooms: "1 Bedroom",
     image: "/stay/rooms-6.webp",
+    images: ["/stay/rooms-6.webp"],
     description:
-      "Choose a comfortable room with a balcony-style setting, subject to property details.",
+      "A relaxing room option for travellers who want a comfortable stay and a place to unwind during their Corbett getaway.",
     features: [
-      "Comfortable bedding",
-      "Balcony, subject to room confirmation",
-      "Property facilities as available",
+      "Comfortable double bed",
+      "Private balcony where available",
+      "Attached bathroom",
+      "Air-conditioning",
+      "Seating space",
+      "Storage space",
     ],
+    highlights: ["Couples", "Relaxing breaks"],
   },
 ];
 
-// ================= HIGHLIGHTS =================
+/* -------------------------------------------------------
+   PAGE HIGHLIGHTS
+------------------------------------------------------- */
 
 const roomHighlights = [
   {
-    title: "Stay Options",
-    description:
-      "Explore room styles for couples, families and small groups.",
     icon: Hotel,
+    title: "Stay Options",
+    description: "Explore room and cottage options.",
   },
   {
-    title: "Comfortable Stays",
-    description:
-      "Compare accommodation options before choosing your room.",
     icon: BedDouble,
+    title: "Comfortable Rooms",
+    description: "Choose a stay that suits your trip.",
   },
   {
-    title: "Custom Plans",
-    description:
-      "Share your dates, guest count and budget for suitable options.",
-    icon: SlidersHorizontal,
-  },
-  {
-    title: "Booking Assistance",
-    description:
-      "Confirm room availability, facilities and final pricing before booking.",
     icon: ShieldCheck,
+    title: "Enquiry Assistance",
+    description: "Get help choosing your accommodation.",
+  },
+  {
+    icon: MessageCircle,
+    title: "Direct Contact",
+    description: "Discuss your requirements with our team.",
   },
 ];
 
-// ================= FAQ =================
+/* -------------------------------------------------------
+   FAQ DATA
+------------------------------------------------------- */
 
 const faqs = [
   {
-    question: "How can I check room availability?",
+    question: "How can I book a room?",
     answer:
-      "Choose your preferred room and travel dates, then use Book Now or Send an Enquiry to discuss availability.",
+      "Choose a room and click Book Now to continue to the booking page. You can also use Enquiry to share your requirements with the Destination Corbett team.",
   },
   {
     question: "Are the displayed prices final?",
     answer:
-      "Prices shown are indicative. The final quotation can vary by date, occupancy, room availability, meals and applicable taxes.",
+      "The displayed prices are indicative starting prices. Final pricing and availability may vary by property, room type, travel dates, occupancy and inclusions. Confirm the final quote before booking.",
   },
   {
-    question: "Can I book a room for my family?",
+    question: "Can I enquire about a family stay?",
     answer:
-      "Yes. Select a suitable family room or contact our team with your guest count so that we can discuss appropriate options.",
+      "Yes. Open a room's details and select Enquire Now. Share your travel dates, number of guests and room requirements so the team can help you find a suitable option.",
   },
   {
-    question: "Are meals included in the room price?",
+    question: "Are meals and safari bookings included?",
     answer:
-      "Meal inclusions vary by property and room plan. Confirm the final inclusions with our team before completing your booking.",
+      "Inclusions depend on the selected property and package. Meals, safari permits, transfers and other services should be confirmed separately before you finalise your booking.",
   },
 ];
 
-// ================= CONTACT HELPERS =================
+/* -------------------------------------------------------
+   HELPERS
+------------------------------------------------------- */
 
-function normalisePhoneNumber(value) {
-  let digits = String(value || "").replace(/\D/g, "");
+function normalisePhoneNumber(value = "") {
+  let digits = String(value).replace(/\D/g, "");
 
   if (!digits) return "";
 
@@ -210,449 +258,488 @@ function normalisePhoneNumber(value) {
   return digits;
 }
 
-function getWhatsAppUrl(message, number) {
-  const whatsappNumber = normalisePhoneNumber(number);
+function getWhatsAppUrl(phone, message) {
+  const number = normalisePhoneNumber(phone);
 
-  if (!whatsappNumber) return "";
+  if (!number) return "";
 
-  return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
-    message
-  )}`;
+  return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
 }
 
-function WhatsAppLink({
-  message,
-  number,
-  className,
-  children,
-  label,
-}) {
-  const url = getWhatsAppUrl(message, number);
+function formatINR(amount) {
+  if (amount === null || amount === undefined || amount === "") {
+    return "Price on request";
+  }
 
-  return (
-    <a
-      href={url || undefined}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label={label || "Contact us on WhatsApp"}
-      aria-disabled={!url}
-      onClick={(event) => {
-        if (!url) event.preventDefault();
-      }}
-      className={`${className} ${
-        !url ? "cursor-not-allowed opacity-60" : ""
-      }`}
-    >
-      {children}
-    </a>
-  );
+  return `₹${Number(amount).toLocaleString("en-IN")}`;
 }
 
-// ================= PAGE =================
+function getEnquiryUrl(room) {
+  const params = new URLSearchParams({
+    type: "stay",
+    hotel: room.name,
+    hotelImage: room.image,
+    location: room.location,
+    room_type: room.name,
+    guests: String(room.guests),
+  });
+
+  return `/contact?${params.toString()}`;
+}
+
+function getBookingUrl(room) {
+  const params = new URLSearchParams({
+    type: "stay",
+    property_name: room.name,
+    room_name: room.name,
+    room_type: room.name,
+    location: room.location,
+    price: String(room.price),
+    guests: String(room.guests),
+  });
+
+  return `/booking?${params.toString()}`;
+}
+
+/* -------------------------------------------------------
+   ROOMS PAGE
+------------------------------------------------------- */
 
 export default function RoomsPage() {
-  const { profile } = useOrganisationProfile();
+  const organisationResult = useOrganisationProfile() || {};
+
+  const organisation = useMemo(
+    () =>
+      organisationResult.profile ||
+      organisationResult.organisationProfile ||
+      organisationResult.data ||
+      organisationResult.organisation ||
+      organisationResult,
+    [organisationResult]
+  );
+
+  const phone =
+    organisation?.phone ||
+    organisation?.phoneNumber ||
+    organisation?.contactNumber ||
+    organisation?.mobile ||
+    organisation?.contact?.phone ||
+    "";
+
+  const whatsapp =
+    organisation?.whatsapp ||
+    organisation?.whatsappNumber ||
+    organisation?.whatsapp_number ||
+    organisation?.contact?.whatsapp ||
+    phone;
 
   const [activeCategory, setActiveCategory] = useState("all");
-  const [openFaq, setOpenFaq] = useState(null);
+  const [selectedRoom, setSelectedRoom] = useState(null);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [openFaq, setOpenFaq] = useState(0);
 
-  const whatsappNumber = profile?.whatsapp || profile?.phone || "";
-  const contactPhone = normalisePhoneNumber(profile?.phone);
+  const filteredRooms = useMemo(() => {
+    if (activeCategory === "all") return rooms;
 
-  const filteredRooms =
-    activeCategory === "all"
-      ? rooms
-      : rooms.filter((room) => room.category === activeCategory);
+    return rooms.filter((room) => room.category === activeCategory);
+  }, [activeCategory]);
 
-  const chooseRoomMessage =
-    "Hi Destination Corbett, please suggest suitable rooms based on my travel dates, guest count and budget.";
+  const selectedImages = selectedRoom
+    ? selectedRoom.images?.length
+      ? selectedRoom.images
+      : [selectedRoom.image]
+    : [];
 
-  const customStayMessage =
-    "Hi Destination Corbett, I would like to enquire about room availability and stay options.";
+  const currentImage =
+    selectedImages[activeImageIndex] ||
+    selectedRoom?.image ||
+    "/stay/rooms-hero.webp";
 
-  const finalEnquiryMessage =
-    "Hi Destination Corbett, I want to plan my Jim Corbett stay. Please share suitable rooms and pricing.";
-
-  function getEnquiryUrl(room) {
-    const params = new URLSearchParams({
-      type: "stay",
-      hotel: room.title,
-      hotelImage: room.image,
-      location: room.location,
-    });
-
-    return `/contact?${params.toString()}`;
+  function openRoom(room) {
+    setSelectedRoom(room);
+    setActiveImageIndex(0);
   }
 
-  function getBookingUrl(room) {
-    const params = new URLSearchParams({
-      type: "stay",
-      property_name: room.title,
-      property_id: room.id,
-    });
-
-    return `/booking?${params.toString()}`;
+  function closeRoom() {
+    setSelectedRoom(null);
+    setActiveImageIndex(0);
   }
+
+  function nextImage() {
+    if (!selectedImages.length) return;
+
+    setActiveImageIndex(
+      (current) => (current + 1) % selectedImages.length
+    );
+  }
+
+  function previousImage() {
+    if (!selectedImages.length) return;
+
+    setActiveImageIndex(
+      (current) =>
+        (current - 1 + selectedImages.length) % selectedImages.length
+    );
+  }
+
+  useEffect(() => {
+    if (!selectedRoom) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+
+    document.body.style.overflow = "hidden";
+
+    function handleKeyDown(event) {
+      if (event.key === "Escape") closeRoom();
+      if (event.key === "ArrowRight") nextImage();
+      if (event.key === "ArrowLeft") previousImage();
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedRoom]);
+
+  const generalWhatsAppUrl = getWhatsAppUrl(
+    whatsapp,
+    "Hello Destination Corbett, I would like to enquire about room availability and stay options."
+  );
+
+  const selectedRoomWhatsAppUrl = selectedRoom
+    ? getWhatsAppUrl(
+        whatsapp,
+        `Hello Destination Corbett, I am interested in ${selectedRoom.name} in ${selectedRoom.location}. Please share availability and final pricing.`
+      )
+    : "";
 
   return (
-    <main className="bg-[#F7F5F0] text-[#172033]">
-      {/* ================= HERO ================= */}
+    <main className="min-h-screen bg-[#F7F5F0] text-[#172033]">
+      <nav
+  aria-label="Breadcrumb"
+  className="mx-auto max-w-6xl px-3 pt-3 text-xs sm:px-5 sm:pt-4 sm:text-sm md:px-6"
+>
+  <div className="flex items-center gap-2">
+    <Link href="/" className="text-[#B96928] transition-colors hover:underline">
+      Home
+    </Link>
+    <span className="text-gray-400">›</span>
+    <Link href="/stay" className="text-[#B96928] transition-colors hover:underline">
+      Stay
+    </Link>
+    <span className="text-gray-400">›</span>
+    <span aria-current="page" className="font-medium text-[#172033]">
+      Rooms &amp; Stays
+    </span>
+  </div>
+</nav>
+{/* ================= COMPACT HERO ================= */}
+<section className="px-3 pt-3 sm:px-5 sm:pt-4 md:px-6">
+  <div className="relative mx-auto h-[190px] max-w-6xl overflow-hidden rounded-xl bg-[#172033] text-white sm:h-[230px] sm:rounded-2xl lg:h-[260px]">
+    {/* Hero Image */}
+    <div className="absolute inset-0 lg:left-auto lg:w-[55%]">
+      <Image
+        src="/stay/rooms-hero.webp"
+        alt="Stay and accommodation options in Jim Corbett"
+        fill
+        priority
+        sizes="(max-width: 1023px) 100vw, 700px"
+        className="object-cover object-center brightness-110"
+      />
+    </div>
 
-      <section className="px-2 py-2 sm:px-4 sm:py-4 md:px-6">
-        <div className="relative mx-auto min-h-[260px] max-w-[1440px] overflow-hidden rounded-2xl bg-[#172033] text-white sm:min-h-[420px] sm:rounded-3xl lg:min-h-[500px]">
-          <Image
-            src="/stay/rooms-hero.webp"
-            alt="Room and accommodation options in Jim Corbett"
-            fill
-            priority
-            quality={70}
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 1440px"
-            className="object-cover"
-          />
+    {/* Image Overlays */}
+    <div className="pointer-events-none absolute inset-y-0 left-[45%] hidden w-[15%] bg-gradient-to-r from-[#172033] to-transparent lg:block" />
+    <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#172033]/90 via-[#172033]/55 to-transparent" />
 
-          <div className="absolute inset-0 bg-[#172033]/55" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#172033]/85 via-[#172033]/55 to-[#172033]/15" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#172033]/45 to-transparent" />
-
-          <div className="relative z-10 flex min-h-[260px] items-center px-4 py-6 sm:min-h-[420px] sm:px-9 sm:py-12 lg:min-h-[500px] lg:px-14">
-            <div className="max-w-2xl">
-              <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md sm:mb-4 sm:gap-2 sm:py-2 sm:text-sm">
-                <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                Destination Corbett Stays
-              </div>
-
-              <h1 className="text-[1.6rem] font-bold leading-tight tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
-                Find Your Perfect Stay
-                <span className="mt-0.5 block text-[#E6A76D] sm:mt-1">
-                  Rooms, Comfort & Nature
-                </span>
-              </h1>
-
-              <p className="mt-3 max-w-xl text-sm leading-6 text-white/90 sm:mt-4 sm:text-base sm:leading-7">
-                Explore rooms for your Corbett trip. Choose an option or send
-                us an enquiry for availability and pricing.
-              </p>
-
-              <div className="mt-4 flex flex-wrap gap-2.5 sm:mt-6 sm:gap-3">
-                <a
-                  href="#room-list"
-                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#B96928] px-5 text-sm font-bold text-white transition hover:bg-[#9F5520] focus:outline-none focus:ring-2 focus:ring-white"
-                >
-                  Explore Rooms
-                  <ArrowRight className="h-4 w-4" />
-                </a>
-
-                <Link
-                  href="/contact?type=stay"
-                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/40 bg-white/10 px-5 text-sm font-bold text-white backdrop-blur-md transition hover:bg-white/20"
-                >
-                  Send an Enquiry
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </div>
-
-              <div className="mt-5 hidden flex-wrap gap-x-5 gap-y-2 text-sm font-medium text-white/90 sm:flex">
-                <span className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-[#E6A76D]" />
-                  Room Options
-                </span>
-                <span className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-[#E6A76D]" />
-                  Booking Assistance
-                </span>
-                <span className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-[#E6A76D]" />
-                  Flexible Choices
-                </span>
-              </div>
-            </div>
-          </div>
+    {/* Hero Content */}
+    <div className="relative z-10 flex h-full items-center px-4 py-4 sm:px-8 lg:px-10">
+      <div className="max-w-2xl">
+        <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-white/85 backdrop-blur-xl">
+          <Sparkles className="h-3 w-3 text-[#E0924F]" />
+          Stay Your Way
         </div>
-      </section>
 
-      {/* ================= ROOM LIST ================= */}
+        <h1 className="text-xl font-bold leading-tight tracking-tight sm:text-2xl md:text-3xl lg:text-4xl">
+          Rooms &amp;{" "}
+          <span className="text-[#E0924F]">Stays</span>
+        </h1>
 
-      <section
-        id="room-list"
-        className="scroll-mt-20 px-4 py-6 sm:px-6 sm:py-10 md:px-8"
-      >
-        <div className="mx-auto max-w-7xl">
-          <div className="flex items-end justify-between gap-3">
-            <div className="min-w-0">
-              <p className="hidden text-sm font-bold uppercase tracking-wider text-[#B96928] sm:block">
-                Find Your Stay
-              </p>
-
-              <h2 className="text-xl font-bold leading-tight sm:mt-2 sm:text-3xl md:text-4xl">
-                Explore Rooms
-              </h2>
-
-              <p className="mt-1 text-sm leading-5 text-[#4B5563] sm:mt-2 sm:text-base sm:leading-6">
-                Compare room options and enquire about your preferred stay.
-              </p>
-            </div>
-
-            <WhatsAppLink
-              number={whatsappNumber}
-              message={chooseRoomMessage}
-              label="Get room recommendations on WhatsApp"
-              className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-[#172033] px-3.5 text-sm font-bold text-white transition hover:bg-[#26344D] sm:px-5"
-            >
-              <MessageCircle className="h-4 w-4" />
-              <span className="hidden sm:inline">Help Me Choose</span>
-              <span className="sm:hidden">Help</span>
-            </WhatsAppLink>
-          </div>
-
-          {/* CATEGORY FILTER */}
-
-          <div className="-mx-4 mt-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:mt-5 sm:flex-wrap sm:px-0 sm:pb-2 [&::-webkit-scrollbar]:hidden">
-            {categories.map((cat) => {
-              const active = activeCategory === cat.id;
-
-              return (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => setActiveCategory(cat.id)}
-                  aria-pressed={active}
-                  className={`min-h-10 shrink-0 rounded-full px-4 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-[#B96928] focus:ring-offset-2 ${
-                    active
-                      ? "bg-[#B96928] text-white shadow-sm"
-                      : "border border-black/10 bg-white text-[#374151] hover:border-[#B96928] hover:text-[#9F5520]"
-                  }`}
-                >
-                  {cat.label}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* ROOM CARDS */}
-
-          <div className="mt-4 grid gap-3 sm:mt-6 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
-            {filteredRooms.map((room) => (
-              <article
-                key={room.id}
-                className="group flex min-w-0 overflow-hidden rounded-xl border border-black/10 bg-white shadow-sm transition duration-200 hover:shadow-md sm:flex-col"
-              >
-                <Link
-                  href={getEnquiryUrl(room)}
-                  aria-label={`Enquire about ${room.title}`}
-                  className="relative block w-[112px] shrink-0 self-stretch overflow-hidden bg-[#E8E3DA] sm:aspect-[16/9] sm:w-full sm:self-auto"
-                >
-                  <Image
-                    src={room.image}
-                    alt={room.title}
-                    fill
-                    quality={70}
-                    sizes="(max-width: 639px) 112px, (max-width: 1023px) 50vw, 33vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-
-                  <span className="absolute left-2 top-2 max-w-[calc(100%-1rem)] truncate rounded-full bg-[#B96928] px-2 py-1 text-[10px] font-bold leading-none text-white shadow sm:px-2.5 sm:py-1.5 sm:text-xs">
-                    {room.tag}
-                  </span>
-                </Link>
-
-                <div className="flex min-w-0 flex-1 flex-col p-3 sm:p-4">
-                  <Link href={getEnquiryUrl(room)}>
-                    <h3 className="line-clamp-2 text-[15px] font-bold leading-snug text-[#172033] hover:text-[#9F5520] sm:text-base">
-                      {room.title}
-                    </h3>
-                  </Link>
-
-                  <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-xs text-[#4B5563]">
-                    <span className="inline-flex items-center gap-1">
-                      <Users className="h-3.5 w-3.5 text-[#B96928]" />
-                      {room.guests}
-                    </span>
-
-                    <span className="inline-flex min-w-0 items-center gap-1">
-                      <MapPin className="h-3.5 w-3.5 shrink-0 text-[#B96928]" />
-                      <span className="truncate">{room.location}</span>
-                    </span>
-                  </div>
-
-                  <p className="mt-2 hidden text-sm leading-5 text-[#4B5563] sm:line-clamp-2">
-                    {room.description}
-                  </p>
-
-                  <div className="mt-auto pt-3">
-                    <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
-                      <span className="text-[11px] font-semibold text-[#6B7280]">
-                        From
-                      </span>
-
-                      <span className="text-lg font-bold text-[#172033] sm:text-xl">
-                        {room.price}
-                      </span>
-
-                      <span className="text-xs text-[#6B7280]">
-                        {room.priceUnit}
-                      </span>
-                    </div>
-
-                    {/* MOBILE: BOOK NOW + WHATSAPP */}
-                    {/* DESKTOP: ENQUIRE + BOOK NOW + WHATSAPP */}
-
-                    <div className="mt-2 flex gap-2">
-                      <Link
-                        href={getEnquiryUrl(room)}
-                        className="hidden min-h-11 items-center justify-center rounded-lg border border-[#172033]/20 px-4 text-sm font-bold text-[#172033] transition hover:bg-[#F7F5F0] sm:inline-flex"
-                      >
-                        Enquire
-                      </Link>
-
-                      <Link
-                        href={getBookingUrl(room)}
-                        className="inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-lg bg-[#B96928] px-3 text-sm font-bold text-white transition hover:bg-[#9F5520] focus:outline-none focus:ring-2 focus:ring-[#B96928] focus:ring-offset-2"
-                      >
-                        <CalendarDays className="h-4 w-4" />
-                        Book Now
-                      </Link>
-
-                      <WhatsAppLink
-                        number={whatsappNumber}
-                        message={`Hi Destination Corbett, I am interested in ${room.title}. Please share availability, final pricing and room details.`}
-                        label={`Ask about ${room.title} on WhatsApp`}
-                        className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-[#16794B]/30 bg-[#16794B]/5 text-[#126640] transition hover:bg-[#16794B]/10"
-                      >
-                        <MessageCircle className="h-5 w-5" />
-                      </WhatsAppLink>
-                    </div>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-
-          {filteredRooms.length === 0 && (
-            <div className="mt-4 rounded-xl border border-black/10 bg-white p-6 text-center sm:mt-6 sm:rounded-2xl sm:p-8">
-              <p className="text-base font-semibold text-[#172033]">
-                No rooms found.
-              </p>
-
-              <button
-                type="button"
-                onClick={() => setActiveCategory("all")}
-                className="mt-3 min-h-11 rounded-xl bg-[#B96928] px-5 text-sm font-bold text-white hover:bg-[#9F5520] sm:mt-4"
-              >
-                View All Rooms
-              </button>
-            </div>
-          )}
-
-          <p className="mt-4 text-xs leading-5 text-[#6B7280]">
-            Prices are indicative. Confirm room availability, occupancy,
-            inclusions and applicable taxes before booking.
-          </p>
-        </div>
-      </section>
-
-      {/* ================= WHY DESTINATION CORBETT ================= */}
-
-      <section className="px-4 py-3 sm:px-6 sm:py-8 md:px-8">
-  <div className="mx-auto max-w-7xl overflow-hidden rounded-xl bg-[#172033] px-4 py-4 text-white sm:px-6 sm:py-6">
-    <div className="grid gap-4 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
-      <div>
-        <p className="hidden text-xs font-bold uppercase tracking-wider text-[#E6A76D] sm:block">
-          Why Destination Corbett
+        <p className="mt-2 hidden max-w-md line-clamp-2 text-xs leading-5 text-white/80 sm:block sm:text-sm">
+          Find your comfortable stay for your next Jim Corbett getaway.
         </p>
 
-        <h2 className="text-lg font-bold leading-tight sm:mt-1 sm:text-2xl">
-          Your Stay, Made Simpler
-        </h2>
-
-        <p className="mt-1.5 text-xs leading-5 text-white/80 sm:text-sm">
-          Share your dates, guests and budget. We’ll help you find the right stay.
-        </p>
-
-        <WhatsAppLink
-          number={whatsappNumber}
-          message={customStayMessage}
-          label="Request room options on WhatsApp"
-          className="mt-3 inline-flex min-h-9 items-center justify-center gap-2 rounded-full bg-[#B96928] px-4 text-xs font-bold text-white transition hover:bg-[#9F5520] sm:text-sm"
-        >
-          Get Stay Options
-          <ArrowRight className="h-3.5 w-3.5" />
-        </WhatsAppLink>
-      </div>
-
-      <div className="grid grid-cols-2 gap-2">
-        {roomHighlights.map((item) => {
-          const Icon = item.icon;
-
-          return (
-            <div
-              key={item.title}
-              className="flex items-start gap-2 rounded-lg border border-white/10 bg-white/[0.05] p-2.5"
-            >
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#B96928]/20 text-[#F0B77F]">
-                <Icon className="h-4 w-4" />
-              </div>
-
-              <div className="min-w-0">
-                <h3 className="text-xs font-bold sm:text-sm">
-                  {item.title}
-                </h3>
-
-                <p className="mt-0.5 text-[11px] leading-4 text-white/70 sm:text-xs sm:leading-5">
-                  {item.description}
-                </p>
-              </div>
-            </div>
-          );
-        })}
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <a
+            href="#available-rooms"
+            className="inline-flex items-center justify-center gap-1.5 rounded-full bg-[#C87532] px-4 py-2 text-xs font-semibold text-white shadow-md transition-all duration-200 hover:bg-[#B96928] sm:text-sm"
+          >
+            Explore Rooms
+            <ArrowRight size={13} />
+          </a>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-      {/* ================= FAQ ================= */}
-
-      <section className="px-4 py-6 sm:px-6 sm:py-12 md:px-8">
-        <div className="mx-auto max-w-4xl">
-          <div className="text-center">
-            <p className="hidden text-sm font-bold uppercase tracking-wider text-[#B96928] sm:block">
-              Need to Know?
+      {/* ROOM LIST */}
+      <section
+        id="available-rooms"
+        className="mx-auto max-w-6xl scroll-mt-20 px-3 pb-8 sm:px-5 sm:pb-10 md:px-6 md:pb-12"
+      >
+        <div className="mb-3 flex flex-col gap-2 sm:mb-5 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#B96928] sm:text-xs">
+              Find your stay
             </p>
 
-            <h2 className="text-xl font-bold sm:mt-2 sm:text-3xl">
-              Room Booking FAQs
+            <h2 className="mt-1 text-lg font-bold sm:text-2xl">
+              Choose Your Room
             </h2>
+
+            <p className="mt-1 text-xs text-slate-600 sm:text-sm">
+              Select a room image to view full details.
+            </p>
           </div>
 
-          <div className="mt-4 space-y-2 sm:mt-6 sm:space-y-3">
+          <span className="text-xs font-medium text-slate-500 sm:text-sm">
+            {filteredRooms.length}{" "}
+            {filteredRooms.length === 1 ? "option" : "options"}
+          </span>
+        </div>
+
+        {/* CATEGORY FILTERS */}
+        <div className="-mx-1 mb-4 flex gap-2 overflow-x-auto px-1 pb-1.5">
+          {categories.map((category) => {
+            const isActive = activeCategory === category.id;
+
+            return (
+              <button
+                key={category.id}
+                type="button"
+                onClick={() => setActiveCategory(category.id)}
+                aria-pressed={isActive}
+                className={`shrink-0 rounded-full border px-3.5 py-2 text-xs font-semibold transition sm:px-4 sm:text-sm ${
+                  isActive
+                    ? "border-[#B96928] bg-[#B96928] text-white shadow-sm"
+                    : "border-slate-200 bg-white text-slate-700 hover:border-[#B96928] hover:text-[#B96928]"
+                }`}
+              >
+                {category.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* ROOM CARDS */}
+        {filteredRooms.length > 0 ? (
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+            {filteredRooms.map((room) => (
+              <article
+                key={room.id}
+                className="group flex min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-lg sm:rounded-2xl"
+              >
+                {/* CLICKABLE IMAGE */}
+                <button
+                  type="button"
+                  onClick={() => openRoom(room)}
+                  aria-label={`View details for ${room.name}`}
+                  className="relative block aspect-[4/3] w-full overflow-hidden bg-slate-100 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#B96928]"
+                >
+                  <Image
+                    src={room.image}
+                    alt={room.name}
+                    fill
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 25vw"
+                    className="object-cover transition duration-500 group-hover:scale-105"
+                  />
+
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/10" />
+
+                  <span className="absolute left-1.5 top-1.5 max-w-[calc(100%-12px)] truncate rounded-full bg-white/95 px-2 py-1 text-[9px] font-bold text-[#8b4b20] shadow-sm sm:left-3 sm:top-3 sm:px-2.5 sm:text-xs">
+                    {room.tag}
+                  </span>
+
+                  <span className="absolute bottom-1.5 right-1.5 inline-flex items-center gap-1 rounded-full bg-black/50 px-2 py-1 text-[9px] font-semibold text-white backdrop-blur-sm sm:bottom-3 sm:right-3 sm:px-2.5 sm:py-1.5 sm:text-xs">
+                    View Details
+                    <ArrowRight size={11} />
+                  </span>
+                </button>
+
+                {/* CARD CONTENT */}
+                <div className="flex flex-1 flex-col p-2 sm:p-3.5">
+                  <h3 className="line-clamp-2 min-h-9 text-xs font-bold leading-4 text-[#172033] sm:min-h-0 sm:text-base sm:leading-5">
+                    {room.name}
+                  </h3>
+
+                  <p className="mt-1 flex items-start gap-1 text-[9px] leading-3.5 text-slate-500 sm:text-xs sm:leading-4">
+                    <MapPin
+                      size={12}
+                      className="mt-0.5 shrink-0 text-[#B96928]"
+                    />
+                    <span className="line-clamp-2">{room.location}</span>
+                  </p>
+
+                  <div className="mt-2.5 border-t border-slate-100 pt-2.5 sm:mt-3 sm:pt-3">
+                    <p className="text-[9px] text-slate-500 sm:text-xs">
+                      Starting from
+                    </p>
+
+                    <div className="mt-0.5 flex flex-wrap items-baseline justify-between gap-x-1 gap-y-0.5">
+                      <p className="text-sm font-extrabold text-[#B96928] sm:text-xl">
+                        {formatINR(room.price)}
+                      </p>
+
+                      <span className="flex shrink-0 items-center gap-1 text-[9px] text-slate-600 sm:text-xs">
+                        <Users size={12} />
+                        {room.guests} guests
+                      </span>
+                    </div>
+
+                    <p className="mt-0.5 text-[9px] text-slate-500 sm:text-xs">
+                      {room.priceUnit}
+                    </p>
+                  </div>
+
+                  {/* BOTH BUTTONS: SAME ROW, SAME SIZE */}
+                  <div className="mt-auto grid grid-cols-2 gap-1.5 pt-2.5 sm:gap-2 sm:pt-3">
+                    <Link
+                      href={getBookingUrl(room)}
+                      className="inline-flex min-h-9 min-w-0 items-center justify-center gap-1 rounded-lg bg-[#B96928] px-1.5 py-2 text-center text-[10px] font-bold text-white transition hover:bg-[#9f5720] sm:min-h-10 sm:px-2 sm:text-sm"
+                    >
+                      <CalendarDays size={13} className="shrink-0" />
+                      <span>Book Now</span>
+                    </Link>
+
+                    <Link
+                      href={getEnquiryUrl(room)}
+                      className="inline-flex min-h-9 min-w-0 items-center justify-center gap-1 rounded-lg border border-[#B96928]/40 bg-white px-1.5 py-2 text-center text-[10px] font-bold text-[#9f5720] transition hover:bg-orange-50 sm:min-h-10 sm:px-2 sm:text-sm"
+                    >
+                      <MessageCircle size={13} className="shrink-0" />
+                      <span>Enquiry</span>
+                    </Link>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-10 text-center">
+            <Hotel className="mx-auto text-slate-400" size={30} />
+
+            <h3 className="mt-3 font-bold">No rooms found</h3>
+
+            <p className="mt-1 text-sm text-slate-500">
+              Try another category to see available options.
+            </p>
+
+            <button
+              type="button"
+              onClick={() => setActiveCategory("all")}
+              className="mt-4 rounded-xl bg-[#B96928] px-4 py-2 text-sm font-semibold text-white"
+            >
+              View All Rooms
+            </button>
+          </div>
+        )}
+      </section>
+
+      {/* WHY DESTINATION CORBETT */}
+      <section className="border-y border-slate-200/80 bg-white px-3 py-8 sm:px-6 sm:py-12">
+        <div className="mx-auto max-w-7xl">
+          <div className="mx-auto mb-5 max-w-2xl text-center sm:mb-6">
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#B96928] sm:text-xs">
+              Stay with confidence
+            </p>
+
+            <h2 className="mt-2 text-lg font-bold sm:text-2xl">
+              Why Destination Corbett?
+            </h2>
+
+            <p className="mt-2 text-xs leading-5 text-slate-600 sm:text-sm sm:leading-6">
+              Explore your options and get assistance with your stay enquiry.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4">
+            {roomHighlights.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <div
+                  key={item.title}
+                  className="rounded-xl border border-slate-200 bg-[#F7F5F0]/70 p-3 sm:rounded-2xl sm:p-5"
+                >
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-orange-100 text-[#B96928] sm:h-10 sm:w-10 sm:rounded-xl">
+                    <Icon size={18} />
+                  </div>
+
+                  <h3 className="mt-2.5 text-xs font-bold sm:mt-3 sm:text-base">
+                    {item.title}
+                  </h3>
+
+                  <p className="mt-1 text-[10px] leading-4 text-slate-600 sm:text-sm sm:leading-5">
+                    {item.description}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="px-3 py-8 sm:px-6 sm:py-12">
+        <div className="mx-auto max-w-3xl">
+          <div className="mb-5 text-center">
+            <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-full bg-orange-100 text-[#B96928] sm:h-10 sm:w-10">
+              <CircleHelp size={20} />
+            </div>
+
+            <h2 className="mt-3 text-lg font-bold sm:text-2xl">
+              Frequently Asked Questions
+            </h2>
+
+            <p className="mt-2 text-xs text-slate-600 sm:text-sm">
+              Helpful information before choosing your stay.
+            </p>
+          </div>
+
+          <div className="space-y-2.5 sm:space-y-3">
             {faqs.map((faq, index) => {
               const isOpen = openFaq === index;
 
               return (
                 <div
                   key={faq.question}
-                  className="rounded-xl border border-black/10 bg-white px-4 py-1.5 sm:p-5"
+                  className="overflow-hidden rounded-xl border border-slate-200 bg-white"
                 >
                   <button
                     type="button"
-                    onClick={() => setOpenFaq(isOpen ? null : index)}
+                    onClick={() => setOpenFaq(isOpen ? -1 : index)}
                     aria-expanded={isOpen}
-                    className="flex min-h-11 w-full items-center justify-between gap-4 text-left"
+                    className="flex w-full items-center justify-between gap-3 px-3.5 py-3.5 text-left sm:px-4 sm:py-4"
                   >
-                    <span className="text-sm font-bold leading-5 text-[#172033] sm:text-base sm:leading-6">
+                    <span className="text-xs font-semibold text-[#172033] sm:text-base">
                       {faq.question}
                     </span>
 
-                    <Plus
-                      className={`h-5 w-5 shrink-0 text-[#B96928] transition-transform ${
-                        isOpen ? "rotate-45" : ""
+                    <ChevronDown
+                      size={17}
+                      className={`shrink-0 text-[#B96928] transition-transform ${
+                        isOpen ? "rotate-180" : ""
                       }`}
                     />
                   </button>
 
                   {isOpen && (
-                    <p className="pb-3 text-sm leading-6 text-[#4B5563] sm:mt-3 sm:pb-0">
+                    <div className="border-t border-slate-100 px-3.5 py-3.5 text-xs leading-5 text-slate-600 sm:px-4 sm:py-4 sm:text-sm sm:leading-6">
                       {faq.answer}
-                    </p>
+                    </div>
                   )}
                 </div>
               );
@@ -661,58 +748,343 @@ export default function RoomsPage() {
         </div>
       </section>
 
-      {/* ================= FINAL CTA ================= */}
+      {/* FINAL CTA */}
+      <section className="px-3 pb-8 sm:px-6 sm:pb-12">
+        <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-3 rounded-2xl bg-[#172033] p-4 sm:flex-row sm:items-center sm:gap-4 sm:rounded-3xl sm:p-8">
+          <div className="max-w-xl">
+            <h2 className="text-lg font-bold text-white sm:text-2xl">
+              Need help choosing a room?
+            </h2>
 
-      <section className="px-4 pb-8 sm:px-6 sm:pb-14 md:px-8">
-        <div className="mx-auto max-w-7xl rounded-2xl bg-[#172033] px-4 py-6 text-center text-white sm:px-8 sm:py-10">
-          <p className="hidden text-sm font-bold uppercase tracking-wider text-[#E6A76D] sm:block">
-            Let's Plan Your Corbett Stay
-          </p>
+            <p className="mt-1.5 text-xs leading-5 text-white/75 sm:mt-2 sm:text-sm sm:leading-6">
+              Share your travel dates and guest count with our team to discuss
+              suitable stay options.
+            </p>
+          </div>
 
-          <h2 className="mx-auto max-w-2xl text-xl font-bold leading-tight sm:mt-2 sm:text-3xl">
-            Find a Room That Fits Your Trip
-          </h2>
+          <div className="flex w-full flex-wrap gap-2 sm:w-auto">
+            {generalWhatsAppUrl ? (
+              <a
+                href={generalWhatsAppUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-lg bg-[#25D366] px-3 py-2.5 text-xs font-bold text-white transition hover:bg-[#1fb85a] sm:flex-none sm:rounded-xl sm:px-4 sm:text-sm"
+              >
+                <MessageCircle size={16} />
+                WhatsApp Us
+              </a>
+            ) : (
+              <Link
+                href="/contact?type=stay"
+                className="inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-lg bg-[#B96928] px-3 py-2.5 text-xs font-bold text-white transition hover:bg-[#9f5720] sm:flex-none sm:rounded-xl sm:px-4 sm:text-sm"
+              >
+                <MessageCircle size={16} />
+                Send Enquiry
+              </Link>
+            )}
 
-          <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-white/85 sm:mt-3 sm:text-base sm:leading-7">
-            Share your travel dates and guest count to discuss suitable
-            accommodation options.
-          </p>
-
-          <div className="mx-auto mt-5 grid max-w-md grid-cols-2 gap-2.5 sm:mt-6 sm:flex sm:max-w-none sm:flex-wrap sm:justify-center sm:gap-3">
-            <Link
-              href="/contact?type=stay"
-              className="col-span-2 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#B96928] px-6 text-sm font-bold text-white transition hover:bg-[#9F5520] sm:col-span-1 sm:min-h-12"
-            >
-              Send an Enquiry
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-
-            <WhatsAppLink
-              number={whatsappNumber}
-              message={finalEnquiryMessage}
-              label="Plan your Corbett stay on WhatsApp"
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/30 bg-white/10 px-5 text-sm font-bold text-white transition hover:bg-white/20 sm:min-h-12 sm:px-6"
-            >
-              <MessageCircle className="h-4 w-4" />
-              WhatsApp Now
-            </WhatsAppLink>
-
-            <a
-              href={contactPhone ? `tel:+${contactPhone}` : undefined}
-              aria-disabled={!contactPhone}
-              onClick={(event) => {
-                if (!contactPhone) event.preventDefault();
-              }}
-              className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/30 px-5 text-sm font-bold text-white transition hover:bg-white/10 sm:min-h-12 sm:px-6 ${
-                !contactPhone ? "cursor-not-allowed opacity-60" : ""
-              }`}
-            >
-              <PhoneCall className="h-4 w-4" />
-              Call Us
-            </a>
+            {phone && (
+              <a
+                href={`tel:${String(phone).replace(/[^\d+]/g, "")}`}
+                className="inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-lg border border-white/25 px-3 py-2.5 text-xs font-bold text-white transition hover:bg-white/10 sm:flex-none sm:rounded-xl sm:px-4 sm:text-sm"
+              >
+                <Phone size={15} />
+                Call Us
+              </a>
+            )}
           </div>
         </div>
       </section>
+
+      {/* SAME-PAGE ROOM DETAILS POPUP */}
+      {selectedRoom && (
+        <div
+          className="fixed inset-0 z-[100] flex items-end justify-center bg-[#0b1220]/70 p-2 backdrop-blur-sm sm:items-center sm:p-4"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) closeRoom();
+          }}
+          role="presentation"
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="room-modal-title"
+            className="relative flex max-h-[88dvh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl sm:max-h-[82dvh] sm:rounded-2xl"
+          >
+            {/* POPUP HEADER */}
+            <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-3 py-2 sm:px-5 sm:py-3">
+              <div className="flex min-w-0 items-center gap-2">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-orange-100 text-[#B96928] sm:h-8 sm:w-8">
+                  <Hotel size={16} />
+                </span>
+
+                <span className="truncate text-xs font-bold text-[#172033] sm:text-base">
+                  Room Details
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={closeRoom}
+                aria-label="Close room details"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-700 transition hover:bg-slate-200 sm:h-9 sm:w-9"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* SCROLLABLE POPUP CONTENT */}
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+              <div className="grid grid-cols-1 md:grid-cols-[0.9fr_1.1fr]">
+                {/* ROOM IMAGE */}
+                <div className="p-2.5 sm:p-4">
+                  <div className="relative mx-auto aspect-[16/9] max-h-[190px] overflow-hidden rounded-xl bg-slate-100 sm:aspect-[4/3] sm:max-h-[280px] md:max-h-none">
+                    <Image
+                      key={currentImage}
+                      src={currentImage}
+                      alt={selectedRoom.name}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 45vw"
+                      className="object-cover"
+                      priority
+                    />
+
+                    <div className="absolute left-2 top-2 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold text-[#8b4b20] shadow-sm sm:left-3 sm:top-3 sm:text-xs">
+                      {selectedRoom.tag}
+                    </div>
+
+                    {selectedImages.length > 1 && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={previousImage}
+                          aria-label="Previous image"
+                          className="absolute left-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-slate-800 shadow transition hover:bg-white"
+                        >
+                          <ChevronLeft size={18} />
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={nextImage}
+                          aria-label="Next image"
+                          className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-slate-800 shadow transition hover:bg-white"
+                        >
+                          <ChevronRight size={18} />
+                        </button>
+
+                        <div className="absolute bottom-2 right-2 rounded-full bg-black/55 px-2.5 py-1 text-[10px] font-semibold text-white">
+                          {activeImageIndex + 1} / {selectedImages.length}
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {selectedImages.length > 1 && (
+                    <div className="mt-2 flex gap-2 overflow-x-auto">
+                      {selectedImages.map((image, index) => (
+                        <button
+                          type="button"
+                          key={`${image}-${index}`}
+                          onClick={() => setActiveImageIndex(index)}
+                          aria-label={`Show image ${index + 1}`}
+                          className={`relative h-12 w-16 shrink-0 overflow-hidden rounded-lg border-2 sm:h-14 sm:w-[4.5rem] ${
+                            activeImageIndex === index
+                              ? "border-[#B96928]"
+                              : "border-transparent"
+                          }`}
+                        >
+                          <Image
+                            src={image}
+                            alt={`${selectedRoom.name} image ${index + 1}`}
+                            fill
+                            sizes="72px"
+                            className="object-cover"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="mt-2 hidden rounded-xl bg-[#F7F5F0] p-3 md:block">
+                    <div className="flex items-center gap-2 text-xs font-bold text-[#172033]">
+                      <ShieldCheck size={16} className="text-[#B96928]" />
+                      Need help with your stay?
+                    </div>
+
+                    <p className="mt-1 text-xs leading-4 text-slate-600">
+                      Confirm dates, room availability and final pricing before
+                      booking.
+                    </p>
+                  </div>
+                </div>
+
+                {/* FULL ROOM DETAILS */}
+                <div className="px-3 pb-3 pt-0 sm:px-4 sm:pb-4 sm:pt-1 md:py-4 md:pr-5">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wide text-[#9f5720] sm:text-[10px]">
+                    <Sparkles size={11} />
+
+                    {categories.find(
+                      (category) => category.id === selectedRoom.category
+                    )?.label || "Stay"}
+                  </span>
+
+                  <h2
+                    id="room-modal-title"
+                    className="mt-2 text-lg font-extrabold leading-tight text-[#172033] sm:mt-2.5 sm:text-2xl"
+                  >
+                    {selectedRoom.name}
+                  </h2>
+
+                  <p className="mt-1.5 flex items-center gap-1.5 text-xs text-slate-500 sm:text-sm">
+                    <MapPin size={14} className="shrink-0 text-[#B96928]" />
+                    {selectedRoom.location}
+                  </p>
+
+                  {/* PRICE */}
+                  <div className="mt-3 rounded-xl border border-orange-100 bg-[#FFF9F3] p-3 sm:mt-4 sm:p-4">
+                    <p className="text-[10px] font-medium text-slate-500 sm:text-xs">
+                      Starting price
+                    </p>
+
+                    <div className="mt-0.5 flex flex-wrap items-baseline gap-2">
+                      <span className="text-xl font-extrabold text-[#B96928] sm:text-3xl">
+                        {formatINR(selectedRoom.price)}
+                      </span>
+
+                      <span className="text-[10px] text-slate-500 sm:text-xs">
+                        / {selectedRoom.priceUnit}
+                      </span>
+                    </div>
+
+                    <p className="mt-1 text-[10px] leading-4 text-slate-500 sm:text-xs sm:leading-5">
+                      Final rate and availability must be confirmed for your
+                      travel dates.
+                    </p>
+                  </div>
+
+                  {/* ROOM FACTS */}
+                  <div className="mt-2.5 grid grid-cols-2 gap-2 sm:mt-3">
+                    <div className="rounded-lg border border-slate-200 p-2.5 sm:rounded-xl sm:p-3">
+                      <Users size={16} className="text-[#B96928]" />
+
+                      <p className="mt-1 text-[10px] text-slate-500 sm:text-xs">
+                        Guest capacity
+                      </p>
+
+                      <p className="mt-0.5 text-xs font-bold sm:text-sm">
+                        Up to {selectedRoom.guests} guests
+                      </p>
+                    </div>
+
+                    <div className="rounded-lg border border-slate-200 p-2.5 sm:rounded-xl sm:p-3">
+                      <BedDouble size={16} className="text-[#B96928]" />
+
+                      <p className="mt-1 text-[10px] text-slate-500 sm:text-xs">
+                        Room type
+                      </p>
+
+                      <p className="mt-0.5 text-xs font-bold sm:text-sm">
+                        {selectedRoom.bedrooms}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* DESCRIPTION */}
+                  <div className="mt-3">
+                    <h3 className="text-xs font-bold text-[#172033] sm:text-sm">
+                      About this room
+                    </h3>
+
+                    <p className="mt-1 text-xs leading-5 text-slate-600 sm:text-sm sm:leading-6">
+                      {selectedRoom.description}
+                    </p>
+                  </div>
+
+                  {/* FACILITIES */}
+                  <div className="mt-3">
+                    <h3 className="text-xs font-bold text-[#172033] sm:text-sm">
+                      Room facilities
+                    </h3>
+
+                    <div className="mt-2 grid grid-cols-1 gap-x-3 gap-y-2 sm:grid-cols-2">
+                      {selectedRoom.features.map((feature) => (
+                        <div
+                          key={feature}
+                          className="flex items-start gap-1.5 text-xs leading-4 text-slate-600"
+                        >
+                          <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-green-50 text-green-700">
+                            <Check size={10} />
+                          </span>
+
+                          <span>{feature}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* HIGHLIGHTS */}
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {selectedRoom.highlights.map((highlight) => (
+                      <span
+                        key={highlight}
+                        className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-medium text-slate-600 sm:text-xs"
+                      >
+                        {highlight}
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className="mt-3 flex items-start gap-2 rounded-lg bg-[#F7F5F0] p-2.5 md:hidden">
+                    <Clock
+                      size={15}
+                      className="mt-0.5 shrink-0 text-[#B96928]"
+                    />
+
+                    <p className="text-[10px] leading-4 text-slate-600">
+                      Confirm your dates, final room price and availability
+                      before booking.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* STICKY ACTIONS: EQUAL WIDTH AND HEIGHT */}
+            <div className="shrink-0 border-t border-slate-200 bg-white px-3 py-2.5 pb-[max(10px,env(safe-area-inset-bottom))] sm:px-4 sm:py-3">
+              <div className="mx-auto grid max-w-4xl grid-cols-2 gap-2 sm:gap-3">
+                <Link
+                  href={getBookingUrl(selectedRoom)}
+                  className="inline-flex min-h-10 min-w-0 items-center justify-center gap-1.5 rounded-lg bg-[#B96928] px-2 py-2.5 text-center text-xs font-bold text-white transition hover:bg-[#9f5720] sm:min-h-11 sm:rounded-xl sm:text-sm"
+                >
+                  <CalendarDays size={15} className="shrink-0" />
+                  <span>Book Now</span>
+                </Link>
+
+                <Link
+                  href={getEnquiryUrl(selectedRoom)}
+                  className="inline-flex min-h-10 min-w-0 items-center justify-center gap-1.5 rounded-lg border border-[#B96928]/40 bg-white px-2 py-2.5 text-center text-xs font-bold text-[#9f5720] transition hover:bg-orange-50 sm:min-h-11 sm:rounded-xl sm:text-sm"
+                >
+                  <MessageCircle size={15} className="shrink-0" />
+                  <span>Enquire Now</span>
+                </Link>
+              </div>
+
+              {selectedRoomWhatsAppUrl && (
+                <a
+                  href={selectedRoomWhatsAppUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mx-auto mt-2 flex w-fit items-center justify-center gap-1 text-[10px] font-semibold text-slate-500 hover:text-[#128C7E] sm:text-xs"
+                >
+                  <MessageCircle size={13} />
+                  Ask about this room on WhatsApp
+                </a>
+              )}
+            </div>
+          </section>
+        </div>
+      )}
     </main>
   );
 }

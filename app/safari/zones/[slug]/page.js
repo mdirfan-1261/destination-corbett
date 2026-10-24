@@ -1,4 +1,3 @@
-
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -115,9 +114,7 @@ function normalizeSlug(value = "") {
 }
 
 function getZoneSlug(zone) {
-  return normalizeSlug(
-    zone?.slug || zone?.name || zone?.title || ""
-  );
+  return normalizeSlug(zone?.slug || zone?.name || zone?.title || "");
 }
 
 function getImageUrl(image) {
@@ -138,6 +135,8 @@ function getImageUrl(image) {
   return `/${value}`;
 }
 
+// Jeep / Canter  -> booking page
+// Elephant / other -> enquiry page (no booking page exists for them)
 function getSafariConfig(zone) {
   const rawType = String(
     zone?.safariType ||
@@ -156,17 +155,8 @@ function getSafariConfig(zone) {
     return {
       label: "Canter Safari",
       buttonLabel: "Book Canter Safari",
-      path: "/safari/canter",
+      canBook: true,
       type: "canter",
-    };
-  }
-
-  if (rawType.includes("elephant")) {
-    return {
-      label: "Elephant Safari",
-      buttonLabel: "Book Elephant Safari",
-      path: "/safari/elephant",
-      type: "elephant",
     };
   }
 
@@ -174,8 +164,17 @@ function getSafariConfig(zone) {
     return {
       label: "Jeep Safari",
       buttonLabel: "Book Jeep Safari",
-      path: "/safari/jeep",
+      canBook: true,
       type: "jeep",
+    };
+  }
+
+  if (rawType.includes("elephant")) {
+    return {
+      label: "Elephant Safari",
+      buttonLabel: "Enquire About Elephant Safari",
+      canBook: false,
+      type: "elephant",
     };
   }
 
@@ -184,7 +183,7 @@ function getSafariConfig(zone) {
       ? rawType.replace(/\b\w/g, (char) => char.toUpperCase())
       : "Not specified",
     buttonLabel: "Enquire About Safari",
-    path: null,
+    canBook: false,
     type: "other",
   };
 }
@@ -200,9 +199,7 @@ function getHighlights(zone, slug) {
       .filter(Boolean);
   }
 
-  const fallback = DEFAULT_ZONES.find(
-    (item) => item.slug === slug
-  );
+  const fallback = DEFAULT_ZONES.find((item) => item.slug === slug);
 
   return (
     fallback?.highlights || [
@@ -250,10 +247,7 @@ function normalizeZone(zone, requestedSlug) {
       fallback?.description ||
       "Contact our team to learn more about this safari zone and plan your visit.",
 
-    duration:
-      zone?.duration ||
-      fallback?.duration ||
-      "3–4 hrs",
+    duration: zone?.duration || fallback?.duration || "3–4 hrs",
 
     highlights: getHighlights(zone, actualSlug),
   };
@@ -272,7 +266,7 @@ function normalizeZone(zone, requestedSlug) {
     ...normalized,
     safari: safariConfig.label,
     safariType: safariConfig.type,
-    bookingPath: safariConfig.path,
+    canBook: safariConfig.canBook,
     bookingLabel: safariConfig.buttonLabel,
   };
 }
@@ -301,7 +295,6 @@ async function getZoneBySlug(slug) {
         "Public safari zones API returned:",
         response.status
       );
-
       return null;
     }
 
@@ -313,7 +306,6 @@ async function getZoneBySlug(slug) {
 
     const apiZones = extractZones(result);
 
-    // Match the requested zone, but never use an inactive record.
     const apiZone = apiZones.find((item) => {
       const itemSlug = getZoneSlug(item);
 
@@ -336,10 +328,22 @@ async function getZoneBySlug(slug) {
     return normalizeZone(apiZone, slug);
   } catch (error) {
     console.error("Failed to fetch safari zones:", error);
-
-    // Do not serve hardcoded zones if the API is unavailable.
     return null;
   }
+}
+
+function ZoneHeroImage({ src, alt }) {
+  return (
+    <Image
+      src={src || FALLBACK_IMAGE}
+      alt={alt}
+      fill
+      priority
+      quality={75}
+      sizes="(max-width: 1023px) 100vw, 700px"
+      className="object-cover object-center brightness-110"
+    />
+  );
 }
 
 export default async function SafariZoneDetailPage({ params }) {
@@ -352,149 +356,191 @@ export default async function SafariZoneDetailPage({ params }) {
 
   const zone = await getZoneBySlug(slug);
 
-  // Inactive, deleted, missing or unavailable zone -> 404.
   if (!zone) {
     notFound();
   }
 
   const enquiryUrl = `/contact?type=safari&zone=${encodeURIComponent(
     zone.name
-  )}`;
+  )}&location=${encodeURIComponent(zone.location)}`;
 
-  const bookingUrl = zone.bookingPath
-    ? `${zone.bookingPath}?zone=${encodeURIComponent(zone.slug)}`
+  const bookingUrl = zone.canBook
+    ? `/booking?type=safari&service_code=${encodeURIComponent(
+        zone.safariType
+      )}&zone=${encodeURIComponent(zone.slug)}&zone_name=${encodeURIComponent(
+        zone.name
+      )}&safari=${encodeURIComponent(
+        zone.safari
+      )}&image=${encodeURIComponent(zone.image)}`
     : enquiryUrl;
 
   return (
-    <main className="bg-white">
-      {/* HERO */}
-      <section className="bg-[#F7F5F0] px-1.5 py-1.5 sm:px-4 sm:py-4 md:px-6 md:py-5">
-        <div className="relative mx-auto max-w-7xl overflow-hidden rounded-xl bg-[#172033] text-white sm:rounded-[24px] md:rounded-[28px]">
-          <div className="relative h-[340px] overflow-hidden sm:h-[420px] md:h-[470px] lg:h-[500px]">
-            <Image
+    <main className="min-h-screen bg-[#F7F5F0] text-[#172033]">
+      {/* ================= BREADCRUMB ================= */}
+      <nav
+        aria-label="Breadcrumb"
+        className="mx-auto max-w-6xl px-3 pt-3 text-xs sm:px-5 sm:pt-4 sm:text-sm md:px-6"
+      >
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href="/"
+            className="text-[#B96928] transition-colors hover:underline"
+          >
+            Home
+          </Link>
+
+          <span className="text-gray-400">›</span>
+
+          <Link
+            href="/safari"
+            className="text-[#B96928] transition-colors hover:underline"
+          >
+            Safari
+          </Link>
+
+          <span className="text-gray-400">›</span>
+
+          <Link
+            href="/safari/zones"
+            className="text-[#B96928] transition-colors hover:underline"
+          >
+            Zones
+          </Link>
+
+          <span className="text-gray-400">›</span>
+
+          <span
+            aria-current="page"
+            className="line-clamp-1 font-medium text-[#172033]"
+          >
+            {zone.name}
+          </span>
+        </div>
+      </nav>
+
+      {/* ================= COMPACT HERO ================= */}
+      <section className="px-3 pt-3 sm:px-5 sm:pt-4 md:px-6">
+        <div className="relative mx-auto h-[190px] max-w-6xl overflow-hidden rounded-xl bg-[#172033] text-white sm:h-[230px] sm:rounded-2xl lg:h-[260px]">
+          {/* Hero Image */}
+          <div className="absolute inset-0 lg:left-auto lg:w-[55%]">
+            <ZoneHeroImage
               src={zone.image}
               alt={`${zone.name} safari zone`}
-              fill
-              priority
-              quality={75}
-              sizes="100vw"
-              className="object-cover"
             />
+          </div>
 
-            <div className="absolute inset-0 bg-black/30" />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#172033]/90 via-[#172033]/55 to-transparent" />
+          {/* Image Overlays */}
+          <div className="pointer-events-none absolute inset-y-0 left-[45%] hidden w-[15%] bg-gradient-to-r from-[#172033] to-transparent lg:block" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#172033]/90 via-[#172033]/55 to-transparent" />
 
-            <div className="relative z-10 flex h-full items-center px-5 sm:px-8 md:px-12 lg:px-16">
-              <div className="max-w-2xl">
+          {/* Hero Content */}
+          <div className="relative z-10 flex h-full items-center px-4 py-4 sm:px-8 lg:px-10">
+            <div className="max-w-2xl">
+              <div className="mb-2 inline-flex items-center rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-white/85 backdrop-blur-xl">
+                Jim Corbett · Safari Experience
+              </div>
+
+              <h1 className="line-clamp-2 text-xl font-bold leading-tight tracking-tight sm:text-2xl md:text-3xl lg:text-4xl">
+                {zone.name}
+              </h1>
+
+              <div className="mt-1.5 hidden items-center gap-1.5 text-xs text-white/85 sm:flex">
+                <MapPin size={13} className="shrink-0 text-[#E0924F]" />
+                <span className="line-clamp-1">{zone.location}</span>
+              </div>
+
+              <p className="mt-2 hidden max-w-md line-clamp-2 text-xs leading-5 text-white/80 sm:block sm:text-sm">
+                {zone.description}
+              </p>
+
+              <div className="mt-3 flex flex-wrap items-center gap-2">
                 <Link
-                  href="/safari/zones"
-                  className="mb-5 inline-flex items-center gap-2 text-xs font-semibold text-white/85 transition hover:text-white sm:text-sm"
+                  href={bookingUrl}
+                  className="inline-flex items-center justify-center gap-1.5 rounded-full bg-[#C87532] px-4 py-2 text-xs font-semibold text-white shadow-md transition-all duration-200 hover:bg-[#B96928] sm:text-sm"
                 >
-                  <ArrowLeft size={15} />
-                  All Safari Zones
+                  {zone.bookingLabel}
+                  <ArrowRight size={13} />
                 </Link>
 
-                <p className="mb-2 text-[10px] font-bold tracking-[0.18em] text-[#C88A3D] sm:text-xs">
-                  JIM CORBETT SAFARI
-                </p>
-
-                <h1 className="text-3xl font-black leading-tight sm:text-4xl md:text-5xl lg:text-6xl">
-                  {zone.name}
-                </h1>
-
-                <div className="mt-4 flex items-center gap-2 text-xs text-white/85 sm:text-sm">
-                  <MapPin
-                    size={16}
-                    className="shrink-0 text-[#C88A3D]"
-                  />
-                  <span>{zone.location}</span>
-                </div>
-
-                <p className="mt-4 max-w-xl text-sm leading-6 text-white/90 sm:mt-5 sm:text-base">
-                  {zone.description}
-                </p>
-
-                <div className="mt-6 flex flex-wrap gap-3 sm:mt-7">
-                  <Link
-                    href={bookingUrl}
-                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#B96928] px-4 py-3 text-xs font-bold text-white transition hover:bg-[#9D5721] sm:px-5 sm:text-sm"
-                  >
-                    {zone.bookingLabel}
-                    <ArrowRight size={15} />
-                  </Link>
-
+                {zone.canBook && (
                   <Link
                     href={enquiryUrl}
-                    className="inline-flex min-h-11 items-center justify-center rounded-xl border border-white/60 bg-white/10 px-4 py-3 text-xs font-bold text-white backdrop-blur-sm transition hover:bg-white hover:text-[#172033] sm:px-5 sm:text-sm"
+                    className="hidden items-center justify-center rounded-full border border-white/30 bg-white/10 px-4 py-2 text-xs font-semibold text-white backdrop-blur transition hover:bg-white/20 sm:inline-flex sm:text-sm"
                   >
                     Make an Enquiry
                   </Link>
-                </div>
+                )}
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* DETAILS */}
-      <section className="bg-[#F7F5F0] py-8 sm:py-10 md:py-12">
-        <div className="mx-auto max-w-6xl px-3 sm:px-6">
-          <div className="grid gap-5 md:grid-cols-[1.4fr_1fr] md:gap-6">
+      {/* ================= DETAILS ================= */}
+      <section className="px-3 py-5 sm:px-5 sm:py-6 md:px-6 md:py-8">
+        <div className="mx-auto max-w-6xl">
+          <div className="grid items-start gap-3 sm:gap-4 md:grid-cols-[1.35fr_1fr]">
             {/* MAIN INFO */}
-            <div className="rounded-2xl bg-white p-5 shadow-sm sm:p-7 md:p-8">
-              <p className="text-[10px] font-bold tracking-[0.16em] text-[#B96928] sm:text-xs">
-                ABOUT THE ZONE
+            <article className="rounded-xl border border-black/5 bg-white p-4 shadow-sm sm:rounded-2xl sm:p-5 md:p-6">
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#B96928] sm:text-xs">
+                About the Zone
               </p>
 
-              <h2 className="mt-2 text-2xl font-black text-[#172033] sm:text-3xl">
+              <h2 className="mt-1.5 text-lg font-bold leading-tight tracking-tight text-[#172033] sm:text-xl md:text-2xl">
                 Explore {zone.name}
               </h2>
 
-              <p className="mt-4 text-sm leading-6 text-gray-600 sm:text-base sm:leading-7">
+              <p className="mt-2 text-xs leading-5 text-gray-600 sm:text-sm sm:leading-6">
                 {zone.description}
               </p>
 
-              <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div className="rounded-xl bg-[#F7F5F0] p-4">
-                  <div className="flex items-center gap-2">
-                    <Clock3 size={18} className="text-[#B96928]" />
-                    <span className="text-sm font-semibold text-[#172033]">
+              <div className="mt-4 grid grid-cols-2 gap-2 sm:gap-3">
+                <div className="rounded-lg bg-[#F7F5F0] p-2.5 sm:rounded-xl sm:p-3">
+                  <div className="flex items-center gap-1.5">
+                    <Clock3
+                      size={15}
+                      className="shrink-0 text-[#B96928]"
+                    />
+                    <span className="text-[11px] font-semibold text-[#172033] sm:text-xs">
                       Duration
                     </span>
                   </div>
 
-                  <p className="mt-2 text-sm font-bold text-[#172033]">
+                  <p className="mt-1.5 text-xs font-bold text-[#172033] sm:text-sm">
                     {zone.duration}
                   </p>
                 </div>
 
-                <div className="rounded-xl bg-[#F7F5F0] p-4">
-                  <div className="flex items-center gap-2">
-                    <Trees size={18} className="text-[#B96928]" />
-                    <span className="text-sm font-semibold text-[#172033]">
+                <div className="rounded-lg bg-[#F7F5F0] p-2.5 sm:rounded-xl sm:p-3">
+                  <div className="flex items-center gap-1.5">
+                    <Trees
+                      size={15}
+                      className="shrink-0 text-[#B96928]"
+                    />
+                    <span className="text-[11px] font-semibold text-[#172033] sm:text-xs">
                       Safari Type
                     </span>
                   </div>
 
-                  <p className="mt-2 text-sm font-bold text-[#172033]">
+                  <p className="mt-1.5 text-xs font-bold text-[#172033] sm:text-sm">
                     {zone.safari}
                   </p>
                 </div>
               </div>
 
-              <div className="mt-5 rounded-xl border border-gray-100 p-4">
-                <div className="flex items-start gap-3">
+              <div className="mt-3 rounded-lg border border-gray-100 p-2.5 sm:rounded-xl sm:p-3">
+                <div className="flex items-start gap-2.5">
                   <MapPin
-                    size={18}
+                    size={16}
                     className="mt-0.5 shrink-0 text-[#B96928]"
                   />
 
-                  <div>
-                    <p className="text-sm font-bold text-[#172033]">
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-[#172033] sm:text-sm">
                       Safari Zone Location
                     </p>
 
-                    <p className="mt-1 text-sm leading-6 text-gray-600">
+                    <p className="mt-0.5 text-xs leading-5 text-gray-600 sm:text-sm">
                       {zone.location}
                     </p>
                   </div>
@@ -503,35 +549,35 @@ export default async function SafariZoneDetailPage({ params }) {
 
               <Link
                 href={enquiryUrl}
-                className="mt-6 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#B96928] px-4 py-3 text-sm font-bold text-[#B96928] transition hover:bg-[#B96928] hover:text-white"
+                className="mt-4 inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[#B96928] px-4 text-xs font-bold text-[#B96928] transition hover:bg-[#B96928] hover:text-white sm:text-sm"
               >
                 Ask About This Zone
-                <ArrowRight size={16} />
+                <ArrowRight size={15} />
               </Link>
-            </div>
+            </article>
 
             {/* HIGHLIGHTS */}
-            <div className="rounded-2xl bg-[#18352A] p-5 text-white shadow-sm sm:p-7 md:p-8">
-              <p className="text-[10px] font-bold tracking-[0.16em] text-[#C88A3D] sm:text-xs">
-                ZONE HIGHLIGHTS
+            <aside className="rounded-xl bg-[#18352A] p-4 text-white shadow-sm sm:rounded-2xl sm:p-5 md:p-6">
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#E4AD70] sm:text-xs">
+                Zone Highlights
               </p>
 
-              <h2 className="mt-2 text-2xl font-black sm:text-3xl">
+              <h2 className="mt-1.5 text-lg font-bold leading-tight tracking-tight sm:text-xl md:text-2xl">
                 What You Can Explore
               </h2>
 
-              <div className="mt-6 space-y-4">
+              <div className="mt-4 space-y-2.5 sm:space-y-3">
                 {zone.highlights.map((highlight, index) => (
                   <div
                     key={`${highlight}-${index}`}
-                    className="flex items-start gap-3"
+                    className="flex items-start gap-2.5"
                   >
                     <CheckCircle2
-                      size={18}
-                      className="mt-0.5 shrink-0 text-[#C88A3D]"
+                      size={16}
+                      className="mt-0.5 shrink-0 text-[#E4AD70]"
                     />
 
-                    <span className="text-sm leading-6 text-white/90">
+                    <span className="text-xs leading-5 text-white/90 sm:text-sm">
                       {highlight}
                     </span>
                   </div>
@@ -540,25 +586,25 @@ export default async function SafariZoneDetailPage({ params }) {
 
               <Link
                 href={bookingUrl}
-                className="mt-7 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#B96928] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#9D5721]"
+                className="mt-5 inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-[#B96928] px-4 text-xs font-bold text-white transition hover:bg-[#9D5721] sm:text-sm"
               >
                 {zone.bookingLabel}
-                <ArrowRight size={16} />
+                <ArrowRight size={15} />
               </Link>
 
-              <p className="mt-3 text-xs leading-5 text-white/65">
+              <p className="mt-3 text-[11px] leading-4 text-white/65 sm:text-xs sm:leading-5">
                 Contact our team to confirm availability and booking details.
               </p>
-            </div>
+            </aside>
           </div>
 
-          {/* BACK */}
-          <div className="mt-6 sm:mt-8">
+          {/* BACK TO ZONES */}
+          <div className="mt-4 sm:mt-5">
             <Link
               href="/safari/zones"
-              className="inline-flex items-center gap-2 text-sm font-bold text-[#172033] transition hover:text-[#B96928]"
+              className="inline-flex items-center gap-2 text-xs font-bold text-[#172033] transition hover:text-[#B96928] sm:text-sm"
             >
-              <ArrowLeft size={16} />
+              <ArrowLeft size={15} />
               Back to All Safari Zones
             </Link>
           </div>

@@ -2,329 +2,320 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
-import {
-    ArrowRight,
-    MapPin,
-    ChevronDown,
-    CalendarDays,
-} from "lucide-react";
+import { useEffect, useState } from "react";
+import { Send } from "lucide-react";
 
 import resorts from "@/data/resorts";
+import StayCard from "@/components/stay/StayCard";
+
+// Backend URL: NEXT_PUBLIC_API_URL mein /api ho ya na ho, dono support hain.
+const API_BASE_URL = (
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+).replace(/\/+$/, "");
+
+const PUBLIC_PROPERTIES_URL = `${API_BASE_URL}${
+    /\/api$/i.test(API_BASE_URL) ? "" : "/api"
+}/agent/public/properties`;
+
+const FALLBACK_IMAGE = "/stay/resort-hero.webp";
+
+function slugify(value = "") {
+    return String(value)
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+}
+
+function getPropertyImage(images) {
+    if (!Array.isArray(images) || images.length === 0) {
+        return FALLBACK_IMAGE;
+    }
+
+    const firstImage = images[0];
+
+    const imageUrl =
+        typeof firstImage === "string"
+            ? firstImage
+            : firstImage?.url ||
+              firstImage?.imageUrl ||
+              firstImage?.src ||
+              firstImage?.path;
+
+    return imageUrl || FALLBACK_IMAGE;
+}
+
+function normalizeAgentProperty(property) {
+    const name = property.name?.trim() || "Resort";
+
+    const location =
+        [
+            property.locality,
+            property.city,
+            property.district,
+            property.state,
+        ]
+            .filter(Boolean)
+            .filter(
+                (value, index, array) =>
+                    array.findIndex(
+                        (item) =>
+                            item.toLowerCase() === value.toLowerCase()
+                    ) === index
+            )
+            .join(", ") ||
+        property.address ||
+        "Jim Corbett";
+
+    return {
+        id: property._id,
+        slug: property.slug || slugify(name),
+        locationSlug: slugify(
+            property.locality ||
+                property.city ||
+                property.district ||
+                "corbett"
+        ),
+        name,
+        location,
+        description:
+            property.description?.trim() ||
+            "Explore this property and enquire about your stay.",
+        image: getPropertyImage(property.images),
+        rating: Number(property.rating) || 0,
+        isAgentProperty: true,
+    };
+}
 
 export default function ResortsStaysPage() {
-    const [expanded, setExpanded] = useState(null);
+    const [agentResorts, setAgentResorts] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [apiError, setApiError] = useState("");
 
-    const handleToggle = (id) => {
-        setExpanded(expanded === id ? null : id);
-    };
+    useEffect(() => {
+        const controller = new AbortController();
+
+        async function fetchAgentResorts() {
+            try {
+                setLoading(true);
+                setApiError("");
+
+                const response = await fetch(
+                    `${PUBLIC_PROPERTIES_URL}?propertyType=resort&limit=50`,
+                    {
+                        method: "GET",
+                        signal: controller.signal,
+                        cache: "no-store",
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error(
+                        `Properties load nahi hui (${response.status}).`
+                    );
+                }
+
+                const result = await response.json();
+
+                if (!result?.success || !Array.isArray(result?.data?.properties)) {
+                    throw new Error("Backend response ka format sahi nahi hai.");
+                }
+
+                setAgentResorts(
+                    result.data.properties.map(normalizeAgentProperty)
+                );
+            } catch (error) {
+                if (error.name === "AbortError") return;
+
+                console.error("Public resort listing error:", error);
+                setApiError(
+                    "Agent properties abhi load nahi ho pa rahi hain."
+                );
+            } finally {
+                if (!controller.signal.aborted) {
+                    setLoading(false);
+                }
+            }
+        }
+
+        fetchAgentResorts();
+
+        return () => controller.abort();
+    }, []);
+
+    // Existing static resorts ko preserve karo aur duplicate entries hatao.
+    const staticResorts = resorts.map((resort) => ({
+        ...resort,
+        isAgentProperty: false,
+    }));
+
+    const existingKeys = new Set(
+        staticResorts.flatMap((resort) =>
+            [resort.slug, resort.name]
+                .filter(Boolean)
+                .map((value) => String(value).toLowerCase())
+        )
+    );
+
+    const uniqueAgentResorts = agentResorts.filter((resort) => {
+        const keys = [resort.slug, resort.name]
+            .filter(Boolean)
+            .map((value) => String(value).toLowerCase());
+
+        return !keys.some((key) => existingKeys.has(key));
+    });
+
+    const allResorts = [...staticResorts, ...uniqueAgentResorts];
 
     return (
-        <main className="bg-white">
+        <main className="bg-[#F7F5F0] dark:bg-[#0e1210]">
+            <nav
+  aria-label="Breadcrumb"
+  className="mx-auto max-w-6xl px-3 pt-3 text-xs sm:px-5 sm:pt-4 sm:text-sm md:px-6"
+>
+  <div className="flex items-center gap-2">
+    <Link href="/" className="text-[#B96928] transition-colors hover:underline">
+      Home
+    </Link>
+    <span className="text-gray-400">›</span>
+    <Link href="/stay" className="text-[#B96928] transition-colors hover:underline">
+      Stay
+    </Link>
+    <span className="text-gray-400">›</span>
+    <span aria-current="page" className="font-medium text-[#172033]">
+      Resorts
+    </span>
+  </div>
+</nav>
 
-            {/* ================= HERO ================= */}
+            {/* ================= COMPACT HERO ================= */}
+            {/* ================= COMPACT HERO ================= */}
+<section className="px-3 pt-3 sm:px-5 sm:pt-4 md:px-6">
+  <div className="relative mx-auto h-[190px] max-w-6xl overflow-hidden rounded-xl bg-[#172033] text-white sm:h-[230px] sm:rounded-2xl lg:h-[260px]">
+    {/* Hero Image */}
+    <div className="absolute inset-0 lg:left-auto lg:w-[55%]">
+      <Image
+        src="/stay/resort-hero.webp"
+        alt="Resorts and Stays in Jim Corbett"
+        fill
+        priority
+        quality={75}
+        sizes="(max-width: 1023px) 100vw, 700px"
+        className="object-cover object-center brightness-110"
+      />
+    </div>
 
-            <section className="overflow-hidden bg-[#F7F5F0] px-1.5 py-1.5 sm:px-4 sm:py-4 md:px-6 md:py-5">
+    {/* Image Overlays */}
+    <div className="pointer-events-none absolute inset-y-0 left-[45%] hidden w-[15%] bg-gradient-to-r from-[#172033] to-transparent lg:block" />
+    <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#172033]/90 via-[#172033]/55 to-transparent" />
 
-                <div className="relative mx-auto max-w-7xl overflow-hidden rounded-xl bg-[#172033] text-white sm:rounded-[24px] md:rounded-[28px]">
+    {/* Hero Content */}
+    <div className="relative z-10 flex h-full items-center px-4 py-4 sm:px-8 lg:px-10">
+      <div className="max-w-2xl">
+        <h1 className="text-xl font-bold leading-tight tracking-tight sm:text-2xl md:text-3xl lg:text-4xl">
+          Resorts &amp;{" "}
+          <span className="text-[#E0924F]">Stays in Jim Corbett</span>
+        </h1>
 
-                    <div className="relative h-[300px] overflow-hidden sm:h-[420px] md:h-[470px] lg:h-[560px]">
+        <p className="mt-2 hidden max-w-md line-clamp-2 text-xs leading-5 text-white/80 sm:block sm:text-sm">
+          Comfortable resorts and peaceful stays surrounded by the natural
+          beauty of Jim Corbett.
+        </p>
 
-                        <Image
-                            src="/stay/resort-hero.webp"
-                            alt="Resorts and Stays in Jim Corbett"
-                            fill
-                            priority
-                            quality={75}
-                            sizes="100vw"
-                            className="object-cover"
-                        />
-
-                        <div className="absolute inset-0 bg-black/25" />
-
-                        <div className="absolute inset-0 bg-gradient-to-r from-[#172033]/85 via-[#172033]/50 to-transparent" />
-
-                        <div className="relative z-10 flex h-full items-center px-5 sm:px-8 md:px-12 lg:px-16">
-
-                            <div className="max-w-2xl">
-
-                                <p className="mb-2 text-[9px] font-semibold tracking-[2px] text-[#C87532] sm:mb-3 sm:text-xs sm:tracking-[3px] md:text-sm">
-                                    JIM CORBETT STAYS
-                                </p>
-
-                                <h1 className="text-[27px] font-bold leading-[1.08] tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
-                                    Resorts & Stays in{" "}
-                                    <span className="text-[#C87532]">
-                                        Jim Corbett
-                                    </span>
-                                </h1>
-
-                                <p className="mt-2 max-w-xl text-[11px] leading-[1.55] text-white/85 sm:mt-4 sm:text-base sm:leading-7 md:mt-5 md:text-lg">
-                                    Discover comfortable resorts and peaceful
-                                    stays surrounded by the natural beauty of
-                                    Jim Corbett.
-                                </p>
-
-                                <div className="mt-3 flex flex-wrap items-center gap-2 sm:mt-6 sm:gap-3">
-
-                                    <Link
-                                        href="#resorts"
-                                        className="inline-flex items-center gap-1.5 rounded-full bg-[#C87532] px-4 py-2 text-[11px] font-semibold text-white transition hover:bg-[#B96928] sm:gap-2 sm:px-6 sm:py-3 sm:text-sm"
-                                    >
-                                        Explore Resorts
-                                        <ArrowRight size={15} />
-                                    </Link>
-
-                                    <Link
-                                        href="/contact?type=stay"
-                                        className="inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-white/10 px-4 py-2 text-[11px] font-semibold text-white backdrop-blur-xl transition hover:bg-white/20 sm:gap-2 sm:px-6 sm:py-3 sm:text-sm"
-                                    >
-                                        Make an Enquiry
-                                        <ArrowRight size={15} />
-                                    </Link>
-
-                                </div>
-
-                                <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-[9px] text-white/75 sm:mt-6 sm:gap-x-6 sm:text-xs">
-
-                                    <span className="flex items-center gap-1.5">
-                                        <span className="text-[#C87532]">
-                                            ✓
-                                        </span>
-                                        Nature Stays
-                                    </span>
-
-                                    <span className="flex items-center gap-1.5">
-                                        <span className="text-[#C87532]">
-                                            ✓
-                                        </span>
-                                        Prime Locations
-                                    </span>
-
-                                    <span className="flex items-center gap-1.5">
-                                        <span className="text-[#C87532]">
-                                            ✓
-                                        </span>
-                                        Easy Enquiry
-                                    </span>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </section>
-
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <Link
+            href="/contact?type=stay"
+            className="inline-flex items-center justify-center gap-1.5 rounded-full bg-[#C87532] px-4 py-2 text-xs font-semibold text-white shadow-md transition-all duration-200 hover:bg-[#B96928] sm:text-sm"
+          >
+            Make an Enquiry
+            <Send size={13} />
+          </Link>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
             {/* ================= RESORTS ================= */}
+            <section id="resorts" className="py-5 sm:py-6 md:py-8">
+                <div className="mx-auto max-w-6xl px-3 sm:px-5 md:px-6">
 
-            <section
-                id="resorts"
-                className="bg-[#F7F5F0] py-7 sm:py-10 md:py-12"
-            >
-
-                <div className="mx-auto max-w-7xl px-3 sm:px-6">
-
-                    {/* SECTION INTRO */}
-
-                    <div className="mb-6 max-w-2xl sm:mb-8 md:mb-9">
-
-                        <p className="mb-2 text-[9px] font-semibold tracking-[1.8px] text-[#C87532] sm:mb-3 sm:text-xs sm:tracking-[2.5px]">
-                            EXPLORE RESORTS & STAYS
-                        </p>
-
-                        <h2 className="text-2xl font-bold leading-tight text-[#172033] sm:text-3xl md:text-4xl">
+                    <div className="mb-4 sm:mb-5">
+                        <h2 className="text-lg font-bold leading-tight text-[#172033] dark:text-gray-100 sm:text-2xl">
                             Comfortable Stays in Nature
                         </h2>
-
-                        <p className="mt-2.5 max-w-xl text-[11px] leading-[1.55] text-gray-600 sm:mt-3 sm:text-sm sm:leading-6">
-                            Choose from comfortable resorts and peaceful
-                            accommodation options for your Jim Corbett trip.
+                        <p className="mt-1 text-xs text-gray-600 dark:text-gray-300 sm:text-sm">
+                            Choose a resort to see rooms, amenities and pricing.
                         </p>
-
                     </div>
 
+                    {loading && (
+                        <p
+                            role="status"
+                            className="mb-4 text-sm text-gray-600 dark:text-gray-300"
+                        >
+                            Loading available resorts...
+                        </p>
+                    )}
 
-                    {/* ================= RESORT CARDS ================= */}
+                    {apiError && (
+                        <p
+                            role="status"
+                            className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-200"
+                        >
+                            {apiError} Existing resorts are still available.
+                        </p>
+                    )}
+
+                    {!loading && allResorts.length === 0 && (
+                        <p className="rounded-xl bg-white p-6 text-sm text-gray-600 dark:bg-[#161b18] dark:text-gray-300">
+                            Abhi koi resort listing available nahi hai.
+                            Please baad mein dobara check karein.
+                        </p>
+                    )}
 
                     <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 lg:gap-5">
+                        {allResorts.map((resort) => {
+                            // Route: /stay/resorts/<location>/<property-slug>
+                            const detailUrl = `/stay/resorts/${resort.locationSlug}/${resort.slug}`;
 
-                        {resorts.map((resort) => {
-
-                            // Dynamic property detail URL
-                            const propertyUrl =
-                                `/stay/resorts/${resort.locationSlug}/${resort.slug}`;
-
-                            const enquiryUrl =
-                                `/contact?hotel=${encodeURIComponent(
-                                    resort.name
-                                )}` +
-                                `&hotelImage=${encodeURIComponent(
-                                    resort.image
-                                )}` +
-                                `&location=${encodeURIComponent(
-                                    resort.location
-                                )}`;
+                            const enquiryUrl = resort.isAgentProperty
+                                ? `/contact?hotel=${encodeURIComponent(
+                                      resort.name
+                                  )}&location=${encodeURIComponent(
+                                      resort.location
+                                  )}`
+                                : `/contact?hotel=${encodeURIComponent(
+                                      resort.name
+                                  )}&hotelImage=${encodeURIComponent(
+                                      resort.image
+                                  )}&location=${encodeURIComponent(
+                                      resort.location
+                                  )}`;
 
                             return (
-                                <div
-                                    key={resort.id}
-                                    onClick={() =>
-                                        handleToggle(resort.id)
+                                <StayCard
+                                    key={
+                                        resort.isAgentProperty
+                                            ? `agent-${resort.id}`
+                                            : `static-${resort.id}`
                                     }
-                                    className="group cursor-pointer overflow-hidden rounded-xl bg-white shadow-sm transition-all duration-300 hover:shadow-lg sm:rounded-2xl"
-                                >
-
-                                    {/* IMAGE */}
-
-                                    <Link
-                                        href={propertyUrl}
-                                        onClick={(e) =>
-                                            e.stopPropagation()
-                                        }
-                                        className="block"
-                                    >
-                                        <div className="h-[125px] overflow-hidden sm:h-[180px] md:h-[195px] lg:h-[190px]">
-
-                                            <Image
-                                                src={resort.image}
-                                                alt={resort.name}
-                                                width={400}
-                                                height={240}
-                                                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                                            />
-
-                                        </div>
-                                    </Link>
-
-
-                                    {/* CONTENT */}
-
-                                    <div className="p-2.5 sm:p-4">
-
-                                        {/* LOCATION + CHEVRON */}
-
-                                        <div className="flex items-center justify-between gap-1">
-
-                                            <div className="flex min-w-0 items-center gap-1 text-[9px] font-medium text-[#C87532] sm:gap-1.5 sm:text-xs">
-
-                                                <MapPin
-                                                    size={12}
-                                                    className="shrink-0 sm:h-3.5 sm:w-3.5"
-                                                />
-
-                                                <span className="truncate">
-                                                    {resort.location}
-                                                </span>
-
-                                            </div>
-
-                                            <ChevronDown
-                                                size={14}
-                                                className={`shrink-0 text-[#C87532] transition-transform duration-300 sm:h-4 sm:w-4 ${
-                                                    expanded === resort.id
-                                                        ? "rotate-180"
-                                                        : ""
-                                                }`}
-                                            />
-
-                                        </div>
-
-
-                                        {/* RESORT NAME */}
-
-                                        <Link
-                                            href={propertyUrl}
-                                            onClick={(e) =>
-                                                e.stopPropagation()
-                                            }
-                                            className="block"
-                                        >
-                                            <h3 className="mt-1.5 text-sm font-bold leading-tight text-[#172033] transition-colors hover:text-[#C87532] sm:text-lg">
-                                                {resort.name}
-                                            </h3>
-                                        </Link>
-
-
-                                        {/* DESCRIPTION */}
-
-                                        {expanded !== resort.id && (
-                                            <p className="mt-1 line-clamp-1 text-[9px] leading-3.5 text-gray-600 sm:text-xs sm:leading-5">
-                                                {resort.description}
-                                            </p>
-                                        )}
-
-
-                                        {/* EXPANDED DESCRIPTION */}
-
-                                        {expanded === resort.id && (
-                                            <div className="mt-2">
-
-                                                <p className="text-[9px] leading-3.5 text-gray-600 sm:text-xs sm:leading-5">
-                                                    {resort.description}
-                                                </p>
-
-                                                <div className="mt-2.5 border-t border-gray-100 pt-2.5">
-
-                                                    <p className="text-[9px] text-gray-500 sm:text-[11px]">
-                                                        Stay Experience
-                                                    </p>
-
-                                                    <p className="mt-0.5 text-[9px] font-semibold text-[#172033] sm:text-xs">
-                                                        Nature & Comfort
-                                                    </p>
-
-                                                </div>
-
-                                            </div>
-                                        )}
-
-
-                                        {/* BUTTONS */}
-
-                                        <div className="mt-2.5 flex flex-row gap-1.5 sm:mt-4 sm:flex-row sm:gap-2">
-
-                                            <Link
-                                                href={enquiryUrl}
-                                                onClick={(e) =>
-                                                    e.stopPropagation()
-                                                }
-                                                className="inline-flex h-8 flex-1 items-center justify-center gap-1 rounded-lg border border-[#172033] px-1.5 text-[9px] font-semibold text-[#172033] transition hover:bg-[#172033] hover:text-white sm:h-10 sm:flex-1 sm:gap-1.5 sm:px-3 sm:text-xs"
-                                            >
-                                                Enquire
-                                                <ArrowRight size={11} />
-                                            </Link>
-
-                                            <Link
-                                                href={propertyUrl}
-                                                onClick={(e) =>
-                                                    e.stopPropagation()
-                                                }
-                                                className="inline-flex h-8 flex-1 items-center justify-center gap-1 rounded-lg bg-[#C87532] px-1.5 text-[9px] font-semibold text-white transition hover:bg-[#B96928] sm:h-10 sm:flex-1 sm:gap-1.5 sm:px-3 sm:text-xs"
-                                            >
-                                                <CalendarDays size={11} />
-                                                View Resort
-                                            </Link>
-
-                                        </div>
-
-                                    </div>
-
-                                </div>
+                                    href={detailUrl}
+                                    enquiryHref={enquiryUrl}
+                                    image={resort.image || FALLBACK_IMAGE}
+                                    name={resort.name}
+                                    location={resort.location}
+                                    badge={resort.location?.split(",")[0]?.trim()}
+                                    rating={resort.rating}
+                                    tags={resort.isAgentProperty ? ["Partner Stay"] : []}
+                                    ctaLabel="View Resort"
+                                    unoptimized
+                                />
                             );
                         })}
-
                     </div>
-
                 </div>
-
             </section>
-
         </main>
     );
 }

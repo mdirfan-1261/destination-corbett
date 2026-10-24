@@ -7,7 +7,7 @@ import HomeAboutSection from "@/components/home/HomeAboutSection";
 
 export default function Home() {
   return (
-    <main className="min-w-0 overflow-x-clip">
+    <main className="home-page min-w-0 overflow-x-clip">
       <Hero />
       <HomeConversionCTA />
       <Services />

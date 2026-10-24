@@ -69,434 +69,388 @@ const meetingGallery = [
   },
 ];
 
+const primaryButton =
+  "inline-flex min-h-10 items-center justify-center gap-1.5 rounded-lg bg-[#B96928] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#9F5721]";
+
+const secondaryButton =
+  "inline-flex min-h-10 items-center justify-center gap-1.5 rounded-lg border border-[#172033]/15 bg-white px-4 py-2 text-xs font-semibold text-[#172033] transition hover:border-[#B96928] hover:text-[#B96928]";
+
+const sectionLabel =
+  "text-[10px] font-semibold tracking-[0.18em] text-[#B96928]";
+
+const sectionHeading =
+  "mt-2 text-2xl font-bold leading-tight text-[#172033] sm:text-3xl md:text-4xl";
+
+const sectionDescription =
+  "mx-auto mt-3 max-w-2xl text-sm leading-6 text-gray-600";
+
 export default function CorporateMeetingsPage() {
   return (
     <main className="min-h-screen bg-[#F7F5F0] text-[#172033]">
+      {/* BREADCRUMB */}
+      <div className="mx-auto max-w-6xl px-4 pb-1 pt-3 sm:px-5 sm:pt-4">
+  <nav
+    aria-label="Breadcrumb"
+    className="flex flex-wrap items-center gap-2 text-xs sm:text-sm"
+  >
+    <Link
+      href="/"
+      className="text-gray-500 transition hover:text-[#B96928]"
+    >
+      Home
+    </Link>
 
-      {/* ================= HERO ================= */}
-      <section className="bg-[#F7F5F0] px-1.5 py-1.5 sm:px-3 sm:py-3 md:px-5 md:py-4">
-        <div className="relative mx-auto max-w-7xl overflow-hidden rounded-xl bg-[#172033] text-white sm:rounded-2xl md:rounded-[24px]">
+    <span className="text-gray-400">/</span>
 
-          <div className="relative h-[285px] sm:h-[380px] md:h-[450px] lg:h-[500px]">
+    <Link
+      href="/events"
+      className="text-gray-500 transition hover:text-[#B96928]"
+    >
+      Events
+    </Link>
 
-            <Image
-              src="/images/events/optimized/corporate-meetings-hero.webp"
-              alt="Corporate meetings in Jim Corbett"
-              fill
-              priority
-              quality={75}
-              sizes="100vw"
-              className="object-cover"
-            />
+    <span className="text-gray-400">/</span>
 
-            <div className="absolute inset-0 bg-black/25" />
+    <Link
+      href="/events/meetings"
+      className="font-semibold text-[#B96928] transition hover:underline"
+      aria-current="page"
+    >
+      Corporate Meetings
+    </Link>
+  </nav>
+</div>
 
-            <div className="absolute inset-0 bg-gradient-to-r from-[#172033]/90 via-[#172033]/55 to-transparent" />
+      {/* ================= COMPACT HERO ================= */}
+<section className="px-3 pt-3 sm:px-5 sm:pt-4 md:px-6">
+  <div className="relative mx-auto h-[190px] max-w-6xl overflow-hidden rounded-xl bg-[#172033] text-white sm:h-[230px] sm:rounded-2xl lg:h-[260px]">
+    {/* Hero Image */}
+    <div className="absolute inset-0 lg:left-auto lg:w-[55%]">
+      <Image
+        src="/images/events/optimized/corporate-meetings-hero.webp"
+        alt="Corporate meetings in Jim Corbett"
+        fill
+        priority
+        quality={80}
+        sizes="(max-width: 1023px) 100vw, 700px"
+        className="object-cover object-center brightness-110"
+      />
+    </div>
 
-            <div className="relative z-10 flex h-full items-center px-5 sm:px-8 md:px-10 lg:px-14">
-              <div className="max-w-xl">
+    {/* Image Overlays */}
+    <div className="pointer-events-none absolute inset-y-0 left-[45%] hidden w-[15%] bg-gradient-to-r from-[#172033] to-transparent lg:block" />
+    <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#172033]/90 via-[#172033]/55 to-transparent" />
 
-                <p className="mb-2 text-[8px] font-semibold tracking-[0.2em] text-[#E3A15D] sm:mb-3 sm:text-[10px]">
-                  CORPORATE EVENTS
-                </p>
-
-                <h1 className="text-3xl font-bold leading-[1.05] sm:text-4xl md:text-5xl lg:text-[56px]">
-                  Corporate Meetings
-                  <span className="block text-[#E3A15D]">
-                    in Jim Corbett
-                  </span>
-                </h1>
-
-                <p className="mt-3 max-w-lg text-[10px] leading-4 text-white/80 sm:mt-4 sm:text-sm sm:leading-6">
-                  Create productive and memorable corporate meetings in the
-                  peaceful surroundings of Jim Corbett, with comfortable stays
-                  and flexible event arrangements.
-                </p>
-
-                <div className="mt-4 flex flex-row gap-2 sm:mt-6 sm:gap-3">
-
-                  {/* HERO BOOK */}
-                  <Link
-                    href="/booking?type=corporate-meeting"
-                    className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#C87532] px-4 py-2 text-[9px] font-semibold text-white transition hover:bg-[#B96928] active:bg-[#B96928] sm:px-5 sm:py-2.5 sm:text-xs"
-                  >
-                    Book Now
-                    <ArrowRight size={13} />
-                  </Link>
-
-                  {/* HERO ENQUIRE */}
-                  <Link
-                    href="/contact?type=corporate-meeting"
-                    className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-white/50 bg-white px-4 py-2 text-[9px] font-semibold text-[#172033] transition hover:bg-[#172033] hover:text-white active:bg-[#172033] active:text-white sm:px-5 sm:py-2.5 sm:text-xs"
-                  >
-                    Enquire
-                    <ArrowRight size={13} />
-                  </Link>
-
-                </div>
-              </div>
-            </div>
-          </div>
+    {/* Hero Content */}
+    <div className="relative z-10 flex h-full items-center px-4 py-4 sm:px-8 lg:px-10">
+      <div className="max-w-2xl">
+        <div className="mb-2 inline-flex items-center rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-white/85 backdrop-blur-xl">
+          Corporate Events
         </div>
-      </section>
 
-      {/* ================= INTRO ================= */}
-      <section
-        id="meetings"
-        className="bg-[#F7F5F0] px-4 py-8 sm:px-5 sm:py-10 md:py-12"
-      >
-        <div className="mx-auto max-w-7xl">
+        <h1 className="text-xl font-bold leading-tight tracking-tight sm:text-2xl md:text-3xl lg:text-4xl">
+          Corporate Meetings{" "}
+          <span className="text-[#E0924F]">in Jim Corbett</span>
+        </h1>
 
-          <div className="mx-auto max-w-2xl text-center">
+        <p className="mt-2 hidden max-w-md line-clamp-2 text-xs leading-5 text-white/80 sm:block sm:text-sm">
+          Productive meetings, comfortable stays and thoughtfully planned
+          corporate gatherings in the peaceful surroundings of Jim Corbett.
+        </p>
 
-            <p className="text-[8px] font-semibold tracking-[0.2em] text-[#C87532] sm:text-[10px]">
-              CORPORATE MEETINGS
-            </p>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <Link
+            href="/booking?type=corporate-meeting"
+            className="inline-flex items-center justify-center gap-1.5 rounded-full bg-[#C87532] px-4 py-2 text-xs font-semibold text-white shadow-md transition-all duration-200 hover:bg-[#B96928] sm:text-sm"
+          >
+            Book Now
+            <ArrowRight size={13} />
+          </Link>
 
-            <h2 className="mt-2 text-xl font-bold leading-tight text-[#172033] sm:text-3xl md:text-4xl">
+          <Link
+            href="/contact?type=corporate-meeting"
+            className="hidden items-center justify-center gap-1.5 rounded-full border border-white/30 bg-white/10 px-4 py-2 text-xs font-semibold text-white backdrop-blur transition hover:bg-white/20 sm:inline-flex sm:text-sm"
+          >
+            Enquire Now
+            <ArrowRight size={13} />
+          </Link>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+      {/* INTRO + FEATURES */}
+      <section id="meetings" className="px-4 py-8 sm:px-5 sm:py-10">
+        <div className="mx-auto max-w-6xl">
+          <div className="text-center">
+            <p className={sectionLabel}>CORPORATE MEETINGS</p>
+
+            <h2 className={sectionHeading}>
               Business Meetings, Naturally Elevated
             </h2>
 
-            <p className="mx-auto mt-2.5 max-w-xl text-[10px] leading-4 text-gray-600 sm:mt-3 sm:text-xs sm:leading-5 md:text-sm">
-              Bring your team together in the peaceful surroundings of Jim
-              Corbett, with thoughtfully planned venues, stays and event
-              support.
+            <p className={sectionDescription}>
+              Bring your team together with thoughtfully planned venues, stays
+              and event support.
             </p>
-
           </div>
 
-          {/* FEATURE CARDS */}
-          <div className="mt-6 grid grid-cols-2 gap-2.5 sm:mt-8 sm:grid-cols-2 sm:gap-3 md:grid-cols-4">
-
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:mt-8 sm:grid-cols-2 md:grid-cols-4">
             {meetingFeatures.map((item) => {
               const Icon = item.icon;
 
               return (
                 <div
                   key={item.title}
-                  className="rounded-xl border border-gray-100 bg-white p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:rounded-2xl sm:p-4 md:p-5"
+                  className="rounded-xl border border-gray-100 bg-white p-3.5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:rounded-2xl sm:p-5"
                 >
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#C87532]/10 text-[#C87532] sm:h-9 sm:w-9">
-                    <Icon size={16} />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#B96928]/10 text-[#B96928]">
+                    <Icon size={19} />
                   </div>
 
-                  <h3 className="mt-2.5 text-xs font-bold text-[#172033] sm:mt-3 sm:text-sm">
+                  <h3 className="mt-3 text-sm font-bold text-[#172033] sm:text-base">
                     {item.title}
                   </h3>
 
-                  <p className="mt-1 text-[9px] leading-3.5 text-gray-600 sm:text-[10px] sm:leading-4">
+                  <p className="mt-1.5 text-xs leading-5 text-gray-600">
                     {item.description}
                   </p>
                 </div>
               );
             })}
-
           </div>
         </div>
       </section>
 
-      {/* ================= PLAN YOUR MEETING ================= */}
-      <section className="bg-white px-4 py-8 sm:px-5 sm:py-10 md:py-12">
-        <div className="mx-auto max-w-7xl">
-
-          <div className="grid gap-6 md:grid-cols-2 md:items-center md:gap-10">
-
-            {/* VIDEO */}
-            <div className="overflow-hidden rounded-xl bg-[#172033] shadow-sm sm:rounded-2xl">
-              <video
-  className="aspect-video w-full object-cover"
-  autoPlay
-  muted
-  loop
-  playsInline
-  preload="auto"
-  poster="/images/events/optimized/corporate-meetings-hero.webp"
->
-  <source
-    src="/videos/optimized/corporate-meetings-video.mp4"
-    type="video/mp4"
-  />
-  Your browser does not support the video tag.
-</video>
-            </div>
-
-            {/* CONTENT */}
-            <div>
-
-              <p className="text-[8px] font-semibold tracking-[0.2em] text-[#C87532] sm:text-[10px]">
-                PLAN YOUR MEETING
-              </p>
-
-              <h2 className="mt-2 text-xl font-bold leading-tight text-[#172033] sm:text-3xl md:text-4xl">
-                A Productive Meeting in a Natural Setting
-              </h2>
-
-              <p className="mt-2.5 text-[10px] leading-4 text-gray-600 sm:mt-3 sm:text-xs sm:leading-5 md:text-sm">
-                Whether you are planning a leadership meeting, team discussion,
-                business review or corporate gathering, Jim Corbett offers a
-                refreshing environment away from the usual city workspace.
-              </p>
-
-              {/* BENEFITS */}
-              <div className="mt-4 grid grid-cols-1 gap-2 sm:mt-5 sm:grid-cols-2 sm:gap-2.5">
-
-                {meetingBenefits.map((benefit) => (
-                  <div
-                    key={benefit}
-                    className="flex items-start gap-1.5"
-                  >
-                    <CheckCircle2
-                      size={13}
-                      className="mt-0.5 shrink-0 text-[#C87532]"
-                    />
-
-                    <span className="text-[10px] leading-4 text-gray-700 sm:text-xs">
-                      {benefit}
-                    </span>
-                  </div>
-                ))}
-
-              </div>
-
-              {/* BUTTONS */}
-              <div className="mt-5 flex flex-row gap-2 sm:mt-6 sm:gap-3">
-
-                {/* BOOK */}
-                <Link
-                  href="/booking?type=corporate-meeting"
-                  className="inline-flex h-9 flex-1 items-center justify-center gap-1 rounded-lg bg-[#C87532] px-2 text-[10px] font-semibold text-white transition hover:bg-[#B96928] active:bg-[#B96928] sm:h-10 sm:flex-none sm:px-4 sm:text-xs"
-                >
-                  <CalendarDays size={12} />
-                  Book
-                </Link>
-
-                {/* ENQUIRE */}
-                <Link
-                  href="/contact?type=corporate-meeting"
-                  className="inline-flex h-9 flex-1 items-center justify-center gap-1 rounded-lg border border-[#172033] bg-white px-2 text-[10px] font-semibold text-[#172033] transition hover:bg-[#172033] hover:text-white active:bg-[#172033] active:text-white sm:h-10 sm:flex-none sm:px-4 sm:text-xs"
-                >
-                  Enquire
-                  <ArrowRight size={12} />
-                </Link>
-
-              </div>
-            </div>
+      {/* PLAN YOUR MEETING */}
+      <section className="bg-white px-4 py-8 sm:px-5 sm:py-10">
+        <div className="mx-auto grid max-w-6xl items-center gap-6 md:grid-cols-2 md:gap-10">
+          {/* VIDEO */}
+          <div className="overflow-hidden rounded-2xl bg-[#172033] shadow-sm">
+            <video
+              className="aspect-video w-full object-cover"
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              poster="/images/events/optimized/corporate-meetings-hero.webp"
+            >
+              <source
+                src="/videos/optimized/corporate-meetings-video.mp4"
+                type="video/mp4"
+              />
+              Your browser does not support the video tag.
+            </video>
           </div>
 
-        </div>
-      </section>
+          {/* CONTENT */}
+          <div>
+            <p className={sectionLabel}>PLAN YOUR MEETING</p>
 
-      {/* ================= IMAGE GALLERY ================= */}
-      <section className="bg-[#F7F5F0] px-4 py-8 sm:px-5 sm:py-10 md:py-12">
-        <div className="mx-auto max-w-7xl">
+            <h2 className="mt-2 text-2xl font-bold leading-tight text-[#172033] sm:text-3xl">
+              A Productive Meeting in a Natural Setting
+            </h2>
 
-          <div className="mx-auto max-w-2xl text-center">
-
-            <p className="text-[8px] font-semibold tracking-[0.2em] text-[#C87532] sm:text-[10px]">
-              CORPORATE EXPERIENCE
+            <p className="mt-3 text-sm leading-6 text-gray-600">
+              Whether you are planning a leadership meeting, team discussion,
+              business review or corporate gathering, Jim Corbett offers a
+              refreshing environment away from the usual city workspace.
             </p>
 
-            <h2 className="mt-2 text-xl font-bold text-[#172033] sm:text-3xl md:text-4xl">
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              {meetingBenefits.map((benefit) => (
+                <div key={benefit} className="flex items-start gap-2">
+                  <CheckCircle2
+                    size={17}
+                    className="mt-0.5 shrink-0 text-[#B96928]"
+                  />
+
+                  <span className="text-sm leading-5 text-gray-700">
+                    {benefit}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 flex flex-wrap gap-2.5">
+              <Link
+                href="/booking?type=corporate-meeting"
+                className={primaryButton}
+              >
+                <CalendarDays size={15} />
+                Book Meeting
+              </Link>
+
+              <Link
+                href="/contact?type=corporate-meeting"
+                className={secondaryButton}
+              >
+                Enquire Now
+                <ArrowRight size={15} />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* IMAGE GALLERY */}
+      <section className="px-4 py-8 sm:px-5 sm:py-10">
+        <div className="mx-auto max-w-6xl">
+          <div className="text-center">
+            <p className={sectionLabel}>CORPORATE EXPERIENCE</p>
+
+            <h2 className={sectionHeading}>
               Create the Right Setting for Your Team
             </h2>
 
-            <p className="mx-auto mt-2.5 max-w-xl text-[10px] leading-4 text-gray-600 sm:text-xs sm:leading-5 md:text-sm">
-              Bring together meetings, team interactions and comfortable stays
-              for a complete corporate experience in Jim Corbett.
+            <p className={sectionDescription}>
+              Combine meetings, team interactions and comfortable stays for a
+              complete corporate experience.
             </p>
-
           </div>
 
-          {/* GALLERY */}
-          <div className="mt-6 grid gap-3 sm:mt-8 sm:grid-cols-2 md:grid-cols-3">
-
+          <div className="mt-6 grid gap-4 sm:mt-8 sm:grid-cols-2 md:grid-cols-3">
             {meetingGallery.map((item) => (
-              <div
+              <article
                 key={item.title}
-                className="group overflow-hidden rounded-xl bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:rounded-2xl"
+                className="group overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
               >
-
-                <div className="relative h-[170px] overflow-hidden sm:h-[210px] md:h-[220px]">
-
+                <div className="relative h-44 overflow-hidden sm:h-48">
                   <Image
                     src={item.image}
                     alt={item.title}
                     fill
                     quality={75}
-                    sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
+                    sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 384px"
                     className="object-cover transition duration-500 group-hover:scale-105"
                   />
-
                 </div>
 
-                <div className="p-3.5 sm:p-4">
-
-                  <h3 className="text-sm font-bold text-[#172033] sm:text-base">
+                <div className="p-4">
+                  <h3 className="text-base font-bold text-[#172033]">
                     {item.title}
                   </h3>
 
-                  <p className="mt-1 text-[10px] leading-4 text-gray-600 sm:text-xs sm:leading-5">
+                  <p className="mt-1.5 text-sm leading-5 text-gray-600">
                     {item.description}
                   </p>
 
-                  <div className="mt-3 flex flex-row gap-1.5">
-
-                    {/* BOOK */}
+                  <div className="mt-4 grid grid-cols-2 gap-2">
                     <Link
                       href="/booking?type=corporate-meeting"
-                      className="inline-flex h-9 flex-1 items-center justify-center gap-1 rounded-lg bg-[#C87532] px-2 text-[9px] font-semibold text-white transition hover:bg-[#B96928] active:bg-[#B96928] sm:h-10 sm:px-3 sm:text-[10px]"
+                      className={`${primaryButton} px-2 text-[11px] sm:text-xs`}
                     >
                       Book
-                      <ArrowRight size={11} />
+                      <ArrowRight size={13} />
                     </Link>
 
-                    {/* ENQUIRE */}
                     <Link
                       href="/contact?type=corporate-meeting"
-                      className="inline-flex h-9 flex-1 items-center justify-center gap-1 rounded-lg border border-[#172033] bg-white px-2 text-[9px] font-semibold text-[#172033] transition hover:bg-[#172033] hover:text-white active:bg-[#172033] active:text-white sm:h-10 sm:px-3 sm:text-[10px]"
+                      className={`${secondaryButton} px-2 text-[11px] sm:text-xs`}
                     >
                       Enquire
-                      <ArrowRight size={11} />
+                      <ArrowRight size={13} />
                     </Link>
-
                   </div>
                 </div>
-              </div>
+              </article>
             ))}
-
           </div>
         </div>
       </section>
 
-      {/* ================= MEETING SUPPORT ================= */}
-      <section className="bg-white px-4 py-8 sm:px-5 sm:py-10 md:py-12">
-        <div className="mx-auto max-w-7xl">
+      {/* MEETING SUPPORT */}
+      <section className="bg-white px-4 py-8 sm:px-5 sm:py-10">
+        <div className="mx-auto max-w-6xl">
+          <div className="text-center">
+            <p className={sectionLabel}>MEETING SUPPORT</p>
 
-          <div className="mx-auto max-w-2xl text-center">
+            <h2 className={sectionHeading}>Everything Your Team Needs</h2>
 
-            <p className="text-[8px] font-semibold tracking-[0.2em] text-[#C87532] sm:text-[10px]">
-              MEETING SUPPORT
-            </p>
-
-            <h2 className="mt-2 text-xl font-bold text-[#172033] sm:text-3xl md:text-4xl">
-              Everything Your Team Needs
-            </h2>
-
-            <p className="mx-auto mt-2.5 max-w-xl text-[10px] leading-4 text-gray-600 sm:text-xs sm:leading-5 md:text-sm">
+            <p className={sectionDescription}>
               From venue coordination to accommodation and refreshments,
               organise your corporate meeting with complete event support.
             </p>
-
           </div>
 
           <div className="mt-6 grid gap-3 sm:mt-8 sm:grid-cols-3">
+            <div className="rounded-2xl bg-[#18352A] p-5 text-white">
+              <MapPin size={21} className="text-[#E3A15D]" />
 
-            {/* CARD 1 */}
-            <div className="rounded-xl bg-[#18352A] p-4 text-white sm:rounded-2xl sm:p-5">
+              <h3 className="mt-3 font-bold">Convenient Locations</h3>
 
-              <MapPin
-                size={19}
-                className="text-[#E3A15D]"
-              />
-
-              <h3 className="mt-3 text-sm font-bold sm:text-base">
-                Convenient Locations
-              </h3>
-
-              <p className="mt-1.5 text-[10px] leading-4 text-white/70 sm:text-xs sm:leading-5">
-                Choose from suitable locations around Jim Corbett for your
+              <p className="mt-2 text-sm leading-5 text-white/75">
+                Choose suitable locations around Jim Corbett for your
                 corporate gathering.
               </p>
-
             </div>
 
-            {/* CARD 2 */}
-            <div className="rounded-xl bg-[#F7F5F0] p-4 sm:rounded-2xl sm:p-5">
+            <div className="rounded-2xl bg-[#F7F5F0] p-5">
+              <Building2 size={21} className="text-[#B96928]" />
 
-              <Building2
-                size={19}
-                className="text-[#C87532]"
-              />
-
-              <h3 className="mt-3 text-sm font-bold text-[#172033] sm:text-base">
+              <h3 className="mt-3 font-bold text-[#172033]">
                 Meeting Arrangements
               </h3>
 
-              <p className="mt-1.5 text-[10px] leading-4 text-gray-600 sm:text-xs sm:leading-5">
+              <p className="mt-2 text-sm leading-5 text-gray-600">
                 Plan meeting spaces and arrangements according to your
                 corporate requirements.
               </p>
-
             </div>
 
-            {/* CARD 3 */}
-            <div className="rounded-xl bg-[#F7F5F0] p-4 sm:rounded-2xl sm:p-5">
+            <div className="rounded-2xl bg-[#F7F5F0] p-5">
+              <Users size={21} className="text-[#B96928]" />
 
-              <Users
-                size={19}
-                className="text-[#C87532]"
-              />
-
-              <h3 className="mt-3 text-sm font-bold text-[#172033] sm:text-base">
+              <h3 className="mt-3 font-bold text-[#172033]">
                 Group Coordination
               </h3>
 
-              <p className="mt-1.5 text-[10px] leading-4 text-gray-600 sm:text-xs sm:leading-5">
+              <p className="mt-2 text-sm leading-5 text-gray-600">
                 Get support for corporate groups, stays, meals and event
                 coordination.
               </p>
-
             </div>
-
           </div>
         </div>
       </section>
 
-      {/* ================= FINAL CTA ================= */}
-      <section className="bg-[#18352A] px-4 py-8 sm:px-5 sm:py-10 md:py-12">
-
+      {/* FINAL CTA */}
+      <section className="bg-[#18352A] px-4 py-9 sm:px-5 sm:py-12">
         <div className="mx-auto max-w-3xl text-center text-white">
-
-          <p className="text-[8px] font-semibold tracking-[0.2em] text-[#E3A15D] sm:text-[10px]">
+          <p className="text-[10px] font-semibold tracking-[0.2em] text-[#E3A15D]">
             READY TO PLAN?
           </p>
 
-          <h2 className="mt-2 text-xl font-bold sm:text-3xl md:text-4xl">
+          <h2 className="mt-3 text-2xl font-bold leading-tight sm:text-3xl md:text-4xl">
             Plan Your Corporate Meeting in Jim Corbett
           </h2>
 
-          <p className="mx-auto mt-2.5 max-w-xl text-[10px] leading-4 text-white/70 sm:text-xs sm:leading-5 md:text-sm">
-            Share your dates, group size and requirements with us and our team
-            will help you plan the right corporate meeting experience.
+          <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-white/75">
+            Share your dates, group size and requirements with our team to plan
+            your corporate meeting experience.
           </p>
 
-          <div className="mt-4 flex flex-row justify-center gap-2 sm:mt-5 sm:gap-3">
-
-            {/* BOOK */}
+          <div className="mt-5 flex flex-wrap justify-center gap-2.5">
             <Link
               href="/booking?type=corporate-meeting"
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-[#C87532] px-4 text-[10px] font-semibold text-white transition hover:bg-[#B96928] active:bg-[#B96928] sm:h-10 sm:px-5 sm:text-xs"
+              className={primaryButton}
             >
-              <CalendarDays size={12} />
-              Book
+              <CalendarDays size={15} />
+              Book Meeting
             </Link>
 
-            {/* ENQUIRE */}
             <Link
               href="/contact?type=corporate-meeting"
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-white/40 bg-white px-4 text-[10px] font-semibold text-[#172033] transition hover:bg-[#172033] hover:text-white active:bg-[#172033] active:text-white sm:h-10 sm:px-5 sm:text-xs"
+              className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-lg border border-white/50 bg-white px-4 py-2 text-xs font-semibold text-[#172033] transition hover:bg-white/90"
             >
-              Enquire
-              <ArrowRight size={12} />
+              Enquire Now
+              <ArrowRight size={15} />
             </Link>
-
           </div>
-
         </div>
-
       </section>
-
     </main>
   );
 }
-

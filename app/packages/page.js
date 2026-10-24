@@ -11,18 +11,20 @@ import {
   Hotel,
   Bus,
   CheckCircle2,
+  Plus,
+  ChevronRight,
   CalendarDays,
   Clock,
   MapPin,
-  ShieldCheck,
-  Plus,
-  PhoneCall,
-  SlidersHorizontal,
   Users,
   MessageCircle,
+  Compass,
+  Trees,
+  ShieldCheck,
+  Star,
+  Heart,
+  TentTree,
 } from "lucide-react";
-
-// ================= PACKAGES DATA =================
 
 const categories = [
   { id: "all", label: "All Packages" },
@@ -40,18 +42,17 @@ const packagesData = [
     tag: "Popular Choice",
     duration: "2 Nights / 3 Days",
     groupSize: "2–6 Guests",
-    location: "Bijrani & Garjiya",
+    location: "Jim Corbett",
     price: "₹12,499",
     priceUnit: "per person",
     image: "/images/packages/safari-expedition.webp",
     description:
-      "Enjoy a Corbett stay with safari options and nature experiences.",
+      "Discover Corbett with a comfortable stay and an unforgettable wildlife experience.",
     inclusions: [
       "2 nights resort stay",
-      "Safari options, subject to availability",
+      "Safari assistance, subject to availability",
       "Meals as per confirmed itinerary",
-      "Applicable permits and guide charges, as confirmed",
-      "Optional evening activities, subject to availability",
+      "Nature experiences, where available",
     ],
   },
   {
@@ -66,13 +67,12 @@ const packagesData = [
     priceUnit: "per person",
     image: "/images/packages/luxury-resort1.webp",
     description:
-      "Plan a relaxing resort escape with dining and optional experiences.",
+      "Relax in a premium resort setting with comfortable stays and curated experiences.",
     inclusions: [
       "3 nights accommodation",
-      "Safari option, subject to availability",
       "Meals as per confirmed itinerary",
-      "Optional spa services, subject to availability",
-      "Bonfire or barbecue, subject to resort arrangements",
+      "Optional safari arrangements",
+      "Resort activities, subject to availability",
     ],
   },
   {
@@ -87,13 +87,12 @@ const packagesData = [
     priceUnit: "per delegate",
     image: "/images/packages/corporate-retreat1.webp",
     description:
-      "Bring your team together with accommodation, meetings and group activities.",
+      "Bring your team together with accommodation, meetings and group experiences.",
     inclusions: [
-      "Conference venue, subject to availability",
       "Group accommodation",
+      "Meeting venue, subject to availability",
       "Team activities as agreed",
-      "Safari option, subject to availability",
-      "Dinner and entertainment as per quotation",
+      "Meals as per confirmed itinerary",
     ],
   },
   {
@@ -108,13 +107,12 @@ const packagesData = [
     priceUnit: "per person",
     image: "/images/packages/dhikala-zone.webp",
     description:
-      "Explore a forest-zone experience with arrangements based on permit availability.",
+      "Plan a forest-zone adventure with arrangements based on permit availability.",
     inclusions: [
-      "1 night accommodation, subject to availability",
-      "Canter safari option, subject to permits",
-      "Applicable entry and guide charges as confirmed",
+      "Accommodation, subject to availability",
+      "Canter safari assistance",
+      "Applicable permits as confirmed",
       "Meals as per itinerary",
-      "Transfers, if included in your confirmed package",
     ],
   },
   {
@@ -129,13 +127,12 @@ const packagesData = [
     priceUnit: "per person",
     image: "/images/packages/family-package.webp",
     description:
-      "Enjoy family time with a comfortable stay and optional local experiences.",
+      "Spend quality time together with a comfortable stay and optional local experiences.",
     inclusions: [
       "2 nights family accommodation",
-      "Safari or sightseeing options, subject to availability",
-      "Meals as per confirmed itinerary",
+      "Meals as confirmed",
+      "Optional safari or sightseeing",
       "Resort facilities as per property policy",
-      "Local transfers, if included in the package",
     ],
   },
   {
@@ -150,79 +147,134 @@ const packagesData = [
     priceUnit: "per person",
     image: "/images/packages/adventure-package.webp",
     description:
-      "Combine a comfortable stay with selected outdoor experiences.",
+      "Combine a comfortable stay with outdoor activities and nature experiences.",
     inclusions: [
       "2 nights camp or resort stay",
-      "Activities as agreed in the final itinerary",
+      "Activities as agreed",
       "Safari option, subject to availability",
-      "Nature walk or local experience, where available",
-      "Meals and evening activities as confirmed",
+      "Meals as per confirmed itinerary",
     ],
   },
 ];
 
-// ================= HIGHLIGHTS =================
-
-const packageHighlights = [
+const solutions = [
   {
-    title: "Safari Assistance",
+    title: "Comfortable Stays",
     description:
-      "We help coordinate permit requests. Availability is subject to official approval.",
-    icon: ShieldCheck,
-  },
-  {
-    title: "Stay Options",
-    description: "Choose accommodation to suit your group and budget.",
+      "Explore accommodation options for different budgets and group sizes.",
     icon: Hotel,
   },
   {
-    title: "Custom Packages",
-    description: "Request changes to dates, stay and activities.",
-    icon: SlidersHorizontal,
+    title: "Safari Assistance",
+    description:
+      "Get help exploring safari options, permits and availability.",
+    icon: Compass,
+  },
+  {
+    title: "Family Holidays",
+    description:
+      "Plan memorable getaways with family-friendly experiences.",
+    icon: Heart,
+  },
+  {
+    title: "Nature Experiences",
+    description:
+      "Explore outdoor activities and experiences around Corbett.",
+    icon: Trees,
+  },
+  {
+    title: "Group Packages",
+    description:
+      "Discuss customised arrangements for corporate and larger groups.",
+    icon: Users,
   },
   {
     title: "Trip Coordination",
     description:
-      "Discuss transport and on-ground arrangements with our team.",
+      "Coordinate your stay, activities and other travel requirements.",
     icon: Bus,
   },
 ];
 
-// ================= FAQ =================
+const whyCorbett = [
+  {
+    title: "Wildlife & Nature",
+    description:
+      "Explore nature experiences and safari options around Jim Corbett.",
+  },
+  {
+    title: "Stay Options",
+    description:
+      "Choose from available resort and accommodation options.",
+  },
+  {
+    title: "Flexible Plans",
+    description:
+      "Discuss dates, group size and package customisation.",
+  },
+  {
+    title: "Trip Assistance",
+    description:
+      "Coordinate your requirements with the Destination Corbett team.",
+  },
+];
+
+const process = [
+  {
+    number: "01",
+    title: "Choose a Package",
+    description:
+      "Explore packages and find an experience that suits your trip.",
+  },
+  {
+    number: "02",
+    title: "Share Details",
+    description:
+      "Tell us your dates, guest count and accommodation preferences.",
+  },
+  {
+    number: "03",
+    title: "Confirm Your Plan",
+    description:
+      "Review availability, inclusions and the final quotation.",
+  },
+  {
+    number: "04",
+    title: "Enjoy Corbett",
+    description:
+      "Get ready for your planned stay and experiences.",
+  },
+];
 
 const faqs = [
   {
-    question: "What is included in the package price?",
+    question: "What is included in a package?",
     answer:
-      "Inclusions vary by package. Check the package details and confirm the final inclusions, taxes and availability with our team before booking.",
-  },
-  {
-    question: "Can you arrange a safari?",
-    answer:
-      "We can help coordinate safari arrangements. Permits, zones, dates and availability are subject to the applicable official booking process.",
+      "Package inclusions depend on the selected itinerary. Please confirm accommodation, meals, safari arrangements, transfers, taxes and other inclusions with our team before booking.",
   },
   {
     question: "Can I customise a package?",
     answer:
-      "Yes. Send your travel dates, number of guests and budget through WhatsApp. Our team can discuss suitable options.",
+      "Yes. Share your preferred dates, number of guests, budget and requirements with our team to discuss available custom options.",
   },
   {
-    question: "Is the displayed price final?",
+    question: "Are safari permits guaranteed?",
     answer:
-      "Displayed prices are indicative starting prices. The final quotation may vary by dates, occupancy, property availability, inclusions and applicable taxes.",
+      "No. Safari permits, zones and dates are subject to official rules, permit approval and availability.",
+  },
+  {
+    question: "Are the displayed prices final?",
+    answer:
+      "Displayed prices are indicative. Final prices can vary based on travel dates, occupancy, property availability, confirmed inclusions and applicable taxes.",
   },
 ];
 
-// ================= CONTACT HELPERS =================
+const HERO_IMAGE = "/images/packages/packages-hero.webp";
 
 function normalisePhoneNumber(value) {
   let digits = String(value || "").replace(/\D/g, "");
 
-  if (!digits) return "";
-
-  if (digits.length === 10) {
-    digits = `91${digits}`;
-  }
+  if (digits.length === 10) digits = `91${digits}`;
 
   return digits;
 }
@@ -232,15 +284,13 @@ function getWhatsAppUrl(message, number) {
 
   if (!whatsappNumber) return "";
 
-  return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
-    message
-  )}`;
+  return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
 }
 
 function WhatsAppLink({
   message,
   number,
-  className,
+  className = "",
   children,
   label,
 }) {
@@ -265,344 +315,387 @@ function WhatsAppLink({
   );
 }
 
-// ================= PAGE =================
+function PackageCard({ pkg, whatsappNumber }) {
+  const [showInclusions, setShowInclusions] = useState(false);
+
+  return (
+    <article className="group flex min-w-0 flex-col overflow-hidden rounded-xl border border-[#172033]/[0.08] bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg sm:rounded-2xl">
+      <Link
+        href={`/packages/${pkg.id}`}
+        aria-label={`View ${pkg.title}`}
+        className="relative block aspect-[16/10] overflow-hidden bg-[#E9E4DA] sm:aspect-[16/9]"
+      >
+        <Image
+          src={pkg.image}
+          alt={pkg.title}
+          fill
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 360px"
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
+        />
+
+        <div className="absolute inset-0 bg-gradient-to-t from-[#172033]/85 via-[#172033]/10 to-transparent" />
+
+        <span className="absolute left-2.5 top-2.5 max-w-[calc(100%-1.25rem)] truncate rounded-lg border border-white/20 bg-black/25 px-2.5 py-1.5 text-[9px] font-bold text-white backdrop-blur-md sm:left-3 sm:top-3 sm:text-[10px]">
+          {pkg.tag}
+        </span>
+
+        <div className="absolute bottom-3 left-3 right-3">
+          <div className="flex flex-wrap items-center gap-2 text-[10px] font-medium text-white/90 sm:text-xs">
+            <span className="inline-flex items-center gap-1.5 rounded-md bg-black/25 px-2 py-1 backdrop-blur-sm">
+              <Clock size={12} />
+              {pkg.duration}
+            </span>
+          </div>
+
+          <h3 className="mt-2 text-base font-bold leading-tight text-white sm:text-lg">
+            {pkg.title}
+          </h3>
+        </div>
+      </Link>
+
+      <div className="flex flex-1 flex-col p-3 sm:p-4">
+        <p className="line-clamp-2 min-h-10 text-[11px] leading-5 text-gray-600 sm:text-xs sm:leading-5">
+          {pkg.description}
+        </p>
+
+        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-[10px] text-gray-500 sm:text-xs">
+          <span className="inline-flex items-center gap-1.5">
+            <MapPin size={13} className="shrink-0 text-[#B96928]" />
+            {pkg.location}
+          </span>
+
+          <span className="inline-flex items-center gap-1.5">
+            <Users size={13} className="shrink-0 text-[#B96928]" />
+            {pkg.groupSize}
+          </span>
+        </div>
+
+        <div className="mt-3 border-t border-gray-100 pt-3">
+          <button
+            type="button"
+            onClick={() => setShowInclusions(!showInclusions)}
+            aria-expanded={showInclusions}
+            className="flex min-h-7 w-full items-center justify-between gap-2 text-left text-[11px] font-bold text-[#172033] sm:text-xs"
+          >
+            <span>Package Highlights</span>
+
+            <Plus
+              size={14}
+              className={`shrink-0 text-[#B96928] transition-transform ${
+                showInclusions ? "rotate-45" : ""
+              }`}
+            />
+          </button>
+
+          {showInclusions && (
+            <ul className="mt-2 space-y-2 pb-1">
+              {pkg.inclusions.map((item) => (
+                <li
+                  key={item}
+                  className="flex items-start gap-2 text-[10px] leading-4 text-gray-600 sm:text-xs sm:leading-5"
+                >
+                  <CheckCircle2
+                    size={13}
+                    className="mt-0.5 shrink-0 text-[#B96928]"
+                  />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <div className="mt-auto border-t border-gray-100 pt-3">
+          <div className="flex items-end justify-between gap-2">
+            <div>
+              <p className="text-[10px] text-gray-500 sm:text-xs">
+                Starting from
+              </p>
+
+              <p className="mt-0.5 text-xl font-black leading-tight text-[#172033] sm:text-2xl">
+                {pkg.price}
+              </p>
+
+              <p className="mt-0.5 text-[10px] text-gray-500 sm:text-xs">
+                {pkg.priceUnit}
+              </p>
+            </div>
+
+            <Link
+              href={`/packages/${pkg.id}`}
+              className="inline-flex items-center gap-1 text-[10px] font-bold text-[#B96928] transition hover:text-[#9D5721] sm:text-xs"
+            >
+              View Details
+              <ChevronRight
+                size={14}
+                className="transition-transform group-hover:translate-x-0.5"
+              />
+            </Link>
+          </div>
+
+          <div className="mt-3 grid grid-cols-[1fr_auto] gap-2">
+            <Link
+              href={`/booking?type=package&package=${encodeURIComponent(pkg.id)}`}
+              className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-xl bg-[#B96928] px-3 text-[11px] font-bold text-white transition hover:bg-[#9D5721] sm:text-xs"
+            >
+              <CalendarDays size={14} />
+              Enquire / Book
+            </Link>
+
+            <WhatsAppLink
+              number={whatsappNumber}
+              message={`Hi Destination Corbett, I am interested in the ${pkg.title}. Please share availability, final pricing and package details.`}
+              label={`Enquire about ${pkg.title} on WhatsApp`}
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#16794B]/20 bg-[#16794B]/5 text-[#16794B] transition hover:bg-[#16794B]/10"
+            >
+              <MessageCircle size={17} />
+            </WhatsAppLink>
+          </div>
+        </div>
+      </div>
+    </article>
+  );
+}
 
 export default function PackagesPage() {
   const { profile } = useOrganisationProfile();
 
   const [activeCategory, setActiveCategory] = useState("all");
+  const [openWhy, setOpenWhy] = useState(null);
   const [openFaq, setOpenFaq] = useState(null);
 
   const whatsappNumber = profile?.whatsapp || profile?.phone || "";
-  const contactPhone = normalisePhoneNumber(profile?.phone);
 
   const filteredPackages =
     activeCategory === "all"
       ? packagesData
-      : packagesData.filter(
-          (pkg) => pkg.category === activeCategory
-        );
-
-  const choosePackageMessage =
-    "Hi Destination Corbett, please suggest a package based on my travel dates, guest count and budget.";
-
-  const customQuoteMessage =
-    "Hi Destination Corbett, I would like a customised package quotation.";
-
-  const finalEnquiryMessage =
-    "Hi Destination Corbett, I want to plan a Corbett trip. Please help me with packages and pricing.";
+      : packagesData.filter((pkg) => pkg.category === activeCategory);
 
   return (
-    <main className="bg-[#F7F5F0] text-[#172033]">
-      {/* ================= HERO ================= */}
+    <main className="min-h-screen bg-[#F7F5F0] text-[#172033]">
+      {/* BREADCRUMB */}
+      <div className="px-3 pt-2 sm:px-6 sm:pt-3">
+        <nav
+          aria-label="Breadcrumb"
+          className="mx-auto flex max-w-6xl items-center gap-2 text-xs sm:text-sm"
+        >
+          <Link
+            href="/"
+            className="text-gray-500 transition-colors hover:text-[#B96928]"
+          >
+            Home
+          </Link>
 
-      <section className="px-2 py-2 sm:px-4 sm:py-4 md:px-6">
-        <div className="relative mx-auto min-h-[260px] max-w-[1440px] overflow-hidden rounded-2xl bg-[#172033] text-white sm:min-h-[420px] sm:rounded-3xl lg:min-h-[500px]">
-          <Image
-            src="/images/packages/packages-hero.webp"
-            alt="Tour packages and resort stays in Jim Corbett"
-            fill
-            priority
-            quality={70}
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 1440px"
-            className="object-cover"
-          />
+          <span className="text-gray-400">/</span>
 
-          <div className="absolute inset-0 bg-[#172033]/55" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#172033]/85 via-[#172033]/55 to-[#172033]/15" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#172033]/45 to-transparent" />
+          <span className="font-semibold text-[#B96928]">Packages</span>
+        </nav>
+      </div>
 
-          <div className="relative z-10 flex min-h-[260px] items-center px-4 py-6 sm:min-h-[420px] sm:px-9 sm:py-12 lg:min-h-[500px] lg:px-14">
-            <div className="max-w-2xl">
-              <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md sm:mb-4 sm:gap-2 sm:py-2 sm:text-sm">
-                <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                Destination Corbett Packages
-              </div>
+      {/* ================= COMPACT HERO ================= */}
+<section className="px-3 pt-3 sm:px-5 sm:pt-4 md:px-6">
+  <div className="relative mx-auto h-[190px] max-w-6xl overflow-hidden rounded-xl bg-[#172033] text-white sm:h-[230px] sm:rounded-2xl lg:h-[260px]">
+    {/* Hero Image */}
+    <div className="absolute inset-0 lg:left-auto lg:w-[55%]">
+      <Image
+        src={HERO_IMAGE}
+        alt="Holiday packages, resort stays and wildlife experiences in Jim Corbett"
+        fill
+        priority
+        quality={75}
+        sizes="(max-width: 1023px) 100vw, 700px"
+        className="object-cover object-center brightness-110"
+      />
+    </div>
 
-              <h1 className="text-[1.6rem] font-bold leading-tight tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
-                Find Your Corbett Getaway
-                <span className="mt-0.5 block text-[#E6A76D] sm:mt-1">
-                  Stay, Safari & Experiences
-                </span>
-              </h1>
+    {/* Image Overlays */}
+    <div className="pointer-events-none absolute inset-y-0 left-[45%] hidden w-[15%] bg-gradient-to-r from-[#172033] to-transparent lg:block" />
+    <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#172033]/90 via-[#172033]/55 to-transparent" />
 
-              <p className="mt-3 max-w-xl text-sm leading-6 text-white/90 sm:mt-4 sm:text-base sm:leading-7">
-                Choose a package or tell us what you need. We’ll help you
-                explore suitable options.
-              </p>
-
-              {/* Hero: WhatsApp intentionally removed */}
-              <div className="mt-4 flex flex-wrap gap-2.5 sm:mt-6 sm:gap-3">
-                <a
-                  href="#package-list"
-                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#B96928] px-5 text-sm font-bold text-white transition hover:bg-[#9F5520] focus:outline-none focus:ring-2 focus:ring-white"
-                >
-                  Explore Packages
-                  <ArrowRight className="h-4 w-4" />
-                </a>
-
-                <Link
-                  href="/contact?type=package"
-                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/40 bg-white/10 px-5 text-sm font-bold text-white backdrop-blur-md transition hover:bg-white/20"
-                >
-                  Send an Enquiry
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </div>
-
-              <div className="mt-5 hidden flex-wrap gap-x-5 gap-y-2 text-sm font-medium text-white/90 sm:flex">
-                <span className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-[#E6A76D]" />
-                  Stay Options
-                </span>
-                <span className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-[#E6A76D]" />
-                  Safari Assistance
-                </span>
-                <span className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-[#E6A76D]" />
-                  Custom Plans
-                </span>
-              </div>
-            </div>
-          </div>
+    {/* Hero Content */}
+    <div className="relative z-10 flex h-full items-center px-4 py-4 sm:px-8 lg:px-10">
+      <div className="max-w-2xl">
+        <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-white/85 backdrop-blur-xl">
+          <Sparkles className="h-3 w-3 text-[#E0924F]" />
+          Destination Corbett Packages
         </div>
-      </section>
 
-      {/* ================= PACKAGE LIST ================= */}
+        <h1 className="text-xl font-bold leading-tight tracking-tight sm:text-2xl md:text-3xl lg:text-4xl">
+          Discover Your Corbett,{" "}
+          <span className="text-[#E0924F]">Your Way.</span>
+        </h1>
 
+        <p className="mt-2 hidden max-w-md line-clamp-2 text-xs leading-5 text-white/80 sm:block sm:text-sm">
+          Resort stays, wildlife adventures and family getaways — explore
+          packages for your next Corbett trip.
+        </p>
+
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <Link
+            href="#package-list"
+            className="inline-flex items-center justify-center gap-1.5 rounded-full bg-[#C87532] px-4 py-2 text-xs font-semibold text-white shadow-md transition-all duration-200 hover:bg-[#B96928] sm:text-sm"
+          >
+            Explore Packages
+            <ArrowRight size={13} />
+          </Link>
+
+          <Link
+            href="/contact?type=package"
+            className="hidden items-center justify-center rounded-full border border-white/30 bg-white/10 px-4 py-2 text-xs font-semibold text-white backdrop-blur transition hover:bg-white/20 sm:inline-flex sm:text-sm"
+          >
+            Custom Enquiry
+          </Link>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+      {/* PACKAGES LIST */}
       <section
         id="package-list"
-        className="scroll-mt-20 px-4 py-6 sm:px-6 sm:py-10 md:px-8"
+        className="scroll-mt-5 px-3 py-5 sm:px-6 sm:py-7 lg:py-8"
       >
-        <div className="mx-auto max-w-7xl">
-          <div className="flex items-end justify-between gap-3">
-            <div className="min-w-0">
-              <p className="hidden text-sm font-bold uppercase tracking-wider text-[#B96928] sm:block">
-                Find Your Experience
-              </p>
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-4 max-w-2xl sm:mb-5">
+            <p className="text-[10px] font-bold tracking-[0.16em] text-[#B96928]">
+              FIND YOUR EXPERIENCE
+            </p>
 
-              <h2 className="text-xl font-bold leading-tight sm:mt-2 sm:text-3xl md:text-4xl">
-                Explore Corbett Packages
-              </h2>
+            <h2 className="mt-1.5 text-xl font-black tracking-tight sm:text-2xl lg:text-3xl">
+              Explore Corbett Packages
+            </h2>
 
-              <p className="mt-1 text-sm leading-5 text-[#4B5563] sm:mt-2 sm:text-base sm:leading-6">
-                Choose a package to view details and enquire.
-              </p>
-            </div>
-
-            <WhatsAppLink
-              number={whatsappNumber}
-              message={choosePackageMessage}
-              label="Get package recommendations on WhatsApp"
-              className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-[#172033] px-3.5 text-sm font-bold text-white transition hover:bg-[#26344D] sm:px-5"
-            >
-              <MessageCircle className="h-4 w-4" />
-              <span className="hidden sm:inline">Help Me Choose</span>
-              <span className="sm:hidden">Help</span>
-            </WhatsAppLink>
+            <p className="mt-1.5 text-xs leading-5 text-gray-600 sm:text-sm sm:leading-6">
+              Find the right stay, adventure or getaway for your trip.
+            </p>
           </div>
 
-          {/* CATEGORY FILTER */}
-
-          <div className="-mx-4 mt-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:mt-5 sm:flex-wrap sm:px-0 sm:pb-2 [&::-webkit-scrollbar]:hidden">
-            {categories.map((cat) => {
-              const active = activeCategory === cat.id;
+          {/* CATEGORY FILTERS */}
+          <div className="-mx-3 mb-4 flex gap-2 overflow-x-auto px-3 pb-2 sm:mx-0 sm:mb-5 sm:flex-wrap sm:px-0">
+            {categories.map((category) => {
+              const active = activeCategory === category.id;
 
               return (
                 <button
-                  key={cat.id}
                   type="button"
-                  onClick={() => setActiveCategory(cat.id)}
+                  key={category.id}
+                  onClick={() => setActiveCategory(category.id)}
                   aria-pressed={active}
-                  className={`min-h-10 shrink-0 rounded-full px-4 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-[#B96928] focus:ring-offset-2 ${
+                  className={`min-h-9 shrink-0 rounded-xl px-3.5 text-[11px] font-bold transition sm:text-xs ${
                     active
-                      ? "bg-[#B96928] text-white shadow-sm"
-                      : "border border-black/10 bg-white text-[#374151] hover:border-[#B96928] hover:text-[#9F5520]"
+                      ? "bg-[#B96928] text-white"
+                      : "border border-[#172033]/10 bg-white text-gray-600 hover:border-[#B96928] hover:text-[#B96928]"
                   }`}
                 >
-                  {cat.label}
+                  {category.label}
                 </button>
               );
             })}
           </div>
 
-          {/* PACKAGE CARDS */}
-
-          <div className="mt-4 grid gap-3 sm:mt-6 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
             {filteredPackages.map((pkg) => (
-              <article
+              <PackageCard
                 key={pkg.id}
-                className="group flex min-w-0 overflow-hidden rounded-xl border border-black/10 bg-white shadow-sm transition duration-200 hover:shadow-md sm:flex-col"
-              >
-                <Link
-                  href={`/packages/${pkg.id}`}
-                  aria-label={`View ${pkg.title} details`}
-                  className="relative block w-[112px] shrink-0 self-stretch overflow-hidden bg-[#E8E3DA] sm:aspect-[16/9] sm:w-full sm:self-auto"
-                >
-                  <Image
-                    src={pkg.image}
-                    alt={pkg.title}
-                    fill
-                    quality={70}
-                    sizes="(max-width: 639px) 112px, (max-width: 1023px) 50vw, 33vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-
-                  <span className="absolute left-2 top-2 max-w-[calc(100%-1rem)] truncate rounded-full bg-[#B96928] px-2 py-1 text-[10px] font-bold leading-none text-white shadow sm:px-2.5 sm:py-1.5 sm:text-xs">
-                    {pkg.tag}
-                  </span>
-                </Link>
-
-                <div className="flex min-w-0 flex-1 flex-col p-3 sm:p-4">
-                  <Link href={`/packages/${pkg.id}`}>
-                    <h3 className="line-clamp-2 text-[15px] font-bold leading-snug text-[#172033] hover:text-[#9F5520] sm:text-base">
-                      {pkg.title}
-                    </h3>
-                  </Link>
-
-                  <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-xs text-[#4B5563]">
-                    <span className="inline-flex items-center gap-1">
-                      <Clock className="h-3.5 w-3.5 text-[#B96928]" />
-                      {pkg.duration}
-                    </span>
-
-                    <span className="hidden items-center gap-1 sm:inline-flex">
-                      <Users className="h-3.5 w-3.5 text-[#B96928]" />
-                      {pkg.groupSize}
-                    </span>
-
-                    <span className="inline-flex min-w-0 items-center gap-1">
-                      <MapPin className="h-3.5 w-3.5 shrink-0 text-[#B96928]" />
-                      <span className="truncate">{pkg.location}</span>
-                    </span>
-                  </div>
-
-                  <p className="mt-2 hidden text-sm leading-5 text-[#4B5563] sm:line-clamp-2">
-                    {pkg.description}
-                  </p>
-
-                  <div className="mt-auto pt-3">
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-[11px] font-semibold text-[#6B7280]">
-                        From
-                      </span>
-                      <span className="text-lg font-bold text-[#172033] sm:text-xl">
-                        {pkg.price}
-                      </span>
-                      <span className="text-xs text-[#6B7280]">
-                        {pkg.priceUnit}
-                      </span>
-                    </div>
-
-                    {/* Card actions: WhatsApp retained on every card */}
-                    <div className="mt-2 flex gap-2">
-                      <Link
-                        href={`/packages/${pkg.id}`}
-                        className="hidden min-h-11 items-center justify-center rounded-lg border border-[#172033]/20 px-4 text-sm font-bold text-[#172033] transition hover:bg-[#F7F5F0] sm:inline-flex"
-                      >
-                        Details
-                      </Link>
-
-                      <Link
-                        href={`/booking?type=package&package=${encodeURIComponent(
-                          pkg.id
-                        )}`}
-                        className="inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-lg bg-[#B96928] px-3 text-sm font-bold text-white transition hover:bg-[#9F5520] focus:outline-none focus:ring-2 focus:ring-[#B96928] focus:ring-offset-2"
-                      >
-                        <CalendarDays className="h-4 w-4" />
-                        Book Now
-                      </Link>
-
-                      <WhatsAppLink
-                        number={whatsappNumber}
-                        message={`Hi Destination Corbett, I am interested in the ${pkg.title}. Please share availability, final pricing and package details.`}
-                        label={`Enquire on WhatsApp about ${pkg.title}`}
-                        className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-[#16794B]/30 bg-[#16794B]/5 text-[#126640] transition hover:bg-[#16794B]/10"
-                      >
-                        <MessageCircle className="h-5 w-5" />
-                      </WhatsAppLink>
-                    </div>
-                  </div>
-                </div>
-              </article>
+                pkg={pkg}
+                whatsappNumber={whatsappNumber}
+              />
             ))}
           </div>
 
           {filteredPackages.length === 0 && (
-            <div className="mt-4 rounded-xl border border-black/10 bg-white p-6 text-center sm:mt-6 sm:rounded-2xl sm:p-8">
-              <p className="text-base font-semibold text-[#172033]">
-                No packages found.
+            <div className="rounded-2xl border border-[#172033]/10 bg-white px-5 py-10 text-center">
+              <Compass className="mx-auto h-8 w-8 text-[#B96928]" />
+
+              <p className="mt-3 text-sm font-bold">
+                No packages available in this category.
               </p>
 
               <button
                 type="button"
                 onClick={() => setActiveCategory("all")}
-                className="mt-3 min-h-11 rounded-xl bg-[#B96928] px-5 text-sm font-bold text-white hover:bg-[#9F5520] sm:mt-4"
+                className="mt-4 rounded-xl bg-[#B96928] px-4 py-2.5 text-xs font-bold text-white"
               >
                 View All Packages
               </button>
             </div>
           )}
 
-          <p className="mt-4 text-xs leading-5 text-[#6B7280]">
-            Prices are indicative starting prices. Final price depends on dates,
-            occupancy and availability.
+          <p className="mt-3 text-[10px] leading-4 text-gray-500 sm:text-xs sm:leading-5">
+            Prices shown are indicative. Final pricing depends on travel
+            dates, availability, occupancy, confirmed inclusions and applicable
+            taxes.
           </p>
         </div>
       </section>
 
-      {/* ================= WHY DESTINATION CORBETT ================= */}
+      {/* WHY CORBETT */}
+      <section className="px-3 py-5 sm:px-6 sm:py-7 lg:py-8">
+        <div className="relative mx-auto max-w-6xl overflow-hidden rounded-2xl bg-[#172033] px-5 py-6 text-white sm:px-7 sm:py-8 lg:px-9">
+          <div className="absolute -right-20 -top-20 h-48 w-48 rounded-full bg-[#B96928]/15 blur-3xl" />
+          <div className="absolute -bottom-20 -left-20 h-48 w-48 rounded-full bg-[#B96928]/10 blur-3xl" />
 
-      <section className="px-4 py-4 sm:px-6 sm:py-12 md:px-8">
-        <div className="mx-auto max-w-7xl overflow-hidden rounded-2xl bg-[#172033] px-4 py-6 text-white sm:px-8 sm:py-9">
-          <div className="grid gap-5 sm:gap-7 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
+          <div className="relative z-10 grid gap-5 lg:grid-cols-[0.85fr_1.15fr] lg:items-center lg:gap-8">
             <div>
-              <p className="hidden text-sm font-bold uppercase tracking-wider text-[#E6A76D] sm:block">
-                Why Destination Corbett
+              <p className="text-[10px] font-bold tracking-[0.16em] text-[#F0BD83]">
+                WHY DESTINATION CORBETT
               </p>
 
-              <h2 className="text-xl font-bold leading-tight sm:mt-2 sm:text-3xl">
-                Your Trip, Made Simpler
+              <h2 className="mt-1.5 text-xl font-black leading-tight sm:text-2xl lg:text-3xl">
+                Your next getaway starts here.
               </h2>
 
-              <p className="mt-2 text-sm leading-6 text-white/85 sm:mt-3 sm:text-base sm:leading-7">
-                Tell us your travel dates, guest count and budget. We’ll help
-                you explore suitable stays and experiences.
+              <p className="mt-2 max-w-lg text-xs leading-5 text-white/70 sm:text-sm sm:leading-6">
+                Find a package that fits your dates, group size and travel
+                preferences.
               </p>
 
-              <WhatsAppLink
-                number={whatsappNumber}
-                message={customQuoteMessage}
-                label="Request a custom package quote on WhatsApp"
-                className="mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#B96928] px-5 text-sm font-bold text-white transition hover:bg-[#9F5520] sm:mt-5"
+              <Link
+                href="/contact?type=package"
+                className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#B96928] px-4 text-xs font-bold text-white transition hover:bg-[#9D5721] sm:text-sm"
               >
-                Get a Custom Quote
-                <ArrowRight className="h-4 w-4" />
-              </WhatsAppLink>
+                Plan Your Trip
+                <ArrowRight size={14} />
+              </Link>
             </div>
 
             <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
-              {packageHighlights.map((item) => {
-                const Icon = item.icon;
+              {whyCorbett.map((item, index) => {
+                const isOpen = openWhy === index;
 
                 return (
-                  <div
+                  <button
+                    type="button"
                     key={item.title}
-                    className="rounded-xl border border-white/15 bg-white/[0.06] p-3 sm:p-4"
+                    onClick={() => setOpenWhy(isOpen ? null : index)}
+                    aria-expanded={isOpen}
+                    className="rounded-xl border border-white/10 bg-white/[0.06] p-3 text-left transition hover:bg-white/[0.10] sm:p-4"
                   >
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#B96928]/20 text-[#F0B77F] sm:h-10 sm:w-10 sm:rounded-xl">
-                      <Icon className="h-[18px] w-[18px] sm:h-5 sm:w-5" />
+                    <div className="flex items-center justify-between gap-2">
+                      <CheckCircle2
+                        size={15}
+                        className="shrink-0 text-[#F0BD83]"
+                      />
+
+                      <Plus
+                        size={13}
+                        className={`shrink-0 text-white/60 transition-transform ${
+                          isOpen ? "rotate-45" : ""
+                        }`}
+                      />
                     </div>
 
-                    <h3 className="mt-2.5 text-sm font-bold sm:mt-3 sm:text-base">
+                    <h3 className="mt-2 text-[11px] font-bold leading-tight sm:text-sm">
                       {item.title}
                     </h3>
 
-                    <p className="mt-1 text-xs leading-5 text-white/80 sm:text-sm sm:leading-6">
-                      {item.description}
-                    </p>
-                  </div>
+                    {isOpen && (
+                      <p className="mt-2 text-[10px] leading-4 text-white/65 sm:text-xs sm:leading-5">
+                        {item.description}
+                      </p>
+                    )}
+                  </button>
                 );
               })}
             </div>
@@ -610,50 +703,143 @@ export default function PackagesPage() {
         </div>
       </section>
 
-      {/* ================= FAQ ================= */}
-
-      <section className="px-4 py-6 sm:px-6 sm:py-12 md:px-8">
-        <div className="mx-auto max-w-4xl">
-          <div className="text-center">
-            <p className="hidden text-sm font-bold uppercase tracking-wider text-[#B96928] sm:block">
-              Need to Know?
+      {/* PACKAGE SERVICES */}
+      <section className="px-3 py-5 sm:px-6 sm:py-7 lg:py-8">
+        <div className="mx-auto max-w-6xl">
+          <div className="max-w-2xl">
+            <p className="text-[10px] font-bold tracking-[0.16em] text-[#B96928]">
+              PLAN YOUR EXPERIENCE
             </p>
 
-            <h2 className="text-xl font-bold sm:mt-2 sm:text-3xl">
-              Package FAQs
+            <h2 className="mt-1.5 text-xl font-black tracking-tight sm:text-2xl lg:text-3xl">
+              Everything for your getaway
+            </h2>
+
+            <p className="mt-1.5 text-xs leading-5 text-gray-600 sm:text-sm sm:leading-6">
+              Choose your preferred experience and discuss the details with
+              our team.
+            </p>
+          </div>
+
+          <div className="mt-5 grid grid-cols-2 gap-x-4 gap-y-5 sm:mt-6 sm:grid-cols-3 sm:gap-x-7 sm:gap-y-6">
+            {solutions.map((solution) => {
+              const Icon = solution.icon;
+
+              return (
+                <div
+                  key={solution.title}
+                  className="flex min-w-0 items-start gap-2.5 sm:gap-3"
+                >
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#B96928]/10 text-[#B96928]">
+                    <Icon size={16} />
+                  </div>
+
+                  <div className="min-w-0">
+                    <h3 className="text-xs font-bold leading-tight sm:text-sm">
+                      {solution.title}
+                    </h3>
+
+                    <p className="mt-1.5 text-[10px] leading-4 text-gray-600 sm:text-xs sm:leading-5">
+                      {solution.description}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* HOW IT WORKS */}
+      <section className="px-3 py-5 sm:px-6 sm:py-7 lg:py-8">
+        <div className="mx-auto grid max-w-6xl gap-5 lg:grid-cols-[0.75fr_1.25fr] lg:items-center lg:gap-10">
+          <div>
+            <p className="text-[10px] font-bold tracking-[0.16em] text-[#B96928]">
+              SIMPLE PLANNING
+            </p>
+
+            <h2 className="mt-1.5 text-xl font-black leading-tight sm:text-2xl lg:text-3xl">
+              Plan your Corbett trip.
+            </h2>
+
+            <p className="mt-2 max-w-md text-xs leading-5 text-gray-600 sm:text-sm sm:leading-6">
+              Select a package, share your requirements and confirm your
+              itinerary with our team.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-4 sm:gap-x-3 sm:gap-y-0">
+            {process.map((step, index) => (
+              <div key={step.number} className="relative">
+                {index < process.length - 1 && (
+                  <div className="absolute left-8 top-3 hidden h-px w-[calc(100%-20px)] bg-[#172033]/15 sm:block" />
+                )}
+
+                <div className="relative z-10">
+                  <span className="text-xl font-black leading-none text-[#B96928]/60">
+                    {step.number}
+                  </span>
+
+                  <h3 className="mt-2 text-xs font-bold leading-tight sm:text-sm">
+                    {step.title}
+                  </h3>
+
+                  <p className="mt-1.5 text-[10px] leading-4 text-gray-600 sm:text-xs sm:leading-5">
+                    {step.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* PACKAGE FAQ */}
+      <section className="px-3 py-5 sm:px-6 sm:py-7 lg:py-8">
+        <div className="mx-auto max-w-4xl">
+          <div className="mb-4 text-center sm:mb-5">
+            <p className="text-[10px] font-bold tracking-[0.16em] text-[#B96928]">
+              NEED TO KNOW?
+            </p>
+
+            <h2 className="mt-1.5 text-xl font-black tracking-tight sm:text-2xl lg:text-3xl">
+              Frequently Asked Questions
             </h2>
           </div>
 
-          <div className="mt-4 space-y-2 sm:mt-6 sm:space-y-3">
+          <div className="space-y-2.5">
             {faqs.map((faq, index) => {
               const isOpen = openFaq === index;
 
               return (
                 <div
                   key={faq.question}
-                  className="rounded-xl border border-black/10 bg-white px-4 py-1.5 sm:p-5"
+                  className="overflow-hidden rounded-xl border border-[#172033]/[0.08] bg-white"
                 >
                   <button
                     type="button"
                     onClick={() => setOpenFaq(isOpen ? null : index)}
                     aria-expanded={isOpen}
-                    className="flex min-h-11 w-full items-center justify-between gap-4 text-left"
+                    className="flex min-h-12 w-full items-center justify-between gap-3 px-4 py-3 text-left"
                   >
-                    <span className="text-sm font-bold leading-5 text-[#172033] sm:text-base sm:leading-6">
+                    <span className="text-xs font-bold leading-5 sm:text-sm">
                       {faq.question}
                     </span>
 
                     <Plus
-                      className={`h-5 w-5 shrink-0 text-[#B96928] transition-transform ${
+                      size={16}
+                      className={`shrink-0 text-[#B96928] transition-transform ${
                         isOpen ? "rotate-45" : ""
                       }`}
                     />
                   </button>
 
                   {isOpen && (
-                    <p className="pb-3 text-sm leading-6 text-[#4B5563] sm:mt-3 sm:pb-0">
-                      {faq.answer}
-                    </p>
+                    <div className="px-4 pb-4">
+                      <p className="border-t border-gray-100 pt-3 text-xs leading-5 text-gray-600 sm:text-sm sm:leading-6">
+                        {faq.answer}
+                      </p>
+                    </div>
                   )}
                 </div>
               );
@@ -662,54 +848,45 @@ export default function PackagesPage() {
         </div>
       </section>
 
-      {/* ================= FINAL CTA ================= */}
+      {/* FINAL CTA */}
+      <section className="px-3 pb-7 pt-5 sm:px-6 sm:pb-9 sm:pt-7">
+        <div className="relative mx-auto max-w-6xl overflow-hidden rounded-2xl bg-[#172033] px-5 py-7 text-center text-white sm:px-8 sm:py-9">
+          <div className="absolute -left-16 -top-16 h-36 w-36 rounded-full bg-[#B96928]/15 blur-3xl" />
+          <div className="absolute -bottom-16 -right-16 h-36 w-36 rounded-full bg-[#B96928]/15 blur-3xl" />
 
-      <section className="px-4 pb-8 sm:px-6 sm:pb-14 md:px-8">
-        <div className="mx-auto max-w-7xl rounded-2xl bg-[#172033] px-4 py-6 text-center text-white sm:px-8 sm:py-10">
-          <p className="hidden text-sm font-bold uppercase tracking-wider text-[#E6A76D] sm:block">
-            Let's Plan Your Corbett Trip
-          </p>
+          <div className="relative z-10 mx-auto max-w-2xl">
+            <p className="text-[10px] font-bold tracking-[0.16em] text-[#F0BD83]">
+              YOUR CORBETT GETAWAY
+            </p>
 
-          <h2 className="mx-auto max-w-2xl text-xl font-bold leading-tight sm:mt-2 sm:text-3xl">
-            Tell Us Your Dates. We’ll Help With the Rest.
-          </h2>
+            <h2 className="mt-2 text-xl font-black leading-tight sm:text-3xl">
+              Find Your Stay. Plan Your Adventure.
+            </h2>
 
-          <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-white/85 sm:mt-3 sm:text-base sm:leading-7">
-            Share your guest count and budget to discuss a suitable package.
-          </p>
+            <p className="mx-auto mt-2.5 max-w-xl text-xs leading-5 text-white/70 sm:text-sm sm:leading-6">
+              Share your travel dates, group size and budget to discuss the
+              right package for your trip.
+            </p>
 
-          <div className="mx-auto mt-5 grid max-w-md grid-cols-2 gap-2.5 sm:mt-6 sm:flex sm:max-w-none sm:flex-wrap sm:justify-center sm:gap-3">
-            <Link
-              href="/contact?type=package"
-              className="col-span-2 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#B96928] px-6 text-sm font-bold text-white transition hover:bg-[#9F5520] sm:col-span-1 sm:min-h-12"
-            >
-              Send an Enquiry
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+            <div className="mt-5 flex flex-wrap justify-center gap-2.5">
+              <Link
+                href="/contact?type=package"
+                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-[#B96928] px-4 text-xs font-bold text-white transition hover:bg-[#9D5721] sm:px-5 sm:text-sm"
+              >
+                Plan Your Trip
+                <ArrowRight size={14} />
+              </Link>
 
-            <WhatsAppLink
-              number={whatsappNumber}
-              message={finalEnquiryMessage}
-              label="Plan your Corbett trip on WhatsApp"
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/30 bg-white/10 px-5 text-sm font-bold text-white transition hover:bg-white/20 sm:min-h-12 sm:px-6"
-            >
-              <MessageCircle className="h-4 w-4" />
-              WhatsApp Now
-            </WhatsAppLink>
-
-            <a
-              href={contactPhone ? `tel:+${contactPhone}` : undefined}
-              aria-disabled={!contactPhone}
-              onClick={(event) => {
-                if (!contactPhone) event.preventDefault();
-              }}
-              className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/30 px-5 text-sm font-bold text-white transition hover:bg-white/10 sm:min-h-12 sm:px-6 ${
-                !contactPhone ? "cursor-not-allowed opacity-60" : ""
-              }`}
-            >
-              <PhoneCall className="h-4 w-4" />
-              Call Us
-            </a>
+              <WhatsAppLink
+                number={whatsappNumber}
+                message="Hi Destination Corbett, I would like to plan a Corbett trip. Please share suitable packages, availability and final pricing."
+                label="Discuss a Corbett package on WhatsApp"
+                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/10 px-4 text-xs font-bold text-white transition hover:bg-white hover:text-[#172033] sm:px-5 sm:text-sm"
+              >
+                <MessageCircle size={14} />
+                WhatsApp Us
+              </WhatsAppLink>
+            </div>
           </div>
         </div>
       </section>

@@ -42,10 +42,8 @@ function getRecordDate(record) {
   return toDateKey(new Date(record.date));
 }
 
-// IMPORTANT: This matches app/owner/login/page.js.
 function getStoredOwnerToken() {
   if (typeof window === "undefined") return "";
-
   return localStorage.getItem("destin_owner_token") || "";
 }
 
@@ -54,7 +52,7 @@ async function apiRequest(path, options = {}) {
 
   if (!token) {
     throw new Error(
-      "Owner login token nahi mila. Logout/login karke dobara try karein."
+      "Owner login token not found. Please log out and log in again."
     );
   }
 
@@ -63,9 +61,7 @@ async function apiRequest(path, options = {}) {
     headers: {
       Accept: "application/json",
       Authorization: `Bearer ${token}`,
-      ...(options.body
-        ? { "Content-Type": "application/json" }
-        : {}),
+      ...(options.body ? { "Content-Type": "application/json" } : {}),
       ...options.headers,
     },
     cache: "no-store",
@@ -75,27 +71,27 @@ async function apiRequest(path, options = {}) {
 
   if (response.status === 401) {
     throw new Error(
-      "Owner session invalid ya expire ho gaya hai. Dobara login karein."
+      "Your owner session is invalid or has expired. Please log in again."
     );
   }
 
   if (response.status === 403) {
     throw new Error(
       result?.message ||
-        "Access denied. Owner/partner approval aur backend authorization check karein."
+        "Access denied. Please check owner approval and backend authorization."
     );
   }
 
   if (!response.ok || result?.success === false) {
     throw new Error(
       result?.message ||
-        `Backend request fail hui (HTTP ${response.status}).`
+        `Backend request failed (HTTP ${response.status}).`
     );
   }
 
   if (!result) {
     throw new Error(
-      `Backend se valid JSON response nahi mila (HTTP ${response.status}).`
+      `No valid JSON response received from the backend (HTTP ${response.status}).`
     );
   }
 
@@ -104,6 +100,38 @@ async function apiRequest(path, options = {}) {
 
 function getErrorMessage(error, fallback) {
   return error instanceof Error ? error.message : fallback;
+}
+
+function getRoomList(result) {
+  if (Array.isArray(result?.data?.rooms)) {
+    return result.data.rooms;
+  }
+
+  if (Array.isArray(result?.data)) {
+    return result.data;
+  }
+
+  if (Array.isArray(result?.rooms)) {
+    return result.rooms;
+  }
+
+  return null;
+}
+
+function getPropertyList(result) {
+  if (Array.isArray(result?.data?.properties)) {
+    return result.data.properties;
+  }
+
+  if (Array.isArray(result?.properties)) {
+    return result.properties;
+  }
+
+  if (Array.isArray(result?.data)) {
+    return result.data;
+  }
+
+  return null;
 }
 
 export default function OwnerCalendarPage() {
@@ -120,8 +148,8 @@ export default function OwnerCalendarPage() {
     return new Date(today.getFullYear(), today.getMonth(), 1);
   });
 
-  const [selectedDate, setSelectedDate] = useState(
-    () => toDateKey(new Date())
+  const [selectedDate, setSelectedDate] = useState(() =>
+    toDateKey(new Date())
   );
 
   const [propertiesLoading, setPropertiesLoading] = useState(true);
@@ -166,11 +194,10 @@ export default function OwnerCalendarPage() {
 
   const year = visibleMonth.getFullYear();
   const month = visibleMonth.getMonth();
-
   const monthStart = toDateKey(new Date(year, month, 1));
   const monthEnd = toDateKey(new Date(year, month + 1, 0));
 
-  // 1. Fetch properties belonging to the logged-in owner.
+  // 1. Load properties. Prefer approved properties over drafts.
   useEffect(() => {
     let cancelled = false;
 
@@ -180,11 +207,12 @@ export default function OwnerCalendarPage() {
 
       try {
         const result = await apiRequest("/owner/properties");
-        const list = result?.data?.properties;
+        const list = getPropertyList(result);
 
-        if (!Array.isArray(list)) {
+        if (!list) {
+          console.error("Unexpected properties API response:", result);
           throw new Error(
-            "Backend response mein data.properties array nahi mila."
+            "No properties array found in the backend response."
           );
         }
 
@@ -197,15 +225,20 @@ export default function OwnerCalendarPage() {
             return currentId;
           }
 
-          return list[0]?._id || "";
+          const approvedProperty = list.find(
+            (item) => item.propertyStatus === "approved"
+          );
+
+          return approvedProperty?._id || list[0]?._id || "";
         });
       } catch (error) {
         if (cancelled) return;
 
+        console.error("Owner calendar properties error:", error);
         setProperties([]);
         setPropertyId("");
         setPropertiesError(
-          getErrorMessage(error, "Properties load nahi hui.")
+          getErrorMessage(error, "Failed to load properties.")
         );
       } finally {
         if (!cancelled) setPropertiesLoading(false);
@@ -219,7 +252,7 @@ export default function OwnerCalendarPage() {
     };
   }, [refreshKey]);
 
-  // 2. Fetch room categories whenever the property changes.
+  // 2. Load room categories for the selected property.
   useEffect(() => {
     let cancelled = false;
 
@@ -242,31 +275,40 @@ export default function OwnerCalendarPage() {
           `/owner/properties/${encodeURIComponent(propertyId)}/rooms`
         );
 
-        const list = result?.data?.rooms;
+        const list = getRoomList(result);
 
-        if (!Array.isArray(list)) {
+        console.log("Owner calendar selected property:", propertyId);
+        console.log("Owner calendar rooms API response:", result);
+
+        if (!list) {
           throw new Error(
-            "Backend response mein data.rooms array nahi mila."
+            "No rooms array found in the backend response. Check the API response in the console."
           );
         }
 
         if (cancelled) return;
 
-        setRooms(list);
-        setRoomTypeId(list[0]?._id || "");
+        // Support room category records returned as MongoDB documents.
+        const validRooms = list.filter(
+          (room) => room && room._id
+        );
 
-        if (list.length === 0) {
+        setRooms(validRooms);
+        setRoomTypeId(validRooms[0]?._id || "");
+
+        if (validRooms.length === 0) {
           setRoomsError(
-            "Is property mein active room category nahi mili. Pehle room category add ya activate karein."
+            "No room categories found for this property. Check the selected property ID and the backend room query."
           );
         }
       } catch (error) {
         if (cancelled) return;
 
+        console.error("Owner calendar loadRooms error:", error);
         setRooms([]);
         setRoomTypeId("");
         setRoomsError(
-          getErrorMessage(error, "Room categories load nahi hui.")
+          getErrorMessage(error, "Failed to load room categories.")
         );
       } finally {
         if (!cancelled) setRoomsLoading(false);
@@ -280,7 +322,7 @@ export default function OwnerCalendarPage() {
     };
   }, [propertyId, refreshKey]);
 
-  // 3. Fetch saved availability for the selected room and month.
+  // 3. Load availability for the selected room and month.
   useEffect(() => {
     let cancelled = false;
 
@@ -310,8 +352,9 @@ export default function OwnerCalendarPage() {
         const list = result?.data?.availability;
 
         if (!Array.isArray(list)) {
+          console.error("Unexpected availability response:", result);
           throw new Error(
-            "Backend response mein data.availability array nahi mila."
+            "No data.availability array found in the backend response."
           );
         }
 
@@ -321,9 +364,10 @@ export default function OwnerCalendarPage() {
       } catch (error) {
         if (cancelled) return;
 
+        console.error("Owner calendar availability error:", error);
         setAvailability([]);
         setAvailabilityError(
-          getErrorMessage(error, "Availability load nahi hui.")
+          getErrorMessage(error, "Failed to load availability.")
         );
       } finally {
         if (!cancelled) setAvailabilityLoading(false);
@@ -344,7 +388,7 @@ export default function OwnerCalendarPage() {
     availabilityVersion,
   ]);
 
-  // 4. Populate the editor from the saved record, if one exists.
+  // 4. Populate the editor from saved data or room defaults.
   useEffect(() => {
     setSaveError("");
     setSuccessMessage("");
@@ -361,7 +405,6 @@ export default function OwnerCalendarPage() {
       return;
     }
 
-    // These are room defaults, NOT a saved availability record.
     setForm({
       totalRooms: String(selectedRoom?.totalRooms ?? 0),
       price: String(selectedRoom?.basePrice ?? 0),
@@ -397,7 +440,7 @@ export default function OwnerCalendarPage() {
     setSuccessMessage("");
 
     if (!propertyId || !roomTypeId || !selectedRoom) {
-      setSaveError("Pehle property aur room category select karein.");
+      setSaveError("Please select a property and room category first.");
       return;
     }
 
@@ -408,7 +451,7 @@ export default function OwnerCalendarPage() {
     const inventoryLimit = Number(selectedRoom.totalRooms);
 
     if (!Number.isInteger(totalRooms) || totalRooms < 0) {
-      setSaveError("Total rooms 0 ya usse zyada whole number hona chahiye.");
+      setSaveError("Total rooms must be a whole number greater than or equal to 0.");
       return;
     }
 
@@ -417,13 +460,13 @@ export default function OwnerCalendarPage() {
       totalRooms > inventoryLimit
     ) {
       setSaveError(
-        `Total rooms configured inventory (${selectedRoom.totalRooms ?? "—"}) se zyada nahi ho sakte.`
+        `Total rooms cannot exceed the configured inventory (${selectedRoom.totalRooms ?? "—"}).`
       );
       return;
     }
 
     if (!Number.isFinite(price) || price < 0) {
-      setSaveError("Price valid non-negative number hona chahiye.");
+      setSaveError("Price must be a valid non-negative number.");
       return;
     }
 
@@ -432,18 +475,17 @@ export default function OwnerCalendarPage() {
       minimumStay < 1 ||
       minimumStay > 365
     ) {
-      setSaveError("Minimum stay 1 se 365 nights ke beech hona chahiye.");
+      setSaveError("Minimum stay must be between 1 and 365 nights.");
       return;
     }
 
     if (note.length > 300) {
-      setSaveError("Note maximum 300 characters ka ho sakta hai.");
+      setSaveError("The note cannot exceed 300 characters.");
       return;
     }
 
-    // Closed dates must have zero inventory.
     if (form.isClosed && totalRooms !== 0) {
-      setSaveError("Closed date ke liye total rooms 0 rakhein.");
+      setSaveError("Set total rooms to 0 for a closed date.");
       return;
     }
 
@@ -452,7 +494,7 @@ export default function OwnerCalendarPage() {
 
     if (selectedRecord && totalRooms < booked + blocked) {
       setSaveError(
-        `Total rooms booked (${booked}) + blocked (${blocked}) rooms se kam nahi ho sakte.`
+        `Total rooms cannot be less than the combined booked (${booked}) and blocked (${blocked}) rooms.`
       );
       return;
     }
@@ -478,14 +520,14 @@ export default function OwnerCalendarPage() {
       );
 
       setSuccessMessage(
-        result?.message || "Availability save ho gayi."
+        result?.message || "Availability saved successfully."
       );
 
-      // Fetch saved data again from the backend.
       setAvailabilityVersion((value) => value + 1);
     } catch (error) {
+      console.error("Owner calendar save error:", error);
       setSaveError(
-        getErrorMessage(error, "Availability save nahi hui.")
+        getErrorMessage(error, "Failed to save availability.")
       );
     } finally {
       setSaving(false);
@@ -498,7 +540,6 @@ export default function OwnerCalendarPage() {
     setAvailabilityError("");
     setSaveError("");
     setSuccessMessage("");
-
     setRefreshKey((value) => value + 1);
   }
 
@@ -568,19 +609,25 @@ export default function OwnerCalendarPage() {
               className="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm text-gray-800 outline-none focus:border-[#B96928] focus:ring-2 focus:ring-orange-100 disabled:bg-gray-50"
             >
               <option value="">
-                {propertiesLoading ? "Loading properties..." : "Select property"}
+                {propertiesLoading
+                  ? "Loading properties..."
+                  : "Select property"}
               </option>
 
               {properties.map((property) => (
                 <option key={property._id} value={property._id}>
-                  {property.name || "Unnamed property"}
+                  {property.name || "Unnamed property"} —{" "}
+                  {property.propertyStatus || "unknown"} — ID:{" "}
+                  {property._id.slice(-6)}
                 </option>
               ))}
             </select>
 
             {selectedProperty && (
               <p className="mt-2 text-xs text-gray-500">
-                Status: {selectedProperty.propertyStatus || "Not specified"}
+                Property ID: {selectedProperty._id}
+                {" · "}Status:{" "}
+                {selectedProperty.propertyStatus || "Not specified"}
               </p>
             )}
 
@@ -611,12 +658,15 @@ export default function OwnerCalendarPage() {
               className="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm text-gray-800 outline-none focus:border-[#B96928] focus:ring-2 focus:ring-orange-100 disabled:bg-gray-50"
             >
               <option value="">
-                {roomsLoading ? "Loading rooms..." : "Select room category"}
+                {roomsLoading
+                  ? "Loading rooms..."
+                  : "Select room category"}
               </option>
 
               {rooms.map((room) => (
                 <option key={room._id} value={room._id}>
-                  {room.name || "Unnamed room"} — {Number(room.totalRooms) || 0} rooms
+                  {room.name || "Unnamed room"} —{" "}
+                  {Number(room.totalRooms) || 0} rooms
                 </option>
               ))}
             </select>
@@ -630,9 +680,12 @@ export default function OwnerCalendarPage() {
             )}
 
             {roomsError && (
-              <p role="alert" className="mt-2 text-sm text-red-600">
+              <div
+                role="alert"
+                className="mt-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+              >
                 {roomsError}
-              </p>
+              </div>
             )}
           </div>
         </section>
@@ -641,8 +694,7 @@ export default function OwnerCalendarPage() {
           !propertiesError &&
           properties.length === 0 && (
             <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-              Tumhare account par koi property nahi mili. Pehle property create
-              karein.{" "}
+              No properties were found in your account. Please create a property first.{" "}
               <Link
                 href="/owner/properties"
                 className="font-bold underline underline-offset-2"
@@ -659,7 +711,7 @@ export default function OwnerCalendarPage() {
           >
             <CircleAlert size={19} className="mt-0.5 shrink-0" />
             <div>
-              <p className="font-bold">Availability load nahi hui</p>
+              <p className="font-bold">Failed to load availability</p>
               <p className="mt-1">{availabilityError}</p>
             </div>
           </div>
@@ -715,7 +767,10 @@ export default function OwnerCalendarPage() {
                       {selectedRecord.isClosed ? (
                         <CircleAlert size={18} className="text-red-600" />
                       ) : (
-                        <CheckCircle2 size={18} className="text-emerald-600" />
+                        <CheckCircle2
+                          size={18}
+                          className="text-emerald-600"
+                        />
                       )}
 
                       {selectedRecord.isClosed
@@ -753,7 +808,10 @@ export default function OwnerCalendarPage() {
                       <div>
                         <p className="text-xs text-gray-500">Daily price</p>
                         <p className="font-bold text-[#172033]">
-                          ₹{Number(selectedRecord.price || 0).toLocaleString("en-IN")}
+                          ₹
+                          {Number(
+                            selectedRecord.price || 0
+                          ).toLocaleString("en-IN")}
                         </p>
                       </div>
                     </div>
@@ -766,8 +824,8 @@ export default function OwnerCalendarPage() {
                     />
                     <p>
                       {propertyId && roomTypeId
-                        ? "Is date ka saved availability record nahi mila. Neeche details set karke save karne par naya record create hoga."
-                        : "Availability dekhne ke liye property aur room category select karein."}
+                        ? "No saved availability record was found for this date. You can set the details and save them."
+                        : "Select a property and room category to view availability."}
                     </p>
                   </div>
                 )}
@@ -964,14 +1022,14 @@ export default function OwnerCalendarPage() {
                   {saving
                     ? "Saving..."
                     : selectedRecord
-                    ? "Update Availability"
-                    : "Save Availability"}
+                      ? "Update Availability"
+                      : "Save Availability"}
                 </button>
 
                 <p className="text-xs leading-5 text-gray-500">
                   Changes are saved to the backend for the selected room
                   category and date. Existing bookings and blocked inventory
-                  are validated by the server.
+                  must be validated by the server.
                 </p>
               </form>
             </section>

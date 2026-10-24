@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -26,6 +27,39 @@ import {
 
 const PRIMARY = "#B96928";
 
+const getLocalISODate = (date = new Date()) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+};
+
+const addDaysToISO = (value, days = 1) => {
+  if (!value) return "";
+
+  const [year, month, day] = value.split("-").map(Number);
+
+  const date = new Date(year, month - 1, day);
+  date.setDate(date.getDate() + days);
+
+  return getLocalISODate(date);
+};
+
+const formatDate = (value) => {
+  if (!value) return "DD/MM/YYYY";
+
+  const parts = value.split("-");
+
+  if (parts.length !== 3) return "DD/MM/YYYY";
+
+  const [year, month, day] = parts;
+
+  if (!year || !month || !day) return "DD/MM/YYYY";
+
+  return `${day}/${month}/${year}`;
+};
+
 const safariToItem = (s) => ({
   id: `safari-${s.id}`,
   type: "safari",
@@ -48,16 +82,6 @@ const POPULAR = [
   ...stays.slice(0, 3).map(stayToItem),
 ];
 
-const formatDate = (value) => {
-  if (!value) return "DD/MM/YYYY";
-
-  const d = new Date(`${value}T00:00:00`);
-
-  return Number.isNaN(d.getTime())
-    ? "DD/MM/YYYY"
-    : d.toLocaleDateString("en-GB");
-};
-
 /* =========================================================
    SEARCH LOGIC
 ========================================================= */
@@ -76,8 +100,16 @@ function useSearchForm() {
   const [adults, setAdults] = useState(2);
   const [childCount, setChildCount] = useState(0);
   const [rooms, setRooms] = useState(1);
+
   const [guestOpen, setGuestOpen] = useState(false);
 
+  // Local date avoids UTC timezone conversion problems.
+  const today = getLocalISODate();
+
+  // Checkout must be at least one day after check-in.
+  const minCheckOut = addDaysToISO(checkIn || today, 1);
+
+  /* Close dropdowns on outside click. */
   useEffect(() => {
     const close = (e) => {
       if (!e.target.closest("[data-search-box]")) {
@@ -98,6 +130,7 @@ function useSearchForm() {
     };
   }, []);
 
+  /* Search results. */
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
 
@@ -128,10 +161,12 @@ function useSearchForm() {
   }, ${rooms} ${rooms === 1 ? "Room" : "Rooms"}`;
 
   const totalGuests = adults + childCount;
+
   const guestShort = `${totalGuests} ${
     totalGuests === 1 ? "Guest" : "Guests"
   }, ${rooms} ${rooms === 1 ? "Room" : "Rooms"}`;
 
+  /* Select a result. */
   const selectItem = (item) => {
     setQuery(item.name);
     setSelected(item);
@@ -139,6 +174,7 @@ function useSearchForm() {
     setError("");
   };
 
+  /* Clear search. */
   const clearQuery = () => {
     setQuery("");
     setSelected(null);
@@ -146,6 +182,7 @@ function useSearchForm() {
     setOpen(true);
   };
 
+  /* Search text changes. */
   const onQueryChange = (value) => {
     setQuery(value);
     setSelected(null);
@@ -153,18 +190,64 @@ function useSearchForm() {
     setOpen(true);
   };
 
+  /* Check-in validation. */
   const onCheckInChange = (value) => {
-    setCheckIn(value);
+    if (value && value < today) {
+      setError("Choose a valid check-in date");
+      return;
+    }
 
-    if (checkOut && value && checkOut < value) {
+    setCheckIn(value);
+    setError("");
+
+    // Checkout must be later than check-in.
+    if (checkOut && value && checkOut <= value) {
+      setCheckOut("");
+    }
+
+    // When check-in is cleared, checkout must still be in the future.
+    if (!value && checkOut && checkOut <= today) {
       setCheckOut("");
     }
   };
 
+  /* Check-out validation. */
+  const onCheckOutChange = (value) => {
+    if (!value) {
+      setCheckOut("");
+      setError("");
+      return;
+    }
+
+    const earliestCheckout = addDaysToISO(
+      checkIn || today,
+      1
+    );
+
+    if (value < earliestCheckout) {
+      setError("Check-out must be after check-in");
+      return;
+    }
+
+    setCheckOut(value);
+    setError("");
+  };
+
+  /* Submit search and preserve routing. */
   const submit = (e) => {
     e.preventDefault();
 
     const q = query.trim();
+
+    if (checkIn && checkIn < today) {
+      setError("Choose a valid check-in date");
+      return;
+    }
+
+    if (checkOut && checkOut < minCheckOut) {
+      setError("Check-out must be after check-in");
+      return;
+    }
 
     if (!q) {
       setError("Choose a safari or stay");
@@ -204,10 +287,7 @@ function useSearchForm() {
       return;
     }
 
-    if (
-      lower.includes("safari") ||
-      lower.includes("zone")
-    ) {
+    if (lower.includes("safari") || lower.includes("zone")) {
       params.set("search", q);
       router.push(`/safari?${params.toString()}`);
       return;
@@ -223,20 +303,27 @@ function useSearchForm() {
     setOpen,
     error,
     results,
+
     checkIn,
     checkOut,
+    today,
+    minCheckOut,
     onCheckInChange,
+    onCheckOutChange,
     setCheckOut,
+
     adults,
     setAdults,
     childCount,
     setChildCount,
     rooms,
     setRooms,
+
     guestOpen,
     setGuestOpen,
     guestSummary,
     guestShort,
+
     selectItem,
     clearQuery,
     onQueryChange,
@@ -278,10 +365,9 @@ export default function Hero() {
 
   return (
     <section className="overflow-visible bg-[#F7F5F0] px-1.5 py-1.5 sm:px-4 sm:py-4 md:px-6 md:py-5">
-      {/* HERO IMAGE AND CONTENT */}
       <div className="relative mx-auto min-h-[250px] max-w-[1440px] overflow-hidden rounded-xl bg-[#172033] text-white sm:min-h-[420px] sm:rounded-[24px] md:min-h-[470px] md:rounded-[28px] lg:min-h-[560px]">
-        {/* OPTIMIZED HERO IMAGE — LOAD ONLY THE ACTIVE SLIDE */}
-        {heroData.images[currentImage] && (
+        {/* Active hero image only. */}
+        {heroData.images?.[currentImage] && (
           <Image
             key={heroData.images[currentImage]}
             src={heroData.images[currentImage]}
@@ -296,9 +382,7 @@ export default function Hero() {
         )}
 
         <div className="absolute inset-0 bg-black/10" />
-
         <div className="absolute inset-0 bg-gradient-to-r from-[#172033]/85 via-[#172033]/45 to-transparent" />
-
         <div className="absolute inset-0 bg-gradient-to-t from-[#172033]/80 via-transparent to-black/10" />
 
         <div className="relative z-10 flex min-h-[250px] items-center px-3 pb-10 pt-4 sm:min-h-[420px] sm:px-8 sm:py-10 md:min-h-[470px] md:px-10 lg:min-h-[560px] lg:px-14">
@@ -324,14 +408,13 @@ export default function Hero() {
                   <Link
                     key={button.text}
                     href={button.href}
-                    className={`group inline-flex min-h-[38px] items-center justify-center gap-1 rounded-full px-3.5 py-2 text-[12px] font-semibold transition-all duration-200 sm:min-h-[44px] sm:gap-1.5 sm:px-5 sm:text-sm ${
+                    className={`group inline-flex min-h-[38px] items-center justify-center gap-1 rounded-full px-3.5 py-2 text-[12px] font-semibold transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-white/70 sm:min-h-[44px] sm:gap-1.5 sm:px-5 sm:text-sm ${
                       isPrimary
                         ? "bg-[#B96928] text-white shadow-md hover:bg-[#A65C22] hover:shadow-lg"
                         : "border border-white/25 bg-white/10 text-white backdrop-blur-xl hover:bg-white/20"
                     }`}
                   >
                     <span>{button.text}</span>
-
                     <ArrowRight
                       size={15}
                       className="transition-transform duration-200 group-hover:translate-x-1 sm:h-4 sm:w-4"
@@ -347,10 +430,7 @@ export default function Hero() {
                 "Premium Stays",
                 "Events & Weddings",
               ].map((text) => (
-                <span
-                  key={text}
-                  className="flex items-center gap-2"
-                >
+                <span key={text} className="flex items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-[#B96928]" />
                   {text}
                 </span>
@@ -359,7 +439,7 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* DESKTOP CAROUSEL CONTROLS */}
+        {/* Carousel controls. */}
         {total > 1 && (
           <div className="absolute bottom-28 right-7 z-20 hidden items-center gap-2 md:flex">
             <div className="mr-2 flex items-center gap-1">
@@ -368,7 +448,7 @@ export default function Hero() {
                   key={index}
                   type="button"
                   onClick={() => setCurrentImage(index)}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                  className={`h-1.5 rounded-full transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-white ${
                     currentImage === index
                       ? "w-4 bg-[#B96928]"
                       : "w-1.5 bg-white/40 hover:bg-white/70"
@@ -381,7 +461,7 @@ export default function Hero() {
             <button
               type="button"
               onClick={prevSlide}
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-black/40 text-white backdrop-blur-md transition hover:bg-white hover:text-black"
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-black/40 text-white backdrop-blur-md transition outline-none hover:bg-white hover:text-black focus-visible:ring-2 focus-visible:ring-white"
               aria-label="Previous slide"
             >
               <ChevronLeft size={15} />
@@ -390,7 +470,7 @@ export default function Hero() {
             <button
               type="button"
               onClick={nextSlide}
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-black/40 text-white backdrop-blur-md transition hover:bg-white hover:text-black"
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-black/40 text-white backdrop-blur-md transition outline-none hover:bg-white hover:text-black focus-visible:ring-2 focus-visible:ring-white"
               aria-label="Next slide"
             >
               <ChevronRight size={15} />
@@ -398,7 +478,7 @@ export default function Hero() {
           </div>
         )}
 
-        {/* DESKTOP SEARCH BAR — DESKTOP LAYOUT PRESERVED */}
+        {/* Desktop search bar. */}
         <div className="absolute bottom-5 left-1/2 z-30 hidden w-[calc(100%-48px)] max-w-5xl -translate-x-1/2 md:block">
           <div className="overflow-visible rounded-xl border border-white/20 bg-white p-2 shadow-2xl">
             <SearchForm f={form} variant="desktop" />
@@ -406,7 +486,7 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* MOBILE SEARCH BAR */}
+      {/* Mobile search bar. */}
       <div className="relative z-30 mx-auto -mt-7 max-w-5xl px-2 sm:-mt-10 sm:px-3 md:hidden">
         <div className="overflow-visible rounded-xl border border-gray-200 bg-white p-1.5 shadow-xl sm:p-2">
           <SearchForm f={form} variant="mobile" />
@@ -432,14 +512,16 @@ function SearchForm({ f, variant }) {
           : "grid grid-cols-[1.3fr_1fr_1fr_auto] items-center gap-1.5"
       }
     >
-      {/* SEARCH FIELD */}
+      {/* Search field. */}
       <div
         className={`relative min-w-0 ${mobile ? "col-span-2" : ""}`}
         data-search-box
       >
         <div
-          className={`flex min-h-[40px] items-center gap-2 rounded-lg border bg-[#EEF5F2] px-2.5 py-1 focus-within:ring-2 focus-within:ring-[#B96928] sm:min-h-[50px] sm:gap-2.5 sm:px-3 sm:py-2 ${
-            f.error ? "border-red-400" : "border-[#D5E6DF]"
+          className={`flex min-h-[40px] items-center gap-2 rounded-lg border bg-[#EEF5F2] px-2.5 py-1 transition-colors sm:min-h-[50px] sm:gap-2.5 sm:px-3 sm:py-2 ${
+            f.error
+              ? "border-red-400"
+              : "border-[#D5E6DF]"
           }`}
         >
           <Search
@@ -465,7 +547,7 @@ function SearchForm({ f, variant }) {
               onFocus={() => f.setOpen(true)}
               onChange={(e) => f.onQueryChange(e.target.value)}
               placeholder="Dhikuli, Bijrani, Jhirna..."
-              className="w-full min-w-0 truncate bg-transparent p-0 text-[13px] font-semibold leading-5 text-[#172033] placeholder:text-[#5F7A6E] focus:outline-none sm:text-[15px]"
+              className="w-full min-w-0 truncate border-0 bg-transparent p-0 text-[13px] font-semibold leading-5 text-[#172033] outline-none ring-0 placeholder:text-[#5F7A6E] focus:border-0 focus:outline-none focus:ring-0 focus-visible:outline-none sm:text-[15px]"
             />
           </div>
 
@@ -474,7 +556,7 @@ function SearchForm({ f, variant }) {
               type="button"
               onClick={f.clearQuery}
               aria-label="Clear search"
-              className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/70 text-gray-500 sm:h-7 sm:w-7"
+              className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/70 text-gray-500 outline-none sm:h-7 sm:w-7"
             >
               <X size={12} />
             </button>
@@ -491,13 +573,14 @@ function SearchForm({ f, variant }) {
         )}
       </div>
 
-      {/* DATES */}
+      {/* Dates. */}
       {mobile ? (
         <div className="col-span-2 grid grid-cols-2 gap-1.5">
           <MobileDate
             id="mobile-check-in"
             label="Check In"
             value={f.checkIn}
+            min={f.today}
             onChange={f.onCheckInChange}
           />
 
@@ -505,8 +588,8 @@ function SearchForm({ f, variant }) {
             id="mobile-check-out"
             label="Check Out"
             value={f.checkOut}
-            min={f.checkIn || undefined}
-            onChange={f.setCheckOut}
+            min={f.minCheckOut}
+            onChange={f.onCheckOutChange}
           />
         </div>
       ) : (
@@ -529,8 +612,9 @@ function SearchForm({ f, variant }) {
                 id="desktop-check-in"
                 type="date"
                 value={f.checkIn}
+                min={f.today}
                 onChange={(e) => f.onCheckInChange(e.target.value)}
-                className="w-full min-w-0 bg-transparent text-[13px] font-semibold text-[#172033] focus:outline-none"
+                className="w-full min-w-0 cursor-pointer border-0 bg-transparent text-[13px] font-semibold text-[#172033] outline-none ring-0 focus:border-0 focus:outline-none focus:ring-0 focus-visible:outline-none"
               />
             </div>
 
@@ -546,25 +630,22 @@ function SearchForm({ f, variant }) {
                 id="desktop-check-out"
                 type="date"
                 value={f.checkOut}
-                min={f.checkIn || undefined}
-                onChange={(e) => f.setCheckOut(e.target.value)}
-                className="w-full min-w-0 bg-transparent text-[13px] font-semibold text-[#172033] focus:outline-none"
+                min={f.minCheckOut}
+                onChange={(e) => f.onCheckOutChange(e.target.value)}
+                className="w-full min-w-0 cursor-pointer border-0 bg-transparent text-[13px] font-semibold text-[#172033] outline-none ring-0 focus:border-0 focus:outline-none focus:ring-0 focus-visible:outline-none"
               />
             </div>
           </div>
         </div>
       )}
 
-      {/* GUESTS */}
-      <div
-        className="relative min-w-0"
-        data-guest-box
-      >
+      {/* Guests. */}
+      <div className="relative min-w-0" data-guest-box>
         <button
           type="button"
           onClick={() => f.setGuestOpen(!f.guestOpen)}
           aria-expanded={f.guestOpen}
-          className={`flex min-h-[40px] w-full min-w-0 items-center gap-2 rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-left transition hover:bg-gray-50 sm:min-h-[50px] sm:gap-2.5 sm:px-3 sm:py-2 ${
+          className={`flex min-h-[40px] w-full min-w-0 items-center gap-2 rounded-lg border border-gray-200 bg-white px-2.5 py-1 text-left transition outline-none hover:bg-gray-50 focus:outline-none focus-visible:ring-0 sm:min-h-[50px] sm:gap-2.5 sm:px-3 sm:py-2 ${
             mobile ? "h-full" : ""
           }`}
         >
@@ -595,10 +676,10 @@ function SearchForm({ f, variant }) {
         )}
       </div>
 
-      {/* SEARCH BUTTON */}
+      {/* Search button. */}
       <button
         type="submit"
-        className={`flex min-h-[40px] items-center justify-center gap-1.5 rounded-lg bg-[#B96928] px-3 text-[13px] font-bold text-white shadow-md shadow-[#B96928]/20 transition hover:bg-[#A65C22] active:scale-[0.98] sm:min-h-[50px] sm:gap-2 sm:px-6 sm:text-[15px] ${
+        className={`flex min-h-[40px] items-center justify-center gap-1.5 rounded-lg bg-[#B96928] px-3 text-[13px] font-bold text-white shadow-md shadow-[#B96928]/20 transition outline-none hover:bg-[#A65C22] active:scale-[0.98] focus:outline-none focus-visible:ring-0 sm:min-h-[50px] sm:gap-2 sm:px-6 sm:text-[15px] ${
           mobile ? "w-full" : ""
         }`}
       >
@@ -613,17 +694,25 @@ function SearchForm({ f, variant }) {
    MOBILE DATE CELL
 ========================================================= */
 
-function MobileDate({ id, label, value, onChange, min }) {
+function MobileDate({
+  id,
+  label,
+  value,
+  onChange,
+  min,
+}) {
   const openPicker = (e) => {
-    try {
-      e.currentTarget.showPicker?.();
-    } catch {
-      // Browser does not support showPicker; input remains clickable.
+    if (typeof e.currentTarget.showPicker === "function") {
+      try {
+        e.currentTarget.showPicker();
+      } catch {
+        // Native picker remains available through the input.
+      }
     }
   };
 
   return (
-    <div className="flex min-h-[40px] min-w-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2 py-1 sm:min-h-[50px] sm:gap-2 sm:px-2.5 sm:py-2">
+    <div className="flex min-h-[44px] min-w-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2 py-1.5 sm:min-h-[50px] sm:gap-2 sm:px-2.5 sm:py-2">
       <CalendarDays
         size={15}
         className="shrink-0 text-[#172033]"
@@ -637,8 +726,9 @@ function MobileDate({ id, label, value, onChange, min }) {
           {label}
         </label>
 
-        <div className="relative h-[18px] min-w-0 sm:mt-0.5 sm:h-[22px]">
+        <div className="relative mt-0.5 h-[20px] min-w-0 sm:h-[22px]">
           <span
+            aria-hidden="true"
             className={`pointer-events-none absolute inset-0 flex items-center truncate text-[12px] font-semibold sm:text-[14px] ${
               value ? "text-[#172033]" : "text-gray-400"
             }`}
@@ -654,7 +744,7 @@ function MobileDate({ id, label, value, onChange, min }) {
             onChange={(e) => onChange(e.target.value)}
             onClick={openPicker}
             aria-label={label}
-            className="absolute inset-0 h-full w-full cursor-pointer appearance-none bg-transparent opacity-0"
+            className="absolute inset-0 z-10 h-full w-full cursor-pointer appearance-none border-0 bg-transparent opacity-0 outline-none ring-0 focus:border-0 focus:outline-none focus:ring-0 focus-visible:outline-none"
           />
         </div>
       </div>
@@ -693,7 +783,7 @@ function ResultsDropdown({
               key={item.id}
               type="button"
               onClick={() => onSelect(item)}
-              className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left transition hover:bg-[#EEF5F2] active:bg-[#EEF5F2]"
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left transition outline-none hover:bg-[#EEF5F2] active:bg-[#EEF5F2] focus:outline-none focus-visible:bg-[#EEF5F2]"
             >
               <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[#F7F5F0]">
                 {item.image ? (
@@ -726,10 +816,7 @@ function ResultsDropdown({
 
                 {item.location && (
                   <p className="mt-0.5 flex items-center gap-1 truncate text-[12px] text-gray-500">
-                    <MapPin
-                      size={12}
-                      className="shrink-0"
-                    />
+                    <MapPin size={12} className="shrink-0" />
                     {item.location}
                   </p>
                 )}
@@ -739,10 +826,7 @@ function ResultsDropdown({
         </div>
       ) : (
         <div className="px-4 py-5 text-center">
-          <Search
-            size={20}
-            className="mx-auto text-gray-300"
-          />
+          <Search size={20} className="mx-auto text-gray-300" />
 
           <p className="mt-2 text-[14px] font-semibold text-gray-600">
             No matching safari or stay found
@@ -784,7 +868,7 @@ function GuestPopup({ f, onDone, mobile }) {
         <button
           type="button"
           onClick={onDone}
-          className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition hover:bg-gray-200"
+          className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 outline-none transition hover:bg-gray-200 focus:outline-none"
           aria-label="Close"
         >
           <X size={15} />
@@ -817,7 +901,7 @@ function GuestPopup({ f, onDone, mobile }) {
       <button
         type="button"
         onClick={onDone}
-        className="mt-3 flex min-h-[44px] w-full items-center justify-center rounded-lg bg-[#B96928] py-2.5 text-[14px] font-bold text-white transition hover:bg-[#A65C22]"
+        className="mt-3 flex min-h-[44px] w-full items-center justify-center rounded-lg bg-[#B96928] py-2.5 text-[14px] font-bold text-white outline-none transition hover:bg-[#A65C22] focus:outline-none"
       >
         Done
       </button>
@@ -853,7 +937,7 @@ function GuestRow({
           type="button"
           onClick={() => setValue(Math.max(min, value - 1))}
           disabled={value <= min}
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-gray-600 transition hover:border-[#B96928] hover:text-[#B96928] disabled:cursor-not-allowed disabled:opacity-30"
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-gray-600 outline-none transition hover:border-[#B96928] hover:text-[#B96928] focus:outline-none disabled:cursor-not-allowed disabled:opacity-30"
           aria-label={`Decrease ${title}`}
         >
           <Minus size={14} />
@@ -866,7 +950,7 @@ function GuestRow({
         <button
           type="button"
           onClick={() => setValue(value + 1)}
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-gray-600 transition hover:border-[#B96928] hover:text-[#B96928]"
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-gray-600 outline-none transition hover:border-[#B96928] hover:text-[#B96928] focus:outline-none"
           aria-label={`Increase ${title}`}
         >
           <Plus size={14} />

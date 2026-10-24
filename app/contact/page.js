@@ -3,6 +3,8 @@
 import { useSearchParams } from "next/navigation";
 import { useState, useEffect, Suspense } from "react";
 import Image from "next/image";
+
+import ContactBreadcrumb from "@/components/ContactBreadcrumb";
 import {
   CalendarDays,
   Hotel,
@@ -301,12 +303,17 @@ function ContactPage() {
 
   return (
     <main className="min-h-screen bg-[#F7F5F0]">
+      {/* =====================================================
+          BREADCRUMB
+      ====================================================== */}
+
+      <ContactBreadcrumb />
 
       {/* =====================================================
           HERO BANNER (ULTRA-PREMIUM & COMPACT)
       ====================================================== */}
 
-      <section className="relative overflow-hidden bg-gradient-to-b from-[#0E1F18] via-[#18352A] to-[#122A21] py-6 text-white sm:py-8">
+      <section className="relative mt-3 overflow-hidden bg-gradient-to-b from-[#0E1F18] via-[#18352A] to-[#122A21] py-6 text-white sm:mt-4 sm:py-8">
 
         {/* TOP COPPER GLOW LINE */}
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#C87532] to-transparent opacity-80" />
@@ -1185,7 +1192,7 @@ function ContactPage() {
                     value={formData.message}
                     onChange={handleChange}
                     required
-                    rows={2.5}
+                    rows={3}
                     className={`${inputClass} resize-none`}
                   />
 

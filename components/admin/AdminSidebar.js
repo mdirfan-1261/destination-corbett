@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -18,15 +19,54 @@ import {
   Users,
   ShieldCheck,
   ChevronDown,
-  ChevronRight,
   Archive,
   Network,
   ClipboardList,
   Settings2,
   ImagePlus,
+  Handshake,
+  Wallet,
+  CheckCircle2,
+  Home,
 } from "lucide-react";
 
-export default function AdminSidebar({
+const ACTIVE_COLOR = "#B96928";
+const TEXT_COLOR = "#C7D0BC";
+
+const departmentLinks = [
+  ["Manage All Departments", "/admin/organisation/departments"],
+  ["Safari", "/admin/organisation/departments/safari"],
+  ["Stay", "/admin/organisation/departments/stay"],
+  ["Events", "/admin/organisation/departments/events"],
+  ["Weddings", "/admin/organisation/departments/weddings"],
+  ["Packages", "/admin/organisation/departments/packages"],
+];
+
+const safariLinks = [
+  ["Jeep Safari", "/admin/organisation/departments/safari/jeep"],
+  ["Canter Safari", "/admin/organisation/departments/safari/canter"],
+  ["Safari Zones", "/admin/organisation/departments/safari/zones"],
+  [
+    "Nature Activities",
+    "/admin/organisation/departments/safari/nature-activities",
+  ],
+  [
+    "Sightseeing",
+    "/admin/organisation/departments/safari/sightseeing",
+  ],
+  [
+    "Local Experiences",
+    "/admin/organisation/departments/safari/local-experiences",
+  ],
+];
+
+function isRouteActive(pathname, href, exact = false) {
+  if (exact) return pathname === href;
+
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+function AdminSidebar({
   sidebarOpen,
   setSidebarOpen,
   sidebarCollapsed,
@@ -38,59 +78,36 @@ export default function AdminSidebar({
   const [organisationOpen, setOrganisationOpen] = useState(false);
   const [departmentsOpen, setDepartmentsOpen] = useState(false);
   const [safariOpen, setSafariOpen] = useState(false);
+  const [agentsOpen, setAgentsOpen] = useState(false);
+  const [ownersOpen, setOwnersOpen] = useState(false);
+  const [realEstateOpen, setRealEstateOpen] = useState(false);
 
-  // Department navigation: only top-level departments
-  const departmentLinks = [
-    ["Manage All Departments", "/admin/organisation/departments"],
-    ["Safari", "/admin/organisation/departments/safari"],
-    ["Stay", "/admin/organisation/departments/stay"],
-    ["Events", "/admin/organisation/departments/events"],
-    ["Weddings", "/admin/organisation/departments/weddings"],
-    ["Packages", "/admin/organisation/departments/packages"],
-  ];
+  const administrationActive = pathname.startsWith(
+    "/admin/administration"
+  );
 
-  // Safari sub-departments
-  const safariLinks = [
-    ["Jeep Safari", "/admin/organisation/departments/safari/jeep"],
-    ["Canter Safari", "/admin/organisation/departments/safari/canter"],
-    ["Safari Zones", "/admin/organisation/departments/safari/zones"],
-    [
-      "Nature Activities",
-      "/admin/organisation/departments/safari/nature-activities",
-    ],
-    [
-      "Sightseeing",
-      "/admin/organisation/departments/safari/sightseeing",
-    ],
-    [
-      "Local Experiences",
-      "/admin/organisation/departments/safari/local-experiences",
-    ],
-  ];
+  const organisationActive = pathname.startsWith(
+    "/admin/organisation"
+  );
 
-  // Automatically open Administration
+  const departmentsActive = pathname.startsWith(
+    "/admin/organisation/departments"
+  );
+
+  const agentsActive = pathname.startsWith("/admin/agents");
+
+  const ownersActive =
+    pathname.startsWith("/admin/owners") ||
+    pathname.startsWith("/admin/properties");
+
+  const realEstateActive = pathname.startsWith("/admin/real-estate");
+
+  // Keep the correct parent dropdown open for the current route.
   useEffect(() => {
-    if (pathname.startsWith("/admin/administration")) {
-      setAdministrationOpen(true);
-    }
-  }, [pathname]);
+    if (administrationActive) setAdministrationOpen(true);
+    if (organisationActive) setOrganisationOpen(true);
+    if (departmentsActive) setDepartmentsOpen(true);
 
-  // Automatically open Organisation
-  useEffect(() => {
-    if (pathname.startsWith("/admin/organisation")) {
-      setOrganisationOpen(true);
-    }
-  }, [pathname]);
-
-  // Automatically open Departments & Groups
-  useEffect(() => {
-    if (pathname.startsWith("/admin/organisation/departments")) {
-      setDepartmentsOpen(true);
-    }
-  }, [pathname]);
-
-  // Automatically expand Safari on its pages
-  useEffect(() => {
     if (
       pathname.startsWith(
         "/admin/organisation/departments/safari"
@@ -98,77 +115,180 @@ export default function AdminSidebar({
     ) {
       setSafariOpen(true);
     }
-  }, [pathname]);
 
-  // Close mobile sidebar after navigation
+    if (agentsActive) setAgentsOpen(true);
+    if (ownersActive) setOwnersOpen(true);
+    if (realEstateActive) setRealEstateOpen(true);
+  }, [
+    pathname,
+    administrationActive,
+    organisationActive,
+    departmentsActive,
+    agentsActive,
+    ownersActive,
+    realEstateActive,
+  ]);
+
+  // Close the mobile drawer whenever the route changes.
   useEffect(() => {
     setSidebarOpen(false);
   }, [pathname, setSidebarOpen]);
 
-  const administrationActive =
-    pathname.startsWith("/admin/administration");
+  const closeMobileSidebar = useCallback(() => {
+    setSidebarOpen(false);
+  }, [setSidebarOpen]);
 
-  const organisationActive =
-    pathname.startsWith("/admin/organisation");
-
-  const getLinkClass = (active, collapsed) => {
-    return `group relative flex w-full items-center rounded-lg py-2 transition-all duration-200 ${
-      collapsed
-        ? "justify-center px-0"
-        : "gap-2.5 px-2.5"
-    } ${
+  const linkClass = (active, collapsed = false) =>
+    [
+      "group relative flex w-full min-w-0 items-center rounded-lg",
+      "py-2 transition-colors duration-200",
+      collapsed ? "justify-center px-0" : "gap-2.5 px-2.5",
       active
-        ? "bg-[#C87532] font-bold text-white shadow-md"
-        : "text-[#C7D0BC] hover:bg-white/10 hover:text-white"
-    }`;
+        ? "font-bold text-white shadow-sm"
+        : "text-[#C7D0BC] hover:bg-white/10 hover:text-white",
+    ].join(" ");
+
+  const activeStyle = (active) =>
+    active ? { backgroundColor: ACTIVE_COLOR } : undefined;
+
+  const subLinkClass = (active) =>
+    [
+      "flex min-w-0 items-center gap-2 rounded-lg px-2.5 py-2",
+      "transition-colors duration-200",
+      active
+        ? "font-bold text-white shadow-sm"
+        : "text-[#C7D0BC] hover:bg-white/10 hover:text-white",
+    ].join(" ");
+
+  // Shared link component for mobile and desktop.
+  const NavLink = ({
+    href,
+    icon: Icon,
+    children,
+    active,
+    collapsed = false,
+    exact = false,
+    mobile = false,
+  }) => {
+    const selected =
+      active ?? isRouteActive(pathname, href, exact);
+
+    return (
+      <Link
+        href={href}
+        onClick={mobile ? closeMobileSidebar : undefined}
+        title={collapsed ? String(children) : undefined}
+        aria-current={selected ? "page" : undefined}
+        style={activeStyle(selected)}
+        className={linkClass(selected, collapsed)}
+      >
+        {Icon && <Icon size={17} className="shrink-0" />}
+
+        {!collapsed && (
+          <span className="min-w-0 truncate">{children}</span>
+        )}
+      </Link>
+    );
   };
 
-  // Shared nested department navigation.
-  // Safari sub-items appear immediately below Safari.
-  const renderDepartmentLinks = (collapsed = false) => (
-    <div
-      className={`space-y-1 ${
-        collapsed ? "" : "ml-3 border-l border-white/10 pl-3"
-      }`}
+  // Shared expandable section header.
+  const GroupButton = ({
+    label,
+    icon: Icon,
+    open,
+    active,
+    onToggle,
+    collapsed = false,
+  }) => (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-expanded={open}
+      title={collapsed ? label : undefined}
+      className={[
+        "flex w-full items-center rounded-lg py-2",
+        "transition-colors duration-200",
+        collapsed ? "justify-center px-0" : "justify-between px-2.5",
+        active
+          ? "bg-white/10 text-white"
+          : "text-[#C7D0BC] hover:bg-white/10 hover:text-white",
+      ].join(" ")}
     >
+      <span
+        className={[
+          "flex min-w-0 items-center",
+          collapsed ? "justify-center" : "gap-2.5",
+        ].join(" ")}
+      >
+        <Icon size={17} className="shrink-0" />
+
+        {!collapsed && (
+          <span className="truncate">{label}</span>
+        )}
+      </span>
+
+      {!collapsed && (
+        <ChevronDown
+          size={15}
+          className={[
+            "shrink-0 transition-transform duration-200",
+            open ? "rotate-180" : "",
+          ].join(" ")}
+        />
+      )}
+    </button>
+  );
+
+  // A collapsed group click expands the sidebar and opens that group.
+  const toggleGroup = (setter, currentValue) => {
+    if (sidebarCollapsed) {
+      setSidebarCollapsed(false);
+      setter(true);
+      return;
+    }
+
+    setter(!currentValue);
+  };
+
+  const renderDepartmentLinks = (mobile = false) => (
+    <div className="ml-3 space-y-1 border-l border-white/10 pl-3">
       {departmentLinks.map(([name, href]) => {
         const isSafari = name === "Safari";
 
-        const isActive =
-          pathname === href ||
-          (isSafari &&
-            pathname.startsWith(
-              "/admin/organisation/departments/safari/"
-            ));
+        const active = isSafari
+          ? pathname === href || pathname.startsWith(`${href}/`)
+          : isRouteActive(pathname, href);
 
         return (
-          <div key={name}>
-            <div className="flex items-center gap-1">
+          <div key={href}>
+            <div className="flex min-w-0 items-center gap-1">
               <Link
                 href={href}
-                title={collapsed ? name : ""}
-                className={`min-w-0 flex-1 rounded-lg px-2.5 py-2 transition ${
-                  isActive
-                    ? "bg-[#C87532] font-bold text-white shadow-md"
-                    : "text-[#C7D0BC] hover:bg-white/10 hover:text-white"
-                }`}
+                onClick={mobile ? closeMobileSidebar : undefined}
+                aria-current={active ? "page" : undefined}
+                style={activeStyle(active)}
+                className={[
+                  "min-w-0 flex-1 rounded-lg px-2.5 py-2",
+                  "transition-colors duration-200",
+                  active
+                    ? "font-bold text-white shadow-sm"
+                    : "text-[#C7D0BC] hover:bg-white/10 hover:text-white",
+                ].join(" ")}
               >
                 <span className="block truncate">{name}</span>
               </Link>
 
-              {isSafari && !collapsed && (
+              {isSafari && (
                 <button
                   type="button"
-                  onClick={() =>
-                    setSafariOpen((prev) => !prev)
-                  }
+                  onClick={() => setSafariOpen((prev) => !prev)}
                   aria-label={
                     safariOpen
                       ? "Collapse Safari options"
                       : "Expand Safari options"
                   }
                   aria-expanded={safariOpen}
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[#C7D0BC] transition hover:bg-white/10 hover:text-white"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[#C7D0BC] hover:bg-white/10 hover:text-white"
                 >
                   <ChevronDown
                     size={14}
@@ -180,20 +300,32 @@ export default function AdminSidebar({
               )}
             </div>
 
-            {isSafari && !collapsed && safariOpen && (
+            {isSafari && safariOpen && (
               <div className="ml-3 mt-1 space-y-1 border-l border-white/10 pl-3">
                 {safariLinks.map(([childName, childHref]) => {
-                  const childActive = pathname === childHref;
+                  const childActive = isRouteActive(
+                    pathname,
+                    childHref
+                  );
 
                   return (
                     <Link
-                      key={childName}
+                      key={childHref}
                       href={childHref}
-                      className={`block rounded-lg px-2.5 py-2 text-[11px] transition ${
+                      onClick={
+                        mobile ? closeMobileSidebar : undefined
+                      }
+                      aria-current={
+                        childActive ? "page" : undefined
+                      }
+                      style={activeStyle(childActive)}
+                      className={[
+                        "block rounded-lg px-2.5 py-2 text-[11px]",
+                        "transition-colors duration-200",
                         childActive
-                          ? "bg-[#C87532] font-bold text-white shadow-md"
-                          : "text-[#C7D0BC] hover:bg-white/10 hover:text-white"
-                      }`}
+                          ? "font-bold text-white shadow-sm"
+                          : "text-[#C7D0BC] hover:bg-white/10 hover:text-white",
+                      ].join(" ")}
                     >
                       {childName}
                     </Link>
@@ -207,23 +339,353 @@ export default function AdminSidebar({
     </div>
   );
 
+  const renderOwnerChildren = (mobile = false) => (
+    <div className="ml-3 space-y-1 border-l border-white/10 pl-3">
+      <NavLink
+        href="/admin/owners"
+        icon={Building2}
+        exact
+        mobile={mobile}
+      >
+        Resort Owners
+      </NavLink>
+
+      <NavLink
+        href="/admin/properties"
+        icon={Hotel}
+        mobile={mobile}
+      >
+        Property Approvals
+      </NavLink>
+    </div>
+  );
+
+  const renderAgentChildren = (mobile = false) => (
+    <div className="ml-3 space-y-1 border-l border-white/10 pl-3">
+      <NavLink
+        href="/admin/agents"
+        icon={Users}
+        exact
+        mobile={mobile}
+      >
+        Agents
+      </NavLink>
+
+      <NavLink
+        href="/admin/agents/commissions"
+        icon={Wallet}
+        mobile={mobile}
+      >
+        Commission Settings
+      </NavLink>
+
+      <NavLink
+        href="/admin/commissions"
+        icon={CheckCircle2}
+        mobile={mobile}
+      >
+        Commission Approvals
+      </NavLink>
+    </div>
+  );
+
+  const renderRealEstateChildren = (mobile = false) => (
+    <div className="ml-3 space-y-1 border-l border-white/10 pl-3">
+      <NavLink
+        href="/admin/real-estate/properties"
+        icon={Building2}
+        mobile={mobile}
+      >
+        RE Properties
+      </NavLink>
+
+      <NavLink
+        href="/admin/real-estate/leads"
+        icon={Users}
+        mobile={mobile}
+      >
+        RE Leads
+      </NavLink>
+
+      <NavLink
+        href="/admin/real-estate/deals"
+        icon={Handshake}
+        mobile={mobile}
+      >
+        RE Deals
+      </NavLink>
+    </div>
+  );
+
+  const renderAdministrationChildren = (mobile = false) => (
+    <div className="ml-3 space-y-1 border-l border-white/10 pl-3">
+      <NavLink
+        href="/admin/administration/users"
+        icon={Users}
+        mobile={mobile}
+      >
+        User Management
+      </NavLink>
+
+      <NavLink
+        href="/admin/administration/roles"
+        icon={ShieldCheck}
+        mobile={mobile}
+      >
+        Roles & Permissions
+      </NavLink>
+
+      <NavLink
+        href="/admin/administration/groups"
+        icon={Building2}
+        mobile={mobile}
+      >
+        Groups & Departments
+      </NavLink>
+
+      <NavLink
+        href="/admin/administration/recovery"
+        icon={Archive}
+        mobile={mobile}
+      >
+        Recovery Bin
+      </NavLink>
+    </div>
+  );
+
+  const renderOrganisationChildren = (mobile = false) => (
+    <div className="ml-3 space-y-1 border-l border-white/10 pl-3">
+      <NavLink
+        href="/admin/organisation"
+        icon={Building2}
+        exact
+        mobile={mobile}
+      >
+        Overview
+      </NavLink>
+
+      <NavLink
+        href="/admin/organisation/profile"
+        icon={Settings2}
+        mobile={mobile}
+      >
+        Company Profile
+      </NavLink>
+
+      <GroupButton
+        label="Departments & Groups"
+        icon={Network}
+        open={departmentsOpen}
+        active={departmentsActive}
+        onToggle={() => setDepartmentsOpen((prev) => !prev)}
+      />
+
+      {departmentsOpen && renderDepartmentLinks(mobile)}
+
+      <NavLink
+        href="/admin/organisation/members"
+        icon={Users}
+        mobile={mobile}
+      >
+        Members
+      </NavLink>
+
+      <NavLink
+        href="/admin/organisation/policies"
+        icon={ShieldCheck}
+        mobile={mobile}
+      >
+        Booking Policies
+      </NavLink>
+
+      <NavLink
+        href="/admin/organisation/activity-logs"
+        icon={ClipboardList}
+        mobile={mobile}
+      >
+        Activity Logs
+      </NavLink>
+    </div>
+  );
+
+  const renderNavigation = ({
+    mobile = false,
+    collapsed = false,
+  } = {}) => (
+    <nav className="space-y-1 overflow-y-auto text-xs font-semibold">
+      <NavLink
+        href="/admin/dashboard"
+        icon={LayoutDashboard}
+        exact
+        collapsed={collapsed}
+        mobile={mobile}
+      >
+        Dashboard
+      </NavLink>
+
+      <NavLink
+        href="/admin/enquiries"
+        icon={Mail}
+        collapsed={collapsed}
+        mobile={mobile}
+      >
+        Enquiries
+      </NavLink>
+
+      <NavLink
+        href="/admin/customers"
+        icon={Users}
+        collapsed={collapsed}
+        mobile={mobile}
+      >
+        Customers
+      </NavLink>
+
+      <GroupButton
+        label="Resort Partners"
+        icon={Building2}
+        open={ownersOpen}
+        active={ownersActive}
+        collapsed={collapsed}
+        onToggle={() => toggleGroup(setOwnersOpen, ownersOpen)}
+      />
+
+      {!collapsed && ownersOpen && renderOwnerChildren(mobile)}
+
+      <GroupButton
+        label="Agent Management"
+        icon={Handshake}
+        open={agentsOpen}
+        active={agentsActive}
+        collapsed={collapsed}
+        onToggle={() => toggleGroup(setAgentsOpen, agentsOpen)}
+      />
+
+      {!collapsed && agentsOpen && renderAgentChildren(mobile)}
+
+      <GroupButton
+        label="Real Estate"
+        icon={Home}
+        open={realEstateOpen}
+        active={realEstateActive}
+        collapsed={collapsed}
+        onToggle={() =>
+          toggleGroup(setRealEstateOpen, realEstateOpen)
+        }
+      />
+
+      {!collapsed &&
+        realEstateOpen &&
+        renderRealEstateChildren(mobile)}
+
+      <NavLink
+        href="/admin/bookings"
+        icon={ClipboardList}
+        collapsed={collapsed}
+        mobile={mobile}
+      >
+        Bookings
+      </NavLink>
+
+      <NavLink
+        href="/admin/media"
+        icon={ImagePlus}
+        collapsed={collapsed}
+        mobile={mobile}
+      >
+        Media Library
+      </NavLink>
+
+      <GroupButton
+        label="Administration"
+        icon={ShieldCheck}
+        open={administrationOpen}
+        active={administrationActive}
+        collapsed={collapsed}
+        onToggle={() =>
+          toggleGroup(setAdministrationOpen, administrationOpen)
+        }
+      />
+
+      {!collapsed &&
+        administrationOpen &&
+        renderAdministrationChildren(mobile)}
+
+      <GroupButton
+        label="Organisation"
+        icon={Building2}
+        open={organisationOpen}
+        active={organisationActive}
+        collapsed={collapsed}
+        onToggle={() =>
+          toggleGroup(setOrganisationOpen, organisationOpen)
+        }
+      />
+
+      {!collapsed &&
+        organisationOpen &&
+        renderOrganisationChildren(mobile)}
+
+      <NavLink
+        href="/admin/hotels"
+        icon={Hotel}
+        collapsed={collapsed}
+        mobile={mobile}
+      >
+        Hotels & Stays
+      </NavLink>
+
+      <NavLink
+        href="/admin/safari"
+        icon={Trees}
+        collapsed={collapsed}
+        mobile={mobile}
+      >
+        Safari
+      </NavLink>
+
+      <NavLink
+        href="/admin/events"
+        icon={CalendarDays}
+        collapsed={collapsed}
+        mobile={mobile}
+      >
+        Events
+      </NavLink>
+
+      <NavLink
+        href="/admin/weddings"
+        icon={CalendarDays}
+        collapsed={collapsed}
+        mobile={mobile}
+      >
+        Weddings
+      </NavLink>
+
+      <NavLink
+        href="/admin/analytics"
+        icon={BarChart3}
+        collapsed={collapsed}
+        mobile={mobile}
+      >
+        Analytics
+      </NavLink>
+    </nav>
+  );
+
   return (
     <>
-      {/* =====================================================
-          MOBILE SIDEBAR
-      ===================================================== */}
-
+      {/* MOBILE SIDEBAR */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-[999] md:hidden">
-          {/* OVERLAY */}
-          <div
-            onClick={() => setSidebarOpen(false)}
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+          <button
+            type="button"
+            aria-label="Close navigation backdrop"
+            onClick={closeMobileSidebar}
+            className="absolute inset-0 h-full w-full bg-black/60 backdrop-blur-sm"
           />
 
-          {/* DRAWER */}
-          <div className="absolute left-0 top-0 flex h-full w-64 max-w-[85%] flex-col border-r border-white/20 bg-[#142019] p-4 text-white shadow-2xl">
-            {/* DRAWER HEADER */}
+          <aside className="absolute left-0 top-0 flex h-full w-64 max-w-[85%] flex-col border-r border-white/20 bg-[#142019] p-4 text-white shadow-2xl">
             <div className="mb-4 flex items-center justify-between border-b border-white/10 pb-3">
               <div>
                 <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-[#B8C19F]">
@@ -237,367 +699,36 @@ export default function AdminSidebar({
 
               <button
                 type="button"
-                onClick={() => setSidebarOpen(false)}
+                onClick={closeMobileSidebar}
+                aria-label="Close navigation"
                 className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/10 text-white"
               >
                 <X size={16} />
               </button>
             </div>
 
-            {/* MOBILE NAV */}
-            <nav className="space-y-1 overflow-y-auto text-xs font-semibold">
-              {/* DASHBOARD */}
-              <Link
-                href="/admin/dashboard"
-                className={getLinkClass(
-                  pathname === "/admin/dashboard",
-                  false
-                )}
-              >
-                <LayoutDashboard size={17} />
-                <span>Dashboard</span>
-              </Link>
-
-              {/* ENQUIRIES */}
-              <Link
-                href="/admin/enquiries"
-                className={getLinkClass(
-                  pathname.startsWith("/admin/enquiries"),
-                  false
-                )}
-              >
-                <Mail size={17} />
-                <span>Enquiries</span>
-              </Link>
-
-              {/* CUSTOMERS */}
-              <Link
-                href="/admin/customers"
-                className={getLinkClass(
-                  pathname.startsWith("/admin/customers"),
-                  false
-                )}
-              >
-                <Users size={17} />
-                <span>Customers</span>
-              </Link>
-
-              {/* BOOKINGS */}
-              <Link
-                href="/admin/bookings"
-                className={getLinkClass(
-                  pathname.startsWith("/admin/bookings"),
-                  false
-                )}
-              >
-                <ClipboardList size={17} />
-                <span>Bookings</span>
-              </Link>
-
-              {/* MEDIA LIBRARY */}
-              <Link
-                href="/admin/media"
-                className={getLinkClass(
-                  pathname.startsWith("/admin/media"),
-                  false
-                )}
-              >
-                <ImagePlus size={17} />
-                <span>Media Library</span>
-              </Link>
-
-              {/* ADMINISTRATION */}
-              <button
-                type="button"
-                onClick={() =>
-                  setAdministrationOpen((prev) => !prev)
-                }
-                className={`flex w-full items-center justify-between rounded-lg px-3 py-2 transition ${
-                  administrationActive
-                    ? "bg-white/10 text-white"
-                    : "text-[#C7D0BC] hover:bg-white/10 hover:text-white"
-                }`}
-              >
-                <span className="flex items-center gap-3">
-                  <ShieldCheck size={17} />
-                  <span>Administration</span>
-                </span>
-
-                <ChevronDown
-                  size={16}
-                  className={`transition-transform ${
-                    administrationOpen ? "rotate-180" : ""
-                  }`}
-                />
-              </button>
-
-              {/* ADMINISTRATION CHILDREN */}
-              {administrationOpen && (
-                <div className="ml-4 space-y-1 border-l border-white/10 pl-3">
-                  <Link
-                    href="/admin/administration/users"
-                    className={`flex items-center gap-2 rounded-lg px-3 py-2 transition ${
-                      pathname.startsWith(
-                        "/admin/administration/users"
-                      )
-                        ? "bg-[#C87532] font-bold text-white"
-                        : "text-[#C7D0BC] hover:bg-white/10 hover:text-white"
-                    }`}
-                  >
-                    <Users size={15} />
-                    <span>User Management</span>
-                  </Link>
-
-                  <Link
-                    href="/admin/administration/roles"
-                    className={`flex items-center gap-2 rounded-lg px-3 py-2 transition ${
-                      pathname.startsWith(
-                        "/admin/administration/roles"
-                      )
-                        ? "bg-[#C87532] font-bold text-white"
-                        : "text-[#C7D0BC] hover:bg-white/10 hover:text-white"
-                    }`}
-                  >
-                    <ShieldCheck size={15} />
-                    <span>Roles & Permissions</span>
-                  </Link>
-
-                  <Link
-                    href="/admin/administration/groups"
-                    className={`flex items-center gap-2 rounded-lg px-3 py-2 transition ${
-                      pathname.startsWith(
-                        "/admin/administration/groups"
-                      )
-                        ? "bg-[#C87532] font-bold text-white"
-                        : "text-[#C7D0BC] hover:bg-white/10 hover:text-white"
-                    }`}
-                  >
-                    <Building2 size={15} />
-                    <span>Groups & Departments</span>
-                  </Link>
-
-                  <Link
-                    href="/admin/administration/recovery"
-                    className={`flex items-center gap-2 rounded-lg px-3 py-2 transition ${
-                      pathname.startsWith(
-                        "/admin/administration/recovery"
-                      )
-                        ? "bg-[#C87532] font-bold text-white"
-                        : "text-[#C7D0BC] hover:bg-white/10 hover:text-white"
-                    }`}
-                  >
-                    <Archive size={15} />
-                    <span>Recovery Bin</span>
-                  </Link>
-                </div>
-              )}
-
-              {/* HOTELS */}
-              <Link
-                href="/admin/hotels"
-                className={getLinkClass(
-                  pathname.startsWith("/admin/hotels"),
-                  false
-                )}
-              >
-                <Hotel size={17} />
-                <span>Hotels & Stays</span>
-              </Link>
-
-              {/* SAFARI */}
-              <Link
-                href="/admin/safari"
-                className={getLinkClass(
-                  pathname.startsWith("/admin/safari"),
-                  false
-                )}
-              >
-                <Trees size={17} />
-                <span>Safari</span>
-              </Link>
-
-              {/* EVENTS */}
-              <Link
-                href="/admin/events"
-                className={getLinkClass(
-                  pathname.startsWith("/admin/events"),
-                  false
-                )}
-              >
-                <CalendarDays size={17} />
-                <span>Events</span>
-              </Link>
-
-              {/* WEDDINGS */}
-              <Link
-                href="/admin/weddings"
-                className={getLinkClass(
-                  pathname.startsWith("/admin/weddings"),
-                  false
-                )}
-              >
-                <CalendarDays size={17} />
-                <span>Weddings</span>
-              </Link>
-
-              {/* ORGANISATION */}
-              <button
-                type="button"
-                onClick={() =>
-                  setOrganisationOpen((prev) => !prev)
-                }
-                className={`flex w-full items-center justify-between rounded-lg px-3 py-2 transition ${
-                  organisationActive
-                    ? "bg-white/10 text-white"
-                    : "text-[#C7D0BC] hover:bg-white/10 hover:text-white"
-                }`}
-              >
-                <span className="flex items-center gap-3">
-                  <Building2 size={17} />
-                  <span>Organisation</span>
-                </span>
-
-                <ChevronDown
-                  size={16}
-                  className={`transition-transform ${
-                    organisationOpen ? "rotate-180" : ""
-                  }`}
-                />
-              </button>
-
-              {/* ORGANISATION CHILDREN */}
-              {organisationOpen && (
-                <div className="ml-4 space-y-1 border-l border-white/10 pl-3">
-                  <Link
-                    href="/admin/organisation"
-                    className={`flex items-center gap-2 rounded-lg px-3 py-2 transition ${
-                      pathname === "/admin/organisation"
-                        ? "bg-[#C87532] font-bold text-white"
-                        : "text-[#C7D0BC] hover:bg-white/10 hover:text-white"
-                    }`}
-                  >
-                    <Building2 size={15} />
-                    <span>Overview</span>
-                  </Link>
-
-                  <Link
-                    href="/admin/organisation/profile"
-                    className={`flex items-center gap-2 rounded-lg px-3 py-2 transition ${
-                      pathname === "/admin/organisation/profile"
-                        ? "bg-[#C87532] font-bold text-white"
-                        : "text-[#C7D0BC] hover:bg-white/10 hover:text-white"
-                    }`}
-                  >
-                    <Settings2 size={15} />
-                    <span>Company Profile</span>
-                  </Link>
-
-                  {/* DEPARTMENTS & GROUPS */}
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setDepartmentsOpen((prev) => !prev)
-                    }
-                    className="flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-[#C7D0BC] transition hover:bg-white/10 hover:text-white"
-                  >
-                    <span className="flex min-w-0 items-center gap-2">
-                      <Network size={15} />
-                      <span className="truncate">
-                        Departments & Groups
-                      </span>
-                    </span>
-
-                    <ChevronDown
-                      size={14}
-                      className={`shrink-0 transition-transform ${
-                        departmentsOpen ? "rotate-180" : ""
-                      }`}
-                    />
-                  </button>
-
-                  {/* DEPARTMENT LINKS + NESTED SAFARI */}
-                  {departmentsOpen && renderDepartmentLinks(false)}
-
-                  {/* MEMBERS */}
-                  <Link
-                    href="/admin/organisation/members"
-                    className={`flex items-center gap-2 rounded-lg px-3 py-2 transition ${
-                      pathname.startsWith(
-                        "/admin/organisation/members"
-                      )
-                        ? "bg-[#C87532] font-bold text-white"
-                        : "text-[#C7D0BC] hover:bg-white/10 hover:text-white"
-                    }`}
-                  >
-                    <Users size={15} />
-                    <span>Members</span>
-                  </Link>
-
-                  {/* BOOKING POLICIES */}
-                  <Link
-                    href="/admin/organisation/policies"
-                    className={`flex items-center gap-2 rounded-lg px-3 py-2 transition ${
-                      pathname.startsWith(
-                        "/admin/organisation/policies"
-                      )
-                        ? "bg-[#C87532] font-bold text-white"
-                        : "text-[#C7D0BC] hover:bg-white/10 hover:text-white"
-                    }`}
-                  >
-                    <ShieldCheck size={15} />
-                    <span>Booking Policies</span>
-                  </Link>
-
-                  {/* ACTIVITY LOGS */}
-                  <Link
-                    href="/admin/organisation/activity-logs"
-                    className={`flex items-center gap-2 rounded-lg px-3 py-2 transition ${
-                      pathname.startsWith(
-                        "/admin/organisation/activity-logs"
-                      )
-                        ? "bg-[#C87532] font-bold text-white"
-                        : "text-[#C7D0BC] hover:bg-white/10 hover:text-white"
-                    }`}
-                  >
-                    <ClipboardList size={15} />
-                    <span>Activity Logs</span>
-                  </Link>
-                </div>
-              )}
-
-              {/* ANALYTICS */}
-              <Link
-                href="/admin/analytics"
-                className={getLinkClass(
-                  pathname.startsWith("/admin/analytics"),
-                  false
-                )}
-              >
-                <BarChart3 size={17} />
-                <span>Analytics</span>
-              </Link>
-            </nav>
-          </div>
+            {renderNavigation({ mobile: true })}
+          </aside>
         </div>
       )}
 
-      {/* =====================================================
-          DESKTOP SIDEBAR
-      ===================================================== */}
-
+      {/* DESKTOP SIDEBAR */}
       <aside
-        className={`sticky top-14 hidden h-[calc(100vh-56px)] shrink-0 border-r border-white/10 bg-[#18352A] backdrop-blur-2xl transition-all duration-300 md:block ${
-          sidebarCollapsed ? "w-16" : "w-52"
-        }`}
+        className={[
+          "sticky top-14 hidden h-[calc(100vh-56px)] shrink-0",
+          "border-r border-white/10 bg-[#18352A]",
+          "backdrop-blur-2xl transition-[width] duration-300 md:block",
+          sidebarCollapsed ? "w-16" : "w-52",
+        ].join(" ")}
       >
         <div className="relative flex h-full flex-col p-2.5">
-          {/* SIDEBAR HEADER */}
           <div
-            className={`mb-4 flex items-center ${
+            className={[
+              "mb-4 flex items-center",
               sidebarCollapsed
                 ? "justify-center"
-                : "justify-between px-1"
-            }`}
+                : "justify-between px-1",
+            ].join(" ")}
           >
             {!sidebarCollapsed && (
               <div>
@@ -616,12 +747,17 @@ export default function AdminSidebar({
               onClick={() =>
                 setSidebarCollapsed((prev) => !prev)
               }
-              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-white/15 bg-white/10 text-[#F7F4EC] shadow-xs transition-all hover:bg-[#C87532] hover:text-white"
+              aria-label={
+                sidebarCollapsed
+                  ? "Expand sidebar"
+                  : "Collapse sidebar"
+              }
               title={
                 sidebarCollapsed
                   ? "Expand sidebar"
                   : "Collapse sidebar"
               }
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-white/15 bg-white/10 text-[#F7F4EC] shadow-sm transition-colors hover:bg-[#B96928] hover:text-white"
             >
               {sidebarCollapsed ? (
                 <PanelLeft size={15} />
@@ -631,409 +767,11 @@ export default function AdminSidebar({
             </button>
           </div>
 
-          {/* DESKTOP NAV */}
-          <nav className="space-y-1 overflow-y-auto text-xs font-semibold">
-            {/* DASHBOARD */}
-            <Link
-              href="/admin/dashboard"
-              className={getLinkClass(
-                pathname === "/admin/dashboard",
-                sidebarCollapsed
-              )}
-              title={sidebarCollapsed ? "Dashboard" : ""}
-            >
-              <LayoutDashboard size={17} />
-              {!sidebarCollapsed && (
-                <span className="truncate">Dashboard</span>
-              )}
-            </Link>
-
-            {/* ENQUIRIES */}
-            <Link
-              href="/admin/enquiries"
-              className={getLinkClass(
-                pathname.startsWith("/admin/enquiries"),
-                sidebarCollapsed
-              )}
-              title={sidebarCollapsed ? "Enquiries" : ""}
-            >
-              <Mail size={17} />
-              {!sidebarCollapsed && (
-                <span className="truncate">Enquiries</span>
-              )}
-            </Link>
-
-            {/* CUSTOMERS */}
-            <Link
-              href="/admin/customers"
-              className={getLinkClass(
-                pathname.startsWith("/admin/customers"),
-                sidebarCollapsed
-              )}
-              title={sidebarCollapsed ? "Customers" : ""}
-            >
-              <Users size={17} />
-              {!sidebarCollapsed && (
-                <span className="truncate">Customers</span>
-              )}
-            </Link>
-
-            {/* BOOKINGS */}
-            <Link
-              href="/admin/bookings"
-              className={getLinkClass(
-                pathname.startsWith("/admin/bookings"),
-                sidebarCollapsed
-              )}
-              title={sidebarCollapsed ? "Bookings" : ""}
-            >
-              <ClipboardList size={17} />
-              {!sidebarCollapsed && (
-                <span className="truncate">Bookings</span>
-              )}
-            </Link>
-
-            {/* MEDIA LIBRARY */}
-            <Link
-              href="/admin/media"
-              className={getLinkClass(
-                pathname.startsWith("/admin/media"),
-                sidebarCollapsed
-              )}
-              title={sidebarCollapsed ? "Media Library" : ""}
-            >
-              <ImagePlus size={17} />
-              {!sidebarCollapsed && (
-                <span className="truncate">Media Library</span>
-              )}
-            </Link>
-
-            {/* ADMINISTRATION */}
-            <button
-              type="button"
-              onClick={() =>
-                setAdministrationOpen((prev) => !prev)
-              }
-              className={`flex w-full items-center rounded-lg py-2 transition-all duration-200 ${
-                sidebarCollapsed
-                  ? "justify-center px-0"
-                  : "justify-between px-2.5"
-              } ${
-                administrationActive
-                  ? "bg-white/10 text-white"
-                  : "text-[#C7D0BC] hover:bg-white/10 hover:text-white"
-              }`}
-              title={sidebarCollapsed ? "Administration" : ""}
-            >
-              <span
-                className={`flex items-center ${
-                  sidebarCollapsed
-                    ? "justify-center"
-                    : "gap-2.5"
-                }`}
-              >
-                <ShieldCheck size={17} />
-                {!sidebarCollapsed && (
-                  <span className="truncate">
-                    Administration
-                  </span>
-                )}
-              </span>
-
-              {!sidebarCollapsed && (
-                <ChevronDown
-                  size={15}
-                  className={`shrink-0 transition-transform ${
-                    administrationOpen ? "rotate-180" : ""
-                  }`}
-                />
-              )}
-            </button>
-
-            {/* ADMINISTRATION CHILDREN */}
-            {!sidebarCollapsed && administrationOpen && (
-              <div className="ml-3 space-y-1 border-l border-white/10 pl-3">
-                <Link
-                  href="/admin/administration/users"
-                  className={`flex items-center gap-2 rounded-lg px-2.5 py-2 transition ${
-                    pathname.startsWith(
-                      "/admin/administration/users"
-                    )
-                      ? "bg-[#C87532] font-bold text-white shadow-md"
-                      : "text-[#C7D0BC] hover:bg-white/10 hover:text-white"
-                  }`}
-                >
-                  <Users size={15} />
-                  <span className="truncate">User Management</span>
-                </Link>
-
-                <Link
-                  href="/admin/administration/roles"
-                  className={`flex items-center gap-2 rounded-lg px-2.5 py-2 transition ${
-                    pathname.startsWith(
-                      "/admin/administration/roles"
-                    )
-                      ? "bg-[#C87532] font-bold text-white shadow-md"
-                      : "text-[#C7D0BC] hover:bg-white/10 hover:text-white"
-                  }`}
-                >
-                  <ShieldCheck size={15} />
-                  <span className="truncate">
-                    Roles & Permissions
-                  </span>
-                </Link>
-
-                <Link
-                  href="/admin/administration/groups"
-                  className={`flex items-center gap-2 rounded-lg px-2.5 py-2 transition ${
-                    pathname.startsWith(
-                      "/admin/administration/groups"
-                    )
-                      ? "bg-[#C87532] font-bold text-white shadow-md"
-                      : "text-[#C7D0BC] hover:bg-white/10 hover:text-white"
-                  }`}
-                >
-                  <Building2 size={15} />
-                  <span className="truncate">
-                    Groups & Departments
-                  </span>
-                </Link>
-
-                <Link
-                  href="/admin/administration/recovery"
-                  className={`flex items-center gap-2 rounded-lg px-2.5 py-2 transition ${
-                    pathname.startsWith(
-                      "/admin/administration/recovery"
-                    )
-                      ? "bg-[#C87532] font-bold text-white shadow-md"
-                      : "text-[#C7D0BC] hover:bg-white/10 hover:text-white"
-                  }`}
-                >
-                  <Archive size={15} />
-                  <span className="truncate">Recovery Bin</span>
-                </Link>
-              </div>
-            )}
-
-            {/* ORGANISATION */}
-            <button
-              type="button"
-              onClick={() =>
-                setOrganisationOpen((prev) => !prev)
-              }
-              className={`flex w-full items-center rounded-lg py-2 transition-all duration-200 ${
-                sidebarCollapsed
-                  ? "justify-center px-0"
-                  : "justify-between px-2.5"
-              } ${
-                organisationActive
-                  ? "bg-white/10 text-white"
-                  : "text-[#C7D0BC] hover:bg-white/10 hover:text-white"
-              }`}
-              title={sidebarCollapsed ? "Organisation" : ""}
-            >
-              <span
-                className={`flex items-center ${
-                  sidebarCollapsed
-                    ? "justify-center"
-                    : "gap-2.5"
-                }`}
-              >
-                <Building2 size={17} />
-                {!sidebarCollapsed && (
-                  <span className="truncate">Organisation</span>
-                )}
-              </span>
-
-              {!sidebarCollapsed && (
-                <ChevronDown
-                  size={15}
-                  className={`shrink-0 transition-transform ${
-                    organisationOpen ? "rotate-180" : ""
-                  }`}
-                />
-              )}
-            </button>
-
-            {/* ORGANISATION CHILDREN */}
-            {!sidebarCollapsed && organisationOpen && (
-              <div className="ml-3 space-y-1 border-l border-white/10 pl-3">
-                {/* OVERVIEW */}
-                <Link
-                  href="/admin/organisation"
-                  className={`flex items-center gap-2 rounded-lg px-2.5 py-2 transition ${
-                    pathname === "/admin/organisation"
-                      ? "bg-[#C87532] font-bold text-white shadow-md"
-                      : "text-[#C7D0BC] hover:bg-white/10 hover:text-white"
-                  }`}
-                >
-                  <Building2 size={15} />
-                  <span className="truncate">Overview</span>
-                </Link>
-
-                {/* COMPANY PROFILE */}
-                <Link
-                  href="/admin/organisation/profile"
-                  className={`flex items-center gap-2 rounded-lg px-2.5 py-2 transition ${
-                    pathname === "/admin/organisation/profile"
-                      ? "bg-[#C87532] font-bold text-white shadow-md"
-                      : "text-[#C7D0BC] hover:bg-white/10 hover:text-white"
-                  }`}
-                >
-                  <Settings2 size={15} />
-                  <span className="truncate">Company Profile</span>
-                </Link>
-
-                {/* DEPARTMENTS & GROUPS */}
-                <button
-                  type="button"
-                  onClick={() =>
-                    setDepartmentsOpen((prev) => !prev)
-                  }
-                  className="flex w-full items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-[#C7D0BC] transition hover:bg-white/10 hover:text-white"
-                >
-                  <span className="flex min-w-0 items-center gap-2">
-                    <Network size={15} />
-                    <span className="truncate">
-                      Departments & Groups
-                    </span>
-                  </span>
-
-                  <ChevronDown
-                    size={14}
-                    className={`shrink-0 transition-transform ${
-                      departmentsOpen ? "rotate-180" : ""
-                    }`}
-                  />
-                </button>
-
-                {/* DEPARTMENT LINKS + NESTED SAFARI */}
-                {departmentsOpen && renderDepartmentLinks(false)}
-
-                {/* MEMBERS */}
-                <Link
-                  href="/admin/organisation/members"
-                  className={`flex items-center gap-2 rounded-lg px-2.5 py-2 transition ${
-                    pathname.startsWith(
-                      "/admin/organisation/members"
-                    )
-                      ? "bg-[#C87532] font-bold text-white shadow-md"
-                      : "text-[#C7D0BC] hover:bg-white/10 hover:text-white"
-                  }`}
-                >
-                  <Users size={15} />
-                  <span className="truncate">Members</span>
-                </Link>
-
-                {/* BOOKING POLICIES */}
-                <Link
-                  href="/admin/organisation/policies"
-                  className={`flex items-center gap-2 rounded-lg px-2.5 py-2 transition ${
-                    pathname.startsWith(
-                      "/admin/organisation/policies"
-                    )
-                      ? "bg-[#C87532] font-bold text-white shadow-md"
-                      : "text-[#C7D0BC] hover:bg-white/10 hover:text-white"
-                  }`}
-                >
-                  <ShieldCheck size={15} />
-                  <span className="truncate">Booking Policies</span>
-                </Link>
-
-                {/* ACTIVITY LOGS */}
-                <Link
-                  href="/admin/organisation/activity-logs"
-                  className={`flex items-center gap-2 rounded-lg px-2.5 py-2 transition ${
-                    pathname.startsWith(
-                      "/admin/organisation/activity-logs"
-                    )
-                      ? "bg-[#C87532] font-bold text-white shadow-md"
-                      : "text-[#C7D0BC] hover:bg-white/10 hover:text-white"
-                  }`}
-                >
-                  <ClipboardList size={15} />
-                  <span className="truncate">Activity Logs</span>
-                </Link>
-              </div>
-            )}
-
-            {/* HOTELS */}
-            <Link
-              href="/admin/hotels"
-              className={getLinkClass(
-                pathname.startsWith("/admin/hotels"),
-                sidebarCollapsed
-              )}
-              title={sidebarCollapsed ? "Hotels & Stays" : ""}
-            >
-              <Hotel size={17} />
-              {!sidebarCollapsed && (
-                <span className="truncate">Hotels & Stays</span>
-              )}
-            </Link>
-
-            {/* SAFARI */}
-            <Link
-              href="/admin/safari"
-              className={getLinkClass(
-                pathname.startsWith("/admin/safari"),
-                sidebarCollapsed
-              )}
-              title={sidebarCollapsed ? "Safari" : ""}
-            >
-              <Trees size={17} />
-              {!sidebarCollapsed && (
-                <span className="truncate">Safari</span>
-              )}
-            </Link>
-
-            {/* EVENTS */}
-            <Link
-              href="/admin/events"
-              className={getLinkClass(
-                pathname.startsWith("/admin/events"),
-                sidebarCollapsed
-              )}
-              title={sidebarCollapsed ? "Events" : ""}
-            >
-              <CalendarDays size={17} />
-              {!sidebarCollapsed && (
-                <span className="truncate">Events</span>
-              )}
-            </Link>
-
-            {/* WEDDINGS */}
-            <Link
-              href="/admin/weddings"
-              className={getLinkClass(
-                pathname.startsWith("/admin/weddings"),
-                sidebarCollapsed
-              )}
-              title={sidebarCollapsed ? "Weddings" : ""}
-            >
-              <CalendarDays size={17} />
-              {!sidebarCollapsed && (
-                <span className="truncate">Weddings</span>
-              )}
-            </Link>
-
-            {/* ANALYTICS */}
-            <Link
-              href="/admin/analytics"
-              className={getLinkClass(
-                pathname.startsWith("/admin/analytics"),
-                sidebarCollapsed
-              )}
-              title={sidebarCollapsed ? "Analytics" : ""}
-            >
-              <BarChart3 size={17} />
-              {!sidebarCollapsed && (
-                <span className="truncate">Analytics</span>
-              )}
-            </Link>
-          </nav>
+          {renderNavigation({ collapsed: sidebarCollapsed })}
         </div>
       </aside>
     </>
   );
 }
+
+export default AdminSidebar;

@@ -859,6 +859,7 @@ const safariId = getSafariId(booking);
 
 /* ----------------------------- edit modal ----------------------------- */
 
+
 function EditBookingModal({ booking, onClose, onSave, saving }) {
   const [form, setForm] = useState(null);
 
@@ -872,8 +873,7 @@ function EditBookingModal({ booking, onClose, onSave, saving }) {
       name: getName(booking) === "Guest" ? "" : getName(booking),
       phone: getPhone(booking),
       email: getEmail(booking),
-      bookingType:
-        booking.bookingType || booking.type || getBookingType(booking),
+      bookingType: getBookingType(booking),
       location: getLocation(booking),
       checkIn: toDateInput(
         booking.checkIn ||
@@ -909,26 +909,37 @@ function EditBookingModal({ booking, onClose, onSave, saving }) {
     });
   };
 
-  const inputClass =
-    "h-8 w-full rounded-md border border-slate-200 bg-white px-2.5 text-xs outline-none focus:border-[#B96928] focus:ring-2 focus:ring-[#B96928]/10";
+  const labelClass =
+    "mb-1.5 block text-sm font-semibold leading-5 text-slate-700";
 
-  const labelClass = "mb-1 block text-[11px] font-semibold text-slate-600";
+  const inputClass =
+    "block h-10 w-full min-w-0 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-[#B96928] focus:ring-2 focus:ring-[#B96928]/15";
+
+  const fields = [
+    { label: "Customer Name", key: "name", type: "text" },
+    { label: "Phone", key: "phone", type: "tel" },
+    { label: "Email", key: "email", type: "email" },
+    { label: "Location / Zone", key: "location", type: "text" },
+  ];
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/50 p-3"
+      className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-slate-950/60 p-3 sm:p-5"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
     >
       <form
         onSubmit={submit}
-        className="flex max-h-[92vh] w-full max-w-xl flex-col overflow-hidden rounded-xl border border-white/50 bg-white shadow-2xl"
+        className="my-auto flex max-h-[94vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
       >
-        <div className="flex shrink-0 items-center justify-between border-b border-slate-100 bg-[#F8FAFC] px-4 py-2.5">
-          <div>
-            <h2 className="text-sm font-bold text-[#172033]">Edit Booking</h2>
-            <p className="text-[11px] text-slate-500">
+        {/* Header */}
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-slate-50 px-5 py-4">
+          <div className="min-w-0">
+            <h2 className="text-lg font-bold text-[#172033]">
+              Edit Booking
+            </h2>
+            <p className="mt-1 text-sm text-slate-500">
               Reference: {getReference(booking)}
             </p>
           </div>
@@ -936,119 +947,147 @@ function EditBookingModal({ booking, onClose, onSave, saving }) {
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md border border-slate-200 bg-white p-1.5 text-slate-500 hover:bg-slate-100"
+            aria-label="Close edit booking"
+            className="ml-3 rounded-lg border border-slate-200 bg-white p-2 text-slate-500 hover:bg-slate-100"
           >
-            <X size={14} />
+            <X size={18} />
           </button>
         </div>
 
-        <div className="grid min-h-0 grid-cols-2 gap-2.5 overflow-y-auto p-3">
-          {[
-            ["Customer Name", "name", "text"],
-            ["Phone", "phone", "tel"],
-            ["Email", "email", "email"],
-            ["Location / Zone", "location", "text"],
-          ].map(([label, key, type]) => (
-            <label key={key} className="col-span-2 block sm:col-span-1">
-              <span className={labelClass}>{label}</span>
-              <input
-                type={type}
-                value={form[key]}
-                onChange={(event) => updateField(key, event.target.value)}
-                className={inputClass}
+        {/* Form fields */}
+        <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-5">
+          <section>
+            <h3 className="mb-3 text-sm font-bold text-[#172033]">
+              Customer Information
+            </h3>
+
+            <div className="grid grid-cols-1 gap-x-5 gap-y-4 sm:grid-cols-2">
+              {fields.map(({ label, key, type }) => (
+                <label key={key} className="block min-w-0">
+                  <span className={labelClass}>{label}</span>
+                  <input
+                    type={type}
+                    value={form[key] ?? ""}
+                    onChange={(event) =>
+                      updateField(key, event.target.value)
+                    }
+                    className={inputClass}
+                  />
+                </label>
+              ))}
+            </div>
+          </section>
+
+          <section className="border-t border-slate-100 pt-4">
+            <h3 className="mb-3 text-sm font-bold text-[#172033]">
+              Booking Information
+            </h3>
+
+            <div className="grid grid-cols-1 gap-x-5 gap-y-4 sm:grid-cols-2">
+              <label className="block min-w-0">
+                <span className={labelClass}>Booking Type</span>
+                <select
+                  value={form.bookingType}
+                  onChange={(event) =>
+                    updateField("bookingType", event.target.value)
+                  }
+                  className={inputClass}
+                >
+                  {BOOKING_TYPES.filter((type) => type !== "all").map(
+                    (type) => (
+                      <option key={type} value={type}>
+                        {formatLabel(type)}
+                      </option>
+                    )
+                  )}
+                </select>
+              </label>
+
+              <label className="block min-w-0">
+                <span className={labelClass}>Status</span>
+                <select
+                  value={form.status}
+                  onChange={(event) =>
+                    updateField("status", event.target.value)
+                  }
+                  className={inputClass}
+                >
+                  {BOOKING_STATUSES.map((status) => (
+                    <option key={status} value={status}>
+                      {formatLabel(status)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="block min-w-0">
+                <span className={labelClass}>Check-in / Safari Date</span>
+                <input
+                  type="date"
+                  value={form.checkIn}
+                  onChange={(event) =>
+                    updateField("checkIn", event.target.value)
+                  }
+                  className={inputClass}
+                />
+              </label>
+
+              <label className="block min-w-0">
+                <span className={labelClass}>Check-out</span>
+                <input
+                  type="date"
+                  value={form.checkOut}
+                  onChange={(event) =>
+                    updateField("checkOut", event.target.value)
+                  }
+                  className={inputClass}
+                />
+              </label>
+
+              {[
+                ["Adults", "adults", 0],
+                ["Children", "children", 0],
+                ["Rooms", "rooms", 1],
+                ["Guests", "guests", 0],
+              ].map(([label, key, min]) => (
+                <label key={key} className="block min-w-0">
+                  <span className={labelClass}>{label}</span>
+                  <input
+                    type="number"
+                    min={min}
+                    value={form[key] ?? ""}
+                    onChange={(event) =>
+                      updateField(key, event.target.value)
+                    }
+                    className={inputClass}
+                  />
+                </label>
+              ))}
+            </div>
+          </section>
+
+          <section className="border-t border-slate-100 pt-4">
+            <label className="block">
+              <span className={labelClass}>Special Request / Notes</span>
+              <textarea
+                rows={4}
+                value={form.specialRequest}
+                onChange={(event) =>
+                  updateField("specialRequest", event.target.value)
+                }
+                className="block w-full resize-y rounded-lg border border-slate-300 bg-white p-3 text-sm leading-6 text-slate-800 outline-none placeholder:text-slate-400 focus:border-[#B96928] focus:ring-2 focus:ring-[#B96928]/15"
+                placeholder="Customer requirements..."
               />
             </label>
-          ))}
-
-          <label className="col-span-2 block sm:col-span-1">
-            <span className={labelClass}>Booking Type</span>
-            <select
-              value={form.bookingType}
-              onChange={(event) =>
-                updateField("bookingType", event.target.value)
-              }
-              className={inputClass}
-            >
-              {BOOKING_TYPES.filter((type) => type !== "all").map((type) => (
-                <option key={type} value={type}>
-                  {formatLabel(type)}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="col-span-2 block sm:col-span-1">
-            <span className={labelClass}>Status</span>
-            <select
-              value={form.status}
-              onChange={(event) => updateField("status", event.target.value)}
-              className={inputClass}
-            >
-              {BOOKING_STATUSES.map((status) => (
-                <option key={status} value={status}>
-                  {formatLabel(status)}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="col-span-2 block sm:col-span-1">
-            <span className={labelClass}>Check-in / Safari Date</span>
-            <input
-              type="date"
-              value={form.checkIn}
-              onChange={(event) => updateField("checkIn", event.target.value)}
-              className={inputClass}
-            />
-          </label>
-
-          <label className="col-span-2 block sm:col-span-1">
-            <span className={labelClass}>Check-out</span>
-            <input
-              type="date"
-              value={form.checkOut}
-              onChange={(event) => updateField("checkOut", event.target.value)}
-              className={inputClass}
-            />
-          </label>
-
-          {[
-            ["Adults", "adults", 0],
-            ["Children", "children", 0],
-            ["Rooms", "rooms", 1],
-            ["Guests (single field)", "guests", 0],
-          ].map(([label, key, min]) => (
-            <label key={key} className="col-span-1 block">
-              <span className={labelClass}>{label}</span>
-              <input
-                type="number"
-                min={min}
-                value={form[key]}
-                onChange={(event) => updateField(key, event.target.value)}
-                className={inputClass}
-              />
-            </label>
-          ))}
-
-          <label className="col-span-2 block">
-            <span className={labelClass}>Special Request / Notes</span>
-            <textarea
-              rows={3}
-              value={form.specialRequest}
-              onChange={(event) =>
-                updateField("specialRequest", event.target.value)
-              }
-              className="w-full resize-y rounded-md border border-slate-200 p-2 text-xs outline-none focus:border-[#B96928]"
-              placeholder="Customer requirements..."
-            />
-          </label>
+          </section>
         </div>
 
-        <div className="flex shrink-0 justify-end gap-2 border-t border-slate-100 bg-[#F8FAFC] px-4 py-2.5">
+        {/* Footer */}
+        <div className="flex shrink-0 flex-wrap justify-end gap-2 border-t border-slate-200 bg-slate-50 px-5 py-4">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+            className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100"
           >
             Cancel
           </button>
@@ -1056,9 +1095,9 @@ function EditBookingModal({ booking, onClose, onSave, saving }) {
           <button
             type="submit"
             disabled={saving}
-            className="flex items-center gap-1.5 rounded-md bg-[#B96928] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#A65B23] disabled:cursor-not-allowed disabled:opacity-60"
+            className="flex items-center justify-center gap-2 rounded-lg bg-[#B96928] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#A65B23] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            <Save size={13} />
+            <Save size={16} />
             {saving ? "Saving..." : "Save Changes"}
           </button>
         </div>
@@ -1066,6 +1105,7 @@ function EditBookingModal({ booking, onClose, onSave, saving }) {
     </div>
   );
 }
+
 
 /* ----------------------------- main page ----------------------------- */
 
@@ -1443,43 +1483,66 @@ function AdminBookingsContent() {
   /* ---------- edit booking ---------- */
 
   const saveBooking = async (booking, fields) => {
-    const id = getId(booking);
+  const id = getId(booking);
 
-    if (!id) {
-      setNotice("This booking does not have a valid ID.");
-      return;
-    }
+  if (!id) {
+    setNotice("This booking does not have a valid ID.");
+    return;
+  }
 
-    setSaving(true);
+  setSaving(true);
 
-    try {
-      const data = await request(`/api/bookings/${encodeURIComponent(id)}`, {
-        method: "PUT",
-        body: JSON.stringify(fields),
-      });
+  try {
+    // Map frontend form fields to backend Booking model fields.
+    const payload = {
+      name: fields.name,
+      phone: fields.phone,
+      email: fields.email,
+      type: fields.bookingType || booking.type || booking.bookingType,
+      zone: fields.location,
+      checkIn: fields.checkIn || null,
+      checkOut: fields.checkOut || null,
+      adults: Number(fields.adults || 0),
+      children: Number(fields.children || 0),
+      rooms: Number(fields.rooms || 1),
+      specialRequest: fields.specialRequest || "",
+    };
 
-      const updated = data.booking || data.data?.booking || data.data || data;
+    const data = await request(`/api/bookings/${encodeURIComponent(id)}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
 
-      setBookings((current) =>
-        current.map((item) =>
-          getId(item) === id ? { ...item, ...fields, ...(updated || {}) } : item
-        )
-      );
+    const updated = data.booking || data.data?.booking || data.data || data;
 
-      setSelectedBooking((current) =>
-        current && getId(current) === id
-          ? { ...current, ...fields, ...(updated || {}) }
-          : current
-      );
+    const mergedBooking = {
+      ...booking,
+      ...payload,
+      ...fields,
+      ...(updated || {}),
+      // Keep the frontend display fields synchronized with backend fields.
+      location: updated?.zone ?? payload.zone,
+      bookingType: updated?.type ?? payload.type,
+    };
 
-      setEditingBooking(null);
-      setNotice("Booking updated successfully.");
-    } catch (err) {
-      setNotice(err.message);
-    } finally {
-      setSaving(false);
-    }
-  };
+    setBookings((current) =>
+      current.map((item) =>
+        getId(item) === id ? { ...item, ...mergedBooking } : item
+      )
+    );
+
+    setSelectedBooking((current) =>
+      current && getId(current) === id ? mergedBooking : current
+    );
+
+    setEditingBooking(null);
+    setNotice("Booking updated successfully.");
+  } catch (err) {
+    setNotice(err.message || "Booking update failed.");
+  } finally {
+    setSaving(false);
+  }
+};
 
   /* ---------- delete one booking ---------- */
 

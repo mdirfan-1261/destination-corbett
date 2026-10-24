@@ -7,6 +7,17 @@ export const stayData = {
     "From luxury resorts to comfortable group stays, find the right accommodation for your Corbett experience.",
 
   categories: [
+
+      {
+    id: "resorts",
+    title: "Resorts & Stays",
+    description:
+      "Peaceful resorts surrounded by the natural beauty of Jim Corbett.",
+    image: "/stay/resort-hero.webp",
+    href: "/stay/resorts",
+  },
+
+
     {
       id: 1,
       title: "Luxury Resorts",
@@ -18,7 +29,7 @@ export const stayData = {
 
     {
       id: 2,
-      title: "Premium Hotels",
+      title: "Deluxe Hotels",
       description:
         "Comfortable and well-equipped hotels for corporate and leisure groups.",
       image: "/stay/premium-hotel.webp",
@@ -34,13 +45,6 @@ export const stayData = {
       href: "/stay/rooms",
     },
 
-    {
-      id: 4,
-      title: "Conference Resorts",
-      description:
-        "Resorts with meeting spaces and facilities for conferences and corporate events.",
-      image: "/stay/conference-resort.webp",
-      href: "/stay/resorts",
-    },
+    
   ],
 };

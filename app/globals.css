@@ -11,6 +11,7 @@
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 5rem; /* anchor links (#packages etc.) stay clear of the sticky navbar */
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
@@ -26,6 +27,12 @@ body {
   transition: background-color 0.3s, color 0.3s;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  overflow-x: clip; /* no sideways scroll on mobile; clip keeps sticky headers working */
+}
+
+img,
+video {
+  max-width: 100%;
 }
 
 :root {
@@ -65,6 +72,10 @@ body {
 
 /* =========================================
    DARK MODE: NAVY THEME
+
+   OPT-OUT: add the class "dc-keep-colors" to any block that has its own
+   fixed light surface (e.g. cream package cards). Inside it the dark-mode
+   rules below do NOT recolour anything, so dark text stays dark on cream.
    ========================================= */
 
 .dark {
@@ -84,7 +95,7 @@ body {
   .bg-neutral-50,
   [class*="bg-[#f" i],
   [class*="bg-[#e" i]
-):not([class*="dark:"]) {
+):not([class*="dark:"]):not(.dc-keep-colors):not(.dc-keep-colors *) {
   background-color: #070d1f;
 }
 
@@ -93,12 +104,11 @@ body {
   .bg-white,
   .bg-gray-100,
   .bg-slate-100
-):not([class*="dark:"]) {
+):not([class*="dark:"]):not(.dc-keep-colors):not(.dc-keep-colors *) {
   background-color: #0f1830;
 }
 
-/* NEW: translucent white cards (bg-white/80, bg-white/90 etc.)
-   Without this they stay light in dark mode and white text becomes unreadable */
+/* Translucent white cards (bg-white/80, bg-white/90 etc.) */
 .dark :is(
   [class*="bg-white/50"],
   [class*="bg-white/60"],
@@ -110,11 +120,11 @@ body {
   [class*="bg-white/95"],
   [class*="bg-gray-50/"],
   [class*="bg-slate-50/"]
-):not([class*="dark:"]) {
+):not([class*="dark:"]):not(.dc-keep-colors):not(.dc-keep-colors *) {
   background-color: rgba(15, 24, 48, 0.92);
 }
 
-/* NEW: light gradients (e.g. welcome card with from-white / from-[#EEF5F2]) */
+/* Light gradients */
 .dark :is(
   [class*="from-white"],
   [class*="from-gray-50"],
@@ -122,7 +132,7 @@ body {
   [class*="from-stone-50"],
   [class*="from-[#EEF5F2" i],
   [class*="from-[#F7F5F0" i]
-):not([class*="dark:"]) {
+):not([class*="dark:"]):not(.dc-keep-colors):not(.dc-keep-colors *) {
   --tw-gradient-from: #0f1830;
 }
 
@@ -132,7 +142,7 @@ body {
   [class*="via-slate-50"],
   [class*="via-[#EEF5F2" i],
   [class*="via-[#F7F5F0" i]
-):not([class*="dark:"]) {
+):not([class*="dark:"]):not(.dc-keep-colors):not(.dc-keep-colors *) {
   --tw-gradient-via: #0f1830;
 }
 
@@ -143,7 +153,7 @@ body {
   [class*="to-stone-50"],
   [class*="to-[#EEF5F2" i],
   [class*="to-[#F7F5F0" i]
-):not([class*="dark:"]) {
+):not([class*="dark:"]):not(.dc-keep-colors):not(.dc-keep-colors *) {
   --tw-gradient-to: #0f1830;
 }
 
@@ -152,7 +162,7 @@ body {
   .bg-orange-50,
   .bg-amber-50,
   .bg-yellow-50
-):not([class*="dark:"]) {
+):not([class*="dark:"]):not(.dc-keep-colors):not(.dc-keep-colors *) {
   background-color: rgba(185, 105, 40, 0.18);
 }
 
@@ -163,9 +173,13 @@ body {
   .text-gray-800,
   .text-slate-900,
   .text-slate-800,
+  .text-neutral-900,
+  .text-neutral-800,
+  .text-stone-900,
+  .text-stone-800,
   [class*="text-[#172033" i],
   [class*="text-[#18352A" i]
-):not([class*="dark:"]) {
+):not([class*="dark:"]):not(.dc-keep-colors):not(.dc-keep-colors *) {
   color: #f1f5f9;
 }
 
@@ -174,8 +188,12 @@ body {
   .text-gray-700,
   .text-gray-600,
   .text-slate-700,
-  .text-slate-600
-):not([class*="dark:"]) {
+  .text-slate-600,
+  .text-neutral-700,
+  .text-neutral-600,
+  .text-stone-700,
+  .text-stone-600
+):not([class*="dark:"]):not(.dc-keep-colors):not(.dc-keep-colors *) {
   color: #cbd5e1;
 }
 
@@ -183,9 +201,20 @@ body {
   .text-gray-500,
   .text-gray-400,
   .text-slate-500,
-  .text-slate-400
-):not([class*="dark:"]) {
+  .text-slate-400,
+  .text-neutral-500,
+  .text-neutral-400,
+  .text-stone-500,
+  .text-stone-400
+):not([class*="dark:"]):not(.dc-keep-colors):not(.dc-keep-colors *) {
   color: #b8c4d6;
+}
+
+/* Brand orange used as TEXT: lighten slightly so small text stays readable on navy */
+.dark :is(
+  [class*="text-[#B96928" i]
+):not([class*="dark:"]):not(.dc-keep-colors):not(.dc-keep-colors *) {
+  color: #e8a463;
 }
 
 /* Borders */
@@ -196,7 +225,7 @@ body {
   .border-slate-100,
   .border-slate-200,
   [class*="border-[#e" i]
-):not([class*="dark:"]) {
+):not([class*="dark:"]):not(.dc-keep-colors):not(.dc-keep-colors *) {
   border-color: rgba(148, 163, 184, 0.22);
 }
 
@@ -205,7 +234,7 @@ body {
 .dark textarea,
 .dark select {
   background-color: #131c36;
-  color: #f1f5f9;
+  color: #f8fafc;
   border-color: rgba(148, 163, 184, 0.3);
 }
 
@@ -261,41 +290,37 @@ textarea:focus-visible {
 
 @layer base {
   @media (max-width: 767px) {
-    /* Main headings */
     h1 {
-      font-size: clamp(30px, 8vw, 38px);
+      font-size: clamp(28px, 7.5vw, 36px);
       line-height: 1.2;
-      letter-spacing: -0.45px;
+      letter-spacing: -0.4px;
     }
 
     h2 {
-      font-size: clamp(25px, 6.5vw, 30px);
+      font-size: clamp(23px, 6vw, 28px);
       line-height: 1.3;
     }
 
     h3 {
-      font-size: 20px;
+      font-size: 19px;
       line-height: 1.4;
     }
 
     h4 {
-      font-size: 18px;
+      font-size: 17px;
       line-height: 1.45;
     }
 
-    /* Paragraphs */
     p {
-      font-size: 16px;
-      line-height: 1.75;
-    }
-
-    /* Lists */
-    li {
-      font-size: 15px;
+      font-size: 15.5px;
       line-height: 1.7;
     }
 
-    /* Buttons */
+    li {
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
     button,
     a[role="button"],
     input[type="button"],
@@ -303,11 +328,10 @@ textarea:focus-visible {
       min-height: 44px;
     }
 
-    /* Forms */
     input,
     select,
     textarea {
-      font-size: 16px;
+      font-size: 16px; /* 16px stops iOS from zooming into fields */
       line-height: 1.5;
     }
 
@@ -316,13 +340,11 @@ textarea:focus-visible {
       line-height: 1.5;
     }
 
-    /* Supporting text */
     small {
       font-size: 14px;
       line-height: 1.5;
     }
 
-    /* Prevent overflow */
     h1,
     h2,
     h3,
@@ -333,27 +355,19 @@ textarea:focus-visible {
     }
   }
 
-  /* =========================================
-     VERY SMALL MOBILE
-     ========================================= */
-
   @media (max-width: 374px) {
     h1 {
-      font-size: 29px;
+      font-size: 27px;
     }
 
     h2 {
-      font-size: 24px;
+      font-size: 22px;
     }
 
     h3 {
-      font-size: 19px;
+      font-size: 18px;
     }
   }
-
-  /* =========================================
-     TABLET
-     ========================================= */
 
   @media (min-width: 768px) and (max-width: 1023px) {
     body {
@@ -369,6 +383,41 @@ textarea:focus-visible {
     textarea {
       font-size: 16px;
     }
+  }
+}
+
+/* =========================================
+   MOBILE: MINIMUM READABLE SIZE FOR MICRO TEXT
+   Compact pages use text-[9px] / [10px] / [11px] / text-xs, which is too
+   small on phones. Below 640px these are raised a little. The [class~=...]
+   selector matches the exact class only, so sm:text-xs etc. on desktop are
+   not touched. Layout stays compact, text just becomes readable.
+   ========================================= */
+
+@media (max-width: 639px) {
+  [class~="text-[8px]"] {
+    font-size: 10.5px;
+    line-height: 1.35;
+  }
+
+  [class~="text-[9px]"] {
+    font-size: 11px;
+    line-height: 1.4;
+  }
+
+  [class~="text-[10px]"] {
+    font-size: 11.5px;
+    line-height: 1.4;
+  }
+
+  [class~="text-[11px]"] {
+    font-size: 12.5px;
+    line-height: 1.45;
+  }
+
+  [class~="text-xs"] {
+    font-size: 13px;
+    line-height: 1.45;
   }
 }
 
@@ -402,25 +451,34 @@ textarea:focus-visible {
   .dark a:not([class*="bg-"]) {
     color: #f1f5f9;
   }
+
+  /* Blocks with their own light surface: plain text inherits the block colour */
+  .dark .dc-keep-colors :is(h1, h2, h3, h4, h5, h6, p, li, label, span, a) {
+    color: inherit;
+  }
 }
 
 /* Secondary text */
-.dark small,
-.dark .text-gray-500,
-.dark .text-gray-600,
-.dark .text-gray-700,
-.dark .text-slate-500,
-.dark .text-slate-600,
-.dark .text-slate-700 {
+.dark :is(
+  small,
+  .text-gray-500,
+  .text-gray-600,
+  .text-gray-700,
+  .text-slate-500,
+  .text-slate-600,
+  .text-slate-700
+):not(.dc-keep-colors):not(.dc-keep-colors *) {
   color: #cbd5e1;
 }
 
 /* Cards and content panels */
-.dark .bg-white,
-.dark .bg-gray-50,
-.dark .bg-gray-100,
-.dark .bg-slate-50,
-.dark .bg-slate-100 {
+.dark :is(
+  .bg-white,
+  .bg-gray-50,
+  .bg-gray-100,
+  .bg-slate-50,
+  .bg-slate-100
+):not(.dc-keep-colors):not(.dc-keep-colors *) {
   color: #f1f5f9;
 }
 
@@ -467,7 +525,6 @@ textarea:focus-visible {
 .dark a[class*="bg-[#B96928]"] {
   color: #ffffff;
 }
-
 
 /* =========================================
    MOBILE BOTTOM NAV - DARK MODE FIX
@@ -582,7 +639,7 @@ textarea:focus-visible {
     header h4,
     header p,
     header span {
-      font-size: 12px;
+      font-size: 12.5px;
       line-height: 1.35;
       letter-spacing: normal;
     }
@@ -593,12 +650,148 @@ textarea:focus-visible {
     header .font-black,
     header .font-extrabold,
     header .font-bold {
-      font-size: 12px;
+      font-size: 12.5px;
     }
 
     nav svg,
     header svg {
       flex-shrink: 0;
     }
+  }
+}
+
+/* =========================================
+   REDUCED MOTION
+   ========================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* =========================================
+   HOME PAGE SIZING
+   Scoped to <main className="home-page ...">, so no other page is affected.
+   Home components were not visible when this was written, so the rules
+   target common Tailwind classes. Tune the numbers below if needed.
+   ========================================= */
+
+/* Laptop / desktop: smaller overall scale (the 75%-zoom feel). Change 0.85 to taste. */
+@media (min-width: 1024px) {
+  .home-page {
+    zoom: 0.85;
+  }
+}
+
+/* Same content width as Stay / Weddings (max-w-6xl) instead of corner to corner */
+.home-page [class*="max-w-7xl"],
+.home-page [class*="max-w-screen-xl"],
+.home-page [class*="max-w-screen-2xl"] {
+  max-width: 72rem;
+}
+
+/* Full-screen hero becomes a compact hero */
+.home-page :is(
+  [class~="min-h-screen"],
+  [class~="h-screen"],
+  [class~="min-h-svh"],
+  [class~="h-svh"],
+  [class~="min-h-[100vh]"],
+  [class~="h-[100vh]"],
+  [class~="min-h-[90vh]"],
+  [class~="h-[90vh]"],
+  [class~="min-h-[80vh]"],
+  [class~="h-[80vh]"]
+) {
+  height: auto;
+  min-height: clamp(340px, 58svh, 520px);
+}
+
+/* Oversized section padding gets capped */
+.home-page :is(
+  [class*="py-16"],
+  [class*="py-20"],
+  [class*="py-24"],
+  [class*="py-28"],
+  [class*="py-32"]
+) {
+  padding-top: clamp(1.25rem, 3.5vw, 2.5rem);
+  padding-bottom: clamp(1.25rem, 3.5vw, 2.5rem);
+}
+
+.home-page :is([class*="py-10"], [class*="py-12"], [class*="py-14"]) {
+  padding-top: clamp(1.25rem, 3vw, 2rem);
+  padding-bottom: clamp(1.25rem, 3vw, 2rem);
+}
+
+/* Big gaps between cards become even, compact gaps */
+.home-page :is(
+  [class*="gap-8"],
+  [class*="gap-10"],
+  [class*="gap-12"],
+  [class*="gap-16"]
+) {
+  gap: clamp(0.75rem, 2vw, 1.25rem);
+}
+
+/* Headings: capped sizes on every screen */
+.home-page h1 {
+  font-size: clamp(1.6rem, 1.2rem + 2vw, 2.5rem);
+  line-height: 1.15;
+}
+
+.home-page h2 {
+  font-size: clamp(1.25rem, 1rem + 1.2vw, 1.75rem);
+  line-height: 1.25;
+}
+
+.home-page h3 {
+  font-size: clamp(1rem, 0.9rem + 0.5vw, 1.2rem);
+  line-height: 1.3;
+}
+
+/* Tall card images become compact */
+.home-page :is(
+  [class~="h-64"],
+  [class~="h-72"],
+  [class~="h-80"],
+  [class~="h-96"]
+) {
+  height: clamp(180px, 28vw, 260px);
+}
+
+/* =========================================
+   MOBILE BOTTOM BAR - ACTIVE TAB (DARK MODE)
+   The strong dark-mode rules above force every bottom-bar link white
+   with !important, which would hide the active (orange) tab.
+   These come later and are more specific, so they win.
+   ========================================= */
+
+@media (max-width: 767px) {
+  .dark nav.fixed a[aria-current="page"],
+  .dark nav.fixed a[aria-current="page"] svg,
+  .dark nav.fixed a[aria-current="page"] span,
+  .dark nav.fixed button[aria-pressed="true"] {
+    color: #f0a15f !important;
+  }
+
+  /* Quick Quote icon when the popup is open: white on orange */
+  .dark nav.fixed button[aria-pressed="true"] svg,
+  .dark nav.fixed button[aria-pressed="true"] span {
+    color: #ffffff !important;
+  }
+
+  /* Quick Quote icon when normal: orange on navy */
+  .dark nav.fixed button[aria-pressed="false"] svg {
+    color: #f0a15f !important;
   }
 }

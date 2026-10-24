@@ -169,63 +169,75 @@ export default async function PackageDetailPage({ params }) {
 
   return (
     <main className="bg-[#F7F5F0] text-[#172033]">
+      <nav
+  aria-label="Breadcrumb"
+  className="mx-auto max-w-6xl px-3 pt-3 text-xs sm:px-5 sm:pt-4 sm:text-sm md:px-6"
+>
+  <div className="flex flex-wrap items-center gap-2">
+    <Link href="/" className="text-[#B96928] transition-colors hover:underline">
+      Home
+    </Link>
+    <span className="text-gray-400">›</span>
+    <Link href="/packages" className="text-[#B96928] transition-colors hover:underline">
+      Packages
+    </Link>
+    <span className="text-gray-400">›</span>
+    <span aria-current="page" className="line-clamp-1 font-medium text-[#172033]">
+      {pkg.title}
+    </span>
+  </div>
+</nav>
 
-      {/* HERO */}
-      <section className="px-1.5 py-1.5 sm:px-4 sm:py-4 md:px-6 md:py-5">
-        <div className="relative mx-auto max-w-7xl overflow-hidden rounded-xl bg-[#172033] sm:rounded-[24px] md:rounded-[28px]">
+      {/* ================= COMPACT HERO ================= */}
+<section className="px-3 pt-3 sm:px-5 sm:pt-4 md:px-6">
+  <div className="relative mx-auto h-[190px] max-w-6xl overflow-hidden rounded-xl bg-[#172033] text-white sm:h-[230px] sm:rounded-2xl lg:h-[260px]">
+    {/* Hero Image */}
+    <div className="absolute inset-0 lg:left-auto lg:w-[55%]">
+      <Image
+        src={pkg.image}
+        alt={pkg.title}
+        fill
+        priority
+        sizes="(max-width: 1023px) 100vw, 700px"
+        className="object-cover object-center brightness-110"
+      />
+    </div>
 
-          <div className="relative h-[320px] sm:h-[440px] md:h-[500px]">
+    {/* Image Overlays */}
+    <div className="pointer-events-none absolute inset-y-0 left-[45%] hidden w-[15%] bg-gradient-to-r from-[#172033] to-transparent lg:block" />
+    <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#172033]/90 via-[#172033]/55 to-transparent" />
 
-            <Image
-              src={pkg.image}
-              alt={pkg.title}
-              fill
-              priority
-              sizes="100vw"
-              className="object-cover"
-            />
+    {/* Hero Content */}
+    <div className="relative z-10 flex h-full items-center px-4 py-4 sm:px-8 lg:px-10">
+      <div className="max-w-2xl">
+        <span className="mb-2 inline-flex rounded-full bg-[#C87532] px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-white">
+          {pkg.tag}
+        </span>
 
-            <div className="absolute inset-0 bg-[#172033]/35" />
+        <h1 className="line-clamp-2 text-xl font-bold leading-tight tracking-tight sm:text-2xl md:text-3xl lg:text-4xl">
+          {pkg.title}
+        </h1>
 
-            <div className="absolute inset-0 bg-gradient-to-r from-[#172033]/90 via-[#172033]/55 to-transparent" />
+        <div className="mt-3 flex flex-wrap gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-md bg-black/35 px-2.5 py-1.5 text-[10px] text-white backdrop-blur-md sm:text-xs">
+            <Clock size={13} className="text-[#E0924F]" />
+            {pkg.duration}
+          </span>
 
-            <div className="relative z-10 flex h-full items-center px-5 sm:px-8 md:px-12 lg:px-16">
+          <span className="inline-flex items-center gap-1.5 rounded-md bg-black/35 px-2.5 py-1.5 text-[10px] text-white backdrop-blur-md sm:text-xs">
+            <Users size={13} className="text-[#E0924F]" />
+            {pkg.groupSize}
+          </span>
 
-              <div className="max-w-2xl">
-
-                <span className="inline-flex rounded-full bg-[#C87532] px-3 py-1 text-[9px] font-semibold uppercase tracking-wider text-white sm:text-xs">
-                  {pkg.tag}
-                </span>
-
-                <h1 className="mt-3 text-3xl font-semibold leading-tight text-white sm:text-5xl md:text-6xl">
-                  {pkg.title}
-                </h1>
-
-                <div className="mt-4 flex flex-wrap gap-2">
-
-                  <span className="inline-flex items-center gap-1.5 rounded-md bg-black/35 px-2.5 py-1.5 text-[10px] text-white backdrop-blur-md sm:text-xs">
-                    <Clock size={13} className="text-[#C87532]" />
-                    {pkg.duration}
-                  </span>
-
-                  <span className="inline-flex items-center gap-1.5 rounded-md bg-black/35 px-2.5 py-1.5 text-[10px] text-white backdrop-blur-md sm:text-xs">
-                    <Users size={13} className="text-[#C87532]" />
-                    {pkg.groupSize}
-                  </span>
-
-                  <span className="inline-flex items-center gap-1.5 rounded-md bg-black/35 px-2.5 py-1.5 text-[10px] text-white backdrop-blur-md sm:text-xs">
-                    <MapPin size={13} className="text-[#C87532]" />
-                    {pkg.location}
-                  </span>
-
-                </div>
-
-              </div>
-            </div>
-          </div>
+          <span className="hidden items-center gap-1.5 rounded-md bg-black/35 px-2.5 py-1.5 text-[10px] text-white backdrop-blur-md sm:inline-flex sm:text-xs">
+            <MapPin size={13} className="text-[#E0924F]" />
+            {pkg.location}
+          </span>
         </div>
-      </section>
-
+      </div>
+    </div>
+  </div>
+</section>
       {/* DETAILS */}
       <section className="px-4 py-8 sm:px-6 sm:py-12">
         <div className="mx-auto grid max-w-7xl gap-5 lg:grid-cols-[1.5fr_0.7fr]">

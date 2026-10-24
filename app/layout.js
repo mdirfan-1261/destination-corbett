@@ -3,9 +3,9 @@ import Providers from "./providers";
 import TopBar from "@/components/layout/TopBar";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-// import EnquiryWidget from "@/components/EnquiryWidget";
 import { StickyActions } from "@/components/ConversionKit";
-import QuickEnquiryPopup from "@/components/QuickEnquiryPopup";
+// import EnquiryWidget from "@/components/EnquiryWidget";
+// import QuickEnquiryPopup from "@/components/QuickEnquiryPopup";
 
 export const metadata = {
   title: "Destination Corbett",
@@ -18,7 +18,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="bg-white text-[#172033] dark:bg-[#0e1210] dark:text-gray-100 transition-colors duration-300">
+      <body className="bg-white text-[#172033] transition-colors duration-300 dark:bg-[#0e1210] dark:text-gray-100">
         <Providers>
           <TopBar />
           <Navbar />
@@ -29,9 +29,9 @@ export default function RootLayout({ children }) {
             <Footer />
           </div>
 
-          {/* <EnquiryWidget /> */}
           <StickyActions />
-          {/*<QuickEnquiryPopup />*/}
+          {/* <EnquiryWidget /> */}
+          {/* <QuickEnquiryPopup /> */}
         </Providers>
       </body>
     </html>
