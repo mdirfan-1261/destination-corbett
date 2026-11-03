@@ -89,8 +89,19 @@ function normalizeAgentProperty(property) {
 
 export default function ResortsStaysPage() {
     const [agentResorts, setAgentResorts] = useState([]);
+    const [staticOverrides, setStaticOverrides] = useState({});
+    const [deletedStaticIds, setDeletedStaticIds] = useState([]);
     const [loading, setLoading] = useState(true);
     const [apiError, setApiError] = useState("");
+
+    useEffect(() => {
+        try {
+            const savedOverrides = localStorage.getItem("DC_STATIC_PROPERTIES_OVERRIDES");
+            if (savedOverrides) setStaticOverrides(JSON.parse(savedOverrides));
+            const savedDeleted = localStorage.getItem("DC_STATIC_PROPERTIES_DELETED");
+            if (savedDeleted) setDeletedStaticIds(JSON.parse(savedDeleted));
+        } catch {}
+    }, []);
 
     useEffect(() => {
         const controller = new AbortController();
@@ -101,7 +112,7 @@ export default function ResortsStaysPage() {
                 setApiError("");
 
                 const response = await fetch(
-                    `${PUBLIC_PROPERTIES_URL}?propertyType=resort&limit=50`,
+                    `${PUBLIC_PROPERTIES_URL}?stayCategory=resorts&limit=50`,
                     {
                         method: "GET",
                         signal: controller.signal,
@@ -144,10 +155,27 @@ export default function ResortsStaysPage() {
     }, []);
 
     // Existing static resorts ko preserve karo aur duplicate entries hatao.
-    const staticResorts = resorts.map((resort) => ({
-        ...resort,
-        isAgentProperty: false,
-    }));
+    const staticResorts = resorts.filter((r) => {
+        const propId1 = `static-resort-${r.id}`;
+        const propId2 = `static-resort-${r.slug}`;
+        if (deletedStaticIds.includes(propId1) || deletedStaticIds.includes(propId2)) return false;
+        const ovr = staticOverrides[propId1] || staticOverrides[propId2];
+        if (ovr?.publicationStatus === "unpublished") return false;
+        return true;
+    }).map((resort) => {
+        const propId1 = `static-resort-${resort.id}`;
+        const propId2 = `static-resort-${resort.slug}`;
+        const override = staticOverrides[propId1] || staticOverrides[propId2];
+        return {
+            ...resort,
+            ...(override || {}),
+            isAgentProperty: false,
+        };
+    });
+
+
+
+
 
     const existingKeys = new Set(
         staticResorts.flatMap((resort) =>

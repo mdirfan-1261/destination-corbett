@@ -530,8 +530,8 @@ export default function BookingPage() {
 
   const estimatedAmount =
     nightlyPrice !== null &&
-    stayNights > 0 &&
-    Number(bookingData.rooms) > 0
+      stayNights > 0 &&
+      Number(bookingData.rooms) > 0
       ? nightlyPrice * stayNights * Number(bookingData.rooms)
       : null;
 
@@ -586,7 +586,7 @@ export default function BookingPage() {
         if (propertyError || !property) {
           setSubmitError(
             propertyError ||
-              "The selected property could not be verified."
+            "The selected property could not be verified."
           );
           return;
         }
@@ -647,79 +647,56 @@ export default function BookingPage() {
 
     try {
       // Static listings ke liye enquiry submit karo.
-      if (isEnquiryOnlyStay) {
-        const params = new URLSearchParams(
-          window.location.search
-        );
+     if (isEnquiryOnlyStay) {
+  const payload = {
+    type: "stay",
 
-        const enquiryPayload = {
-          inquiryType: "stay",
-          hotel: bookingData.propertyName || "Stay enquiry",
-          checkIn: bookingData.checkIn,
-          checkOut: bookingData.checkOut,
-          rooms: Number(bookingData.rooms),
-          name: guest.name.trim(),
-          company: "",
-          phone: guest.phone.trim(),
-          email: guest.email.trim(),
-          guests: totalGuests,
-          message: [
-            `Room type: ${bookingData.roomName || "Room on request"}`,
-            `Adults: ${bookingData.adults}`,
-            `Children: ${bookingData.children}`,
-            `Rooms: ${bookingData.rooms}`,
-            `Price per night: ${
-              urlPrice !== null
-                ? formatINR(urlPrice)
-                : "Price on request"
-            }`,
-            `Estimated stay amount: ${
-              estimatedAmount !== null
-                ? formatINR(estimatedAmount)
-                : "To be confirmed"
-            }`,
-            `Location: ${params.get("location") || "Jim Corbett"}`,
-            guest.specialRequest.trim()
-              ? `Special request: ${guest.specialRequest.trim()}`
-              : "",
-          ]
-            .filter(Boolean)
-            .join("\n"),
-        };
+    propertyId: String(bookingData.propertyId || ""),
+    roomTypeId: String(bookingData.roomTypeId || ""),
 
-        const enquiryResponse = await fetch(
-          `${API_BASE_URL}/api/enquiries`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-            },
-            body: JSON.stringify(enquiryPayload),
-          }
-        );
+    propertyName: bookingData.propertyName || "Stay enquiry",
+    roomName: bookingData.roomName || "Room on request",
 
-        const enquiryResult = await readApiResponse(enquiryResponse);
+    checkIn: bookingData.checkIn,
+    checkOut: bookingData.checkOut,
 
-        if (
-          !enquiryResponse.ok ||
-          enquiryResult?.success === false
-        ) {
-          throw new Error(
-            getApiError(
-              enquiryResult,
-              "Unable to send your stay enquiry."
-            )
-          );
-        }
+    adults: Number(bookingData.adults),
+    children: Number(bookingData.children),
+    rooms: Number(bookingData.rooms),
 
-        setSubmitSuccess(
-          "Your stay enquiry has been submitted successfully. Our team will contact you to confirm availability and the final price."
-        );
+    name: guest.name.trim(),
+    phone: guest.phone.trim(),
+    email: guest.email.trim(),
 
-        // Enquiry ko booking confirmation nahi dikhana.
-        return;
-      }
+    pricePerNight:
+      urlPrice !== null ? Number(urlPrice) : 0,
+
+    estimatedAmount:
+      estimatedAmount !== null ? Number(estimatedAmount) : 0,
+
+    specialRequest: guest.specialRequest.trim(),
+  };
+
+  const response = await fetch(`${API_BASE_URL}/api/bookings`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const result = await readApiResponse(response);
+
+  if (!response.ok || result?.success === false) {
+    throw new Error(
+      getApiError(result, "Unable to submit your stay booking.")
+    );
+  }
+
+  router.push("/booking/confirmation");
+  return;
+}
 
       // Existing database booking flow.
       const payload = {
@@ -825,7 +802,7 @@ export default function BookingPage() {
 
       setSubmitError(
         error.message ||
-          "Unable to submit your request. Please try again."
+        "Unable to submit your request. Please try again."
       );
 
       setSubmitted(false);
@@ -955,9 +932,8 @@ export default function BookingPage() {
               )}
 
               <div
-                className={`grid gap-2 ${
-                  config.secondDateLabel ? "grid-cols-2" : "grid-cols-1"
-                }`}
+                className={`grid gap-2 ${config.secondDateLabel ? "grid-cols-2" : "grid-cols-1"
+                  }`}
               >
                 <div className="rounded-lg border border-[#ECE7DF] bg-[#FCFBF8] p-2.5 sm:rounded-xl sm:p-3">
                   <div className="flex items-center gap-1.5">
@@ -988,7 +964,7 @@ export default function BookingPage() {
                           checkIn: value,
                           checkOut:
                             previous.checkOut &&
-                            value >= previous.checkOut
+                              value >= previous.checkOut
                               ? ""
                               : previous.checkOut,
                         }));
@@ -1069,13 +1045,13 @@ export default function BookingPage() {
                   },
                   ...(isStay
                     ? [
-                        {
-                          field: "rooms",
-                          label: "Rooms",
-                          IconComponent: BedDouble,
-                          minimum: 1,
-                        },
-                      ]
+                      {
+                        field: "rooms",
+                        label: "Rooms",
+                        IconComponent: BedDouble,
+                        minimum: 1,
+                      },
+                    ]
                     : []),
                 ].map((item) => {
                   const CounterIcon = item.IconComponent;

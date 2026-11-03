@@ -62,6 +62,9 @@ export const navigation = [
     ],
   },
 
+  { name: "Videos",
+    href: "/videos" },
+
   {
     name: "Events",
     href: "/events",

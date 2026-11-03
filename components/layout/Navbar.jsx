@@ -114,29 +114,25 @@ export default function Navbar() {
 
           {/* ================= DESKTOP RIGHT ACTION CLUSTER ================= */}
           <div className="hidden min-[1280px]:flex items-center gap-2 shrink-0">
-            <Link
-              href="/offers"
-              className="
-                group relative flex items-center gap-1.5
-                px-3 py-1.5 rounded-full
-                bg-gradient-to-r from-[#1dae63] to-[#C87532]
-                text-white text-[11px] font-bold tracking-wide uppercase
-                shadow-md shadow-red-500/20
-                whitespace-nowrap
-                transition-all duration-300
-                hover:scale-105 hover:shadow-lg hover:shadow-red-500/30
-              "
-            >
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-80"></span>
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-white"></span>
-              </span>
-              <Sparkles size={12} className="text-white" />
-              <span>Offers</span>
-              <span className="rounded-full bg-white/25 px-1 py-0.2 text-[9px] font-black text-white">
-                %
-              </span>
-            </Link>
+  <Link
+  href="/offers"
+  className="
+    group relative inline-flex items-center gap-1
+    px-2 py-0.5 rounded-full
+    bg-gradient-to-r from-[#1dae63] to-[#C87532]
+    text-white text-[9px] font-extrabold uppercase tracking-wide
+    shadow-sm transition-all duration-200
+    hover:scale-105
+    whitespace-nowrap shrink-0
+  "
+>
+  <span className="h-1 w-1 rounded-full bg-white animate-ping" />
+  <Sparkles size={9} className="text-white" />
+  <span>Offers</span>
+  <span className="rounded bg-black/20 px-1 py-0.2 text-[8px] font-black">
+    %
+  </span>
+</Link>
 
             <div className="h-4 w-px bg-black/10 dark:bg-white/20 mx-0.5" />
 

@@ -28,6 +28,7 @@ import {
   Wallet,
   CheckCircle2,
   Home,
+  Video, 
 } from "lucide-react";
 
 const ACTIVE_COLOR = "#B96928";
@@ -626,6 +627,15 @@ function AdminSidebar({
         organisationOpen &&
         renderOrganisationChildren(mobile)}
 
+      <NavLink
+  href="/admin/videos"
+  icon={Video}
+  collapsed={collapsed}
+  mobile={mobile}
+>
+  Videos Management
+</NavLink>  
+    
       <NavLink
         href="/admin/hotels"
         icon={Hotel}

@@ -144,6 +144,17 @@ export default function DeluxeDetailPage() {
   const [agentProperty, setAgentProperty] = useState(null);
   const [loading, setLoading] = useState(true);
   const [detailError, setDetailError] = useState("");
+  const [staticOverrides, setStaticOverrides] = useState({});
+  const [deletedStaticIds, setDeletedStaticIds] = useState([]);
+
+  useEffect(() => {
+    try {
+      const savedOverrides = localStorage.getItem("DC_STATIC_PROPERTIES_OVERRIDES");
+      if (savedOverrides) setStaticOverrides(JSON.parse(savedOverrides));
+      const savedDeleted = localStorage.getItem("DC_STATIC_PROPERTIES_DELETED");
+      if (savedDeleted) setDeletedStaticIds(JSON.parse(savedDeleted));
+    } catch {}
+  }, []);
 
   /* =====================================================
      STATIC PROPERTY
@@ -151,6 +162,19 @@ export default function DeluxeDetailPage() {
 ===================================================== */
 
   const staticProperty = useMemo(() => {
+    const raw = deluxeHotels.find((hotel) => hotel.locationSlug === locationParam && hotel.slug === propertySlug);
+    if (!raw) return null;
+    const propId1 = "static-deluxe-" + raw.id;
+    const propId2 = "static-deluxe-" + raw.slug;
+    if (deletedStaticIds.includes(propId1) || deletedStaticIds.includes(propId2)) return null;
+    const override = staticOverrides[propId1] || staticOverrides[propId2] || {};
+    if (override.publicationStatus === "unpublished") return null;
+    const newPrice = override.pricePerNight ? Number(override.pricePerNight) : null;
+    const baseRoomPrice = Number(raw.rooms?.[0]?.price || raw.price || 1);
+    const updatedRooms = Array.isArray(raw.rooms) ? raw.rooms.map((r, i) => { if (!newPrice) return r; if (i === 0) return { ...r, price: newPrice }; return { ...r, price: Math.round(Number(r.price || 0) * (newPrice / baseRoomPrice)) }; }) : raw.rooms;
+    return { ...raw, ...override, rooms: updatedRooms, price: newPrice || raw.price, pricePerNight: newPrice || raw.price };
+  }, [locationParam, propertySlug, deletedStaticIds, staticOverrides]);
+  const _ignoreOldStatic = false ? useMemo(() => {
   return (
     deluxeHotels.find(
       (hotel) =>
@@ -158,7 +182,7 @@ export default function DeluxeDetailPage() {
         hotel.slug === propertySlug
     ) || null
   );
-}, [locationParam, propertySlug]);
+}, [locationParam, propertySlug]) : null;
 
   /* =====================================================
      FETCH AGENT PROPERTY
@@ -211,6 +235,10 @@ export default function DeluxeDetailPage() {
 
         const item = result.data.property;
         const images = normalizeImages(item.images);
+        const itemPrice = Number(item.pricePerNight || item.price || 0);
+        const fetchedRooms = Array.isArray(result.data.rooms) ? result.data.rooms.map(normalizeRoom) : [];
+        const updatedFetchedRooms = fetchedRooms.map((r, i) => (itemPrice > 0 && i === 0) ? { ...r, price: itemPrice } : r);
+        const finalRooms = updatedFetchedRooms.length > 0 ? updatedFetchedRooms : itemPrice > 0 ? [{ id: `${item._id || item.id}-base-room`, name: "Deluxe Room", price: itemPrice, description: item.description && item.description.trim().length > 10 ? item.description : "Experience comfort and relaxation in our deluxe accommodation.", bed: "Double Bed", guests: Number(item.maxGuestsPerBooking) || 2, size: "Deluxe Room", cancellation: "Free cancellation", amenities: Array.isArray(item.amenities) ? item.amenities : [] }] : [];
 
         const normalizedProperty = {
           ...item,
@@ -232,12 +260,14 @@ export default function DeluxeDetailPage() {
           reviews: Number(item.reviews) || 0,
           distance: item.distance || "Jim Corbett",
           amenities: Array.isArray(item.amenities)
-            ? item.amenities
-            : [],
+            ? item.amenities : [], // amenities
+
           policies: item.policies || {},
-          rooms: Array.isArray(result.data.rooms)
-            ? result.data.rooms.map(normalizeRoom)
-            : [],
+          price: itemPrice,
+          pricePerNight: itemPrice,
+          rooms: finalRooms,
+
+
         };
 
         setAgentProperty(normalizedProperty);
@@ -294,6 +324,7 @@ export default function DeluxeDetailPage() {
       )[0]
     : null;
 
+  const displayPrice = (property?.pricePerNight && Number(property.pricePerNight) > 0) ? Number(property.pricePerNight) : (property?.price && Number(property.price) > 0) ? Number(property.price) : lowestPriceRoom?.price || null;
   const ratingNumber = Number(property?.rating) || 0;
 
   const locationName =
@@ -679,19 +710,19 @@ export default function DeluxeDetailPage() {
               )}
 
               <div className="rounded-xl border border-gray-200 bg-white p-3.5 shadow-sm sm:p-4">
-                {lowestPriceRoom && (
+                {(lowestPriceRoom || displayPrice) && (
                   <span className="inline-block rounded bg-[#0B3B32]/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#0B3B32] sm:text-[10px]">
-                    {lowestPriceRoom.name}
+                    {(lowestPriceRoom || displayPrice)?.name || "Deluxe Room"}
                   </span>
                 )}
 
                 <div className="mt-1.5 flex items-baseline gap-1">
                   <span className="text-xl font-black text-gray-900 sm:text-2xl">
-                    {lowestPriceRoom
-                      ? `₹${Number(lowestPriceRoom.price).toLocaleString("en-IN")}`
+                    {(lowestPriceRoom || displayPrice)
+                      ? `₹${Number(displayPrice || lowestPriceRoom?.price).toLocaleString("en-IN")}`
                       : "Price on request"}
                   </span>
-                  {lowestPriceRoom && (
+                  {(lowestPriceRoom || displayPrice) && (
                     <span className="text-[11px] text-gray-500">
                       + taxes/night
                     </span>
@@ -709,9 +740,9 @@ export default function DeluxeDetailPage() {
                   </div>
                 </div>
 
-                {lowestPriceRoom ? (
+                {(lowestPriceRoom || displayPrice) ? (
                   <Link
-                    href={getBookingUrl(lowestPriceRoom)}
+                    href={getBookingUrl(lowestPriceRoom || { id: `${property?.id || "deluxe"}-base`, name: "Deluxe Room", price: displayPrice })}
                     className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl bg-[#B96928] py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-[#A65C23] sm:py-3"
                   >
                     Book Now <ArrowRight size={13} />
