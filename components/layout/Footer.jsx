@@ -8,6 +8,7 @@ const exploreLinks = [
   { name: "Home", href: "/" },
   { name: "Stay", href: "/stay" },
   { name: "Safari", href: "/safari" },
+  { name: "Videos", href: "/videos" },
   { name: "Packages", href: "/packages" },
   { name: "About Us", href: "/about" },
 ];
