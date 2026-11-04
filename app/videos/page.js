@@ -402,7 +402,7 @@ export default function PublicVideosPage() {
   // ✅ Exact Admin URL Format for Facebook/WhatsApp/Socials
   const getVideoShareUrl = (video) => {
     if (!video?._id) return "";
-    return `https://destinationcorbett.com/videos?v=${video._id}`;
+    return `https://destination-corbett.vercel.app/videos?v=${video._id}`;
   };
 
   // ✅ Exact Admin Promotional Text + Link

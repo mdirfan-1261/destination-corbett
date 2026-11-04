@@ -441,7 +441,7 @@ export default function AdminVideosPage() {
   }
 
   function handleCopyBroadcastText(video) {
-    const publicUrl = `https://destinationcorbett.com/videos?v=${video._id}`;
+    const publicUrl = `https://destination-corbett.vercel.app/videos?v=${video._id}`;
     const text = `🌿 Watch our latest Jim Corbett experience: "${video.title}"\n🎬 Watch here: ${publicUrl}\n#JimCorbett #Wildlife #Safari`;
     navigator.clipboard.writeText(text);
     setCopySuccess(true);
@@ -1501,9 +1501,10 @@ export default function AdminVideosPage() {
             </p>
 
             <div className="mt-4 grid grid-cols-3 gap-2.5">
+              {/* WhatsApp */}
               <a
                 href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
-                  `🌿 *New Corbett Video Released!* \n"${broadcastVideo.title}"\n👉 Watch here: https://destinationcorbett.com/videos?v=${broadcastVideo._id}`
+                  `🌿 *New Corbett Video Released!* \n"${broadcastVideo.title}"\n👉 Watch here: https://destination-corbett.vercel.app/videos?v=${broadcastVideo._id}`
                 )}`}
                 target="_blank"
                 rel="noreferrer"
@@ -1517,9 +1518,10 @@ export default function AdminVideosPage() {
                 <span className="mt-1 text-[11px] font-bold text-emerald-900">WhatsApp</span>
               </a>
 
+              {/* Facebook */}
               <a
                 href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-                  `https://destinationcorbett.com/videos?v=${broadcastVideo._id}`
+                  `https://destination-corbett.vercel.app/videos?v=${broadcastVideo._id}`
                 )}`}
                 target="_blank"
                 rel="noreferrer"
@@ -1533,11 +1535,12 @@ export default function AdminVideosPage() {
                 <span className="mt-1 text-[11px] font-bold text-blue-900">Facebook</span>
               </a>
 
+              {/* X / Twitter */}
               <a
                 href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
                   `Watch "${broadcastVideo.title}" on Destination Corbett:`
                 )}&url=${encodeURIComponent(
-                  `https://destinationcorbett.com/videos?v=${broadcastVideo._id}`
+                  `https://destination-corbett.vercel.app/videos?v=${broadcastVideo._id}`
                 )}`}
                 target="_blank"
                 rel="noreferrer"
