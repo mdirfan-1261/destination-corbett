@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Building2,
   Users,
@@ -21,8 +21,22 @@ import {
   Send,
 } from "lucide-react";
 
-const eventTypes = [
+const API_BASE = (
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+).replace(/\/+$/, "");
+
+const iconMap = {
+  "corporate-meetings": Users,
+  conferences: Presentation,
+  "team-outings": Mountain,
+  "corporate-retreats": Building2,
+  "dealer-meets": Handshake,
+  "event-production": Clapperboard,
+};
+
+const defaultEventTypes = [
   {
+    slug: "corporate-meetings",
     title: "Corporate Meetings",
     description:
       "Professional meeting spaces and hospitality for focused business gatherings.",
@@ -31,6 +45,7 @@ const eventTypes = [
     icon: Users,
   },
   {
+    slug: "conferences",
     title: "Conferences",
     description:
       "Venue, accommodation, food and coordination for your conference.",
@@ -39,6 +54,7 @@ const eventTypes = [
     icon: Presentation,
   },
   {
+    slug: "team-outings",
     title: "Team Outings",
     description:
       "Bring your team together with memorable outings and Corbett experiences.",
@@ -47,6 +63,7 @@ const eventTypes = [
     icon: Mountain,
   },
   {
+    slug: "corporate-retreats",
     title: "Corporate Retreats",
     description:
       "Combine productive sessions with comfortable stays and nature.",
@@ -55,6 +72,7 @@ const eventTypes = [
     icon: Building2,
   },
   {
+    slug: "dealer-meets",
     title: "Dealer Meets",
     description:
       "Plan dealer meets with stays, hospitality and coordinated arrangements.",
@@ -63,6 +81,7 @@ const eventTypes = [
     icon: Handshake,
   },
   {
+    slug: "event-production",
     title: "Event Production",
     description:
       "Stage, sound, lighting, LED, branding and production support.",
@@ -134,7 +153,8 @@ const whyCorbett = [
   },
 ];
 
-const process = [
+// Renamed from 'process' to 'planningSteps'
+const planningSteps = [
   {
     number: "01",
     title: "Share Requirements",
@@ -164,18 +184,21 @@ const process = [
 const HERO_IMAGE = "/images/events/optimized/events-hero.webp";
 
 function EventCard({ event }) {
-  const Icon = event.icon;
+  const Icon = event.icon || iconMap[event.slug] || Users;
 
   return (
     <Link
-      href={event.href}
+      href={event.href || `/events/${event.slug || ""}`}
       className="group flex min-w-0 flex-col overflow-hidden rounded-xl border border-[#172033]/[0.08] bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg sm:rounded-2xl"
     >
-      <div className="relative aspect-[16/10] overflow-hidden bg-[#E9E4DA] sm:aspect-[16/9]">
+      <div className="relative w-full aspect-[16/10] overflow-hidden bg-[#E9E4DA] sm:aspect-[16/9]">
         <Image
           src={event.image}
           alt={event.title}
           fill
+          unoptimized={
+            event.image?.startsWith("http") || event.image?.startsWith("blob:")
+          }
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 360px"
           className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
@@ -218,6 +241,27 @@ function EventCard({ event }) {
 
 export default function EventsPage() {
   const [openWhy, setOpenWhy] = useState(null);
+  const [events, setEvents] = useState(defaultEventTypes);
+
+  // Fetch live Indian photos & events from backend
+  useEffect(() => {
+    async function loadDynamicEvents() {
+      try {
+        const res = await fetch(`${API_BASE}/api/events`);
+        const data = await res.json();
+        if (data.success && data.data && data.data.length > 0) {
+          const merged = data.data.map((item) => ({
+            ...item,
+            icon: iconMap[item.slug] || Users,
+          }));
+          setEvents(merged);
+        }
+      } catch (err) {
+        console.log("Using default fallback events");
+      }
+    }
+    loadDynamicEvents();
+  }, []);
 
   return (
     <main className="min-h-screen bg-[#F7F5F0] text-[#172033]">
@@ -319,8 +363,8 @@ export default function EventsPage() {
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
-            {eventTypes.map((event) => (
-              <EventCard key={event.title} event={event} />
+            {events.map((event) => (
+              <EventCard key={event.slug || event.title} event={event} />
             ))}
           </div>
         </div>
@@ -540,9 +584,9 @@ export default function EventsPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-4 sm:gap-x-3 sm:gap-y-0">
-            {process.map((step, index) => (
+            {planningSteps.map((step, index) => (
               <div key={step.number} className="relative">
-                {index < process.length - 1 && (
+                {index < planningSteps.length - 1 && (
                   <div className="absolute left-8 top-3 hidden h-px w-[calc(100%-20px)] bg-[#172033]/15 sm:block" />
                 )}
 
