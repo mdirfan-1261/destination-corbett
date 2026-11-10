@@ -12,7 +12,7 @@ export const services = [
     title: "Safari & Tourism",
     description:
       "Safari experiences, nature activities and local Corbett experiences.",
-    image: "/images/services/safari.webp",
+    image: "/images/services/Safari1.webp",
     href: "/safari",
   },
   {
@@ -20,7 +20,7 @@ export const services = [
     title: "Events",
     description:
       "Complete solutions for meetings, conferences and corporate events.",
-    image: "/images/services/mice.webp",
+    image: "/images/services/Events.webp",
     href: "/events",
   },
   {
@@ -28,7 +28,7 @@ export const services = [
     title: "Destination Weddings",
     description:
       "Plan memorable weddings with decor, entertainment and hospitality.",
-    image: "/images/services/wedding.webp",
+    image: "/images/services/wedding-service.webp",
     href: "/weddings",
   },
   

@@ -181,7 +181,7 @@ const planningSteps = [
   },
 ];
 
-const HERO_IMAGE = "/images/events/optimized/events-hero.webp";
+const HERO_IMAGE ="/images/events/corbett_corporate_hero.webp";
 
 function EventCard({ event }) {
   const Icon = event.icon || iconMap[event.slug] || Users;

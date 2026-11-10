@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { miceData } from "@/data/mice";
@@ -7,21 +6,18 @@ export default function MICESection() {
   return (
     <section className="bg-[#F7F5F0] py-9 sm:py-12 md:py-16 lg:py-18">
       <div className="mx-auto max-w-7xl px-4 sm:px-5 md:px-6">
-
         <div className="grid items-center gap-7 md:gap-10 lg:grid-cols-2 lg:gap-12">
-
-          {/* Image */}
-          <div className="h-[280px] overflow-hidden rounded-2xl sm:h-[340px] md:h-[400px] md:rounded-3xl lg:h-[470px]">
+          {/* Image Container with Natural 16:10 Aspect Ratio (Zero Crop) */}
+          <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl shadow-sm md:rounded-3xl">
             <img
-              src="/mice/mice.webp"
+              src="/mice/corporate.webp"
               alt={miceData.title}
-              className="h-full w-full object-cover transition-transform duration-700 hover:scale-[1.02]"
+              className="h-full w-full object-cover object-center transition-transform duration-700 hover:scale-[1.02]"
             />
           </div>
 
           {/* Content */}
           <div className="max-w-xl">
-
             {/* Eyebrow */}
             <p className="mb-2.5 text-[10px] font-semibold tracking-[2px] text-[#B96928] sm:mb-3 sm:text-[11px] md:mb-4 md:text-xs md:tracking-[3px]">
               EVENTS & EXPERIENCES
@@ -31,15 +27,15 @@ export default function MICESection() {
             <h2 className="text-[28px] font-bold leading-[1.12] sm:text-3xl md:text-4xl lg:text-[42px] lg:leading-[1.15]">
               <span
                 className="
-      bg-gradient-to-r
-      from-[#B96928]
-      via-[#C87532]
-      to-[#18352A]
-      bg-clip-text
-      text-transparent
-      transition-all
-      duration-700
-    "
+                  bg-gradient-to-r
+                  from-[#B96928]
+                  via-[#C87532]
+                  to-[#18352A]
+                  bg-clip-text
+                  text-transparent
+                  transition-all
+                  duration-700
+                "
               >
                 {miceData.title}
               </span>
@@ -96,13 +92,9 @@ export default function MICESection() {
               Explore Events
               <ArrowRight size={17} />
             </Link>
-
           </div>
         </div>
-
       </div>
     </section>
   );
 }
-
-

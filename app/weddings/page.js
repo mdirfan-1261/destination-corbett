@@ -1,10 +1,12 @@
+
 "use client";
 
 import Link from "next/link";
 import Image from "next/image";
-import { useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 
 import { useOrganisationProfile } from "@/hooks/useOrganisationProfile";
+
 import {
   ArrowRight,
   CalendarDays,
@@ -25,9 +27,17 @@ import {
   Mail,
 } from "lucide-react";
 
+/* ================= API BASE ================= */
 
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL ||
+  (typeof window !== "undefined" &&
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "");
 
 /* ================= ORGANISATION CONTACT HELPERS ================= */
+
 function getContactDetails(profile) {
   const phone =
     profile?.phone ||
@@ -67,18 +77,20 @@ function getContactDetails(profile) {
 
 function whatsappLink(number, message) {
   if (!number) return "";
+
   return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
 }
 
-/* ================= PAGE DATA ================= */
+/* ================= STATIC PAGE DATA & DEFAULTS ================= */
+
 const weddingPageData = {
   hero: {
-    eyebrow: "DESTINATION WEDDINGS IN JIM CORBETT",
+    eyebrow: "DESTINATION WEDDINGS • JIM CORBETT",
     title: "Your Love Story,",
     highlight: "Surrounded by Nature.",
     description:
       "Celebrate your special day in Jim Corbett with beautiful venues, comfortable stays and personalised wedding planning.",
-    image: "/weddings/wedding-hero1.webp",
+    image: "/weddings/wedding-hero.webp",
   },
 
   introduction: {
@@ -92,42 +104,42 @@ const weddingPageData = {
   services: [
     {
       id: "venue-stay",
-      image: "/weddings/venue-stay.webp",
+      image: "/weddings/wedding_venue_stay.webp",
       title: "Venue & Stay",
       text: "Wedding venues and comfortable accommodation for your guests.",
       icon: BedDouble,
     },
     {
       id: "catering",
-      image: "/weddings/catering.webp",
+      image: "/weddings/wedding_catering.webp",
       title: "Catering",
       text: "Custom menus, local flavours and memorable dining experiences.",
       icon: Coffee,
     },
     {
       id: "decor-styling",
-      image: "/weddings/decor-styling.webp",
+      image: "/weddings/wedding_decor.webp",
       title: "Decor & Styling",
       text: "Wedding decor tailored to your theme, colours and celebration.",
       icon: Flower2,
     },
     {
       id: "photography",
-      image: "/weddings/photography.webp",
+      image: "/weddings/wedding_photos.webp",
       title: "Photography & Films",
       text: "Capture the moments that make your celebration special.",
       icon: Camera,
     },
     {
       id: "entertainment",
-      image: "/weddings/entertainment.webp",
+      image: "/weddings/wedding_entertainment.webp",
       title: "Entertainment",
       text: "Music, DJs and performances for your wedding functions.",
       icon: Music,
     },
     {
       id: "guest-transport",
-      image: "/weddings/guest-transport.webp",
+      image: "/weddings/wedding_guest_transpo.webp",
       title: "Guest Transport",
       text: "Transport coordination for family members and guests.",
       icon: Car,
@@ -141,7 +153,7 @@ const weddingPageData = {
     },
     {
       id: "wedding-planning",
-      image: "/weddings/wedding-planning.webp",
+      image: "/weddings/home_indian_weddings.webp",
       title: "Wedding Planning",
       text: "Planning and coordination support for your wedding events.",
       icon: CalendarCheck2,
@@ -161,14 +173,16 @@ const weddingPageData = {
     ],
   },
 
-  // Confirm these indicative prices with the organisation before publishing.
   packages: [
     {
       id: "silver",
+      tier: "silver",
       title: "Silver",
       price: "24",
+      priceUnit: "Lakhs",
       pax: "100 PAX",
       duration: "2 Nights / 3 Days",
+      featured: false,
       features: [
         "Accommodation",
         "Meals Included",
@@ -179,8 +193,10 @@ const weddingPageData = {
     },
     {
       id: "gold",
+      tier: "gold",
       title: "Gold",
       price: "30",
+      priceUnit: "Lakhs",
       pax: "150 PAX",
       duration: "2 Nights / 3 Days",
       featured: true,
@@ -194,10 +210,13 @@ const weddingPageData = {
     },
     {
       id: "platinum",
+      tier: "platinum",
       title: "Platinum",
       price: "35",
+      priceUnit: "Lakhs",
       pax: "200 PAX",
       duration: "2 Nights / 3 Days",
+      featured: false,
       features: [
         "Premium Accommodation",
         "All Meals Included",
@@ -232,43 +251,48 @@ const weddingPageData = {
   ],
 };
 
+/* ================= PACKAGE COLORS ================= */
+
 const packageTones = {
   silver: {
     card: "dc-keep-colors border-[#D9C9A3]/70 bg-gradient-to-b from-[#FBF8F1] to-[#EFE8D8] text-[#172033]",
     tab: "bg-[#172033] text-[#E6C887]",
     price: "text-[#9A5E1E]",
-    muted: "text-[#172033]/55",
-    pill: "border-[#172033]/20 text-[#172033]",
+    muted: "text-[#172033]/60",
+    pill: "border-[#172033]/20 bg-white/40 text-[#172033]",
     check: "text-[#B07A2A]",
-    text: "text-[#172033]/80",
-    divider: "from-transparent via-[#B07A2A]/50 to-transparent",
-    ghost: "border-[#B07A2A]/50 text-[#8A561A] hover:bg-[#B07A2A]/10",
+    text: "text-[#172033]/85",
+    divider: "from-transparent via-[#B07A2A]/40 to-transparent",
+    ghost: "border-[#B07A2A]/60 text-[#8A561A] hover:bg-[#B07A2A]/10",
   },
+
   gold: {
-    card: "dc-keep-colors border-[#D4A24C] bg-gradient-to-b from-[#FFF7E3] to-[#F2DDAE] text-[#172033] shadow-[0_18px_44px_-22px_rgba(212,162,76,0.7)] lg:-translate-y-2",
+    card: "dc-keep-colors border-[#D4A24C] bg-gradient-to-b from-[#FFF9EC] to-[#F4DFB3] text-[#172033] shadow-[0_14px_36px_-18px_rgba(212,162,76,0.65)] lg:-translate-y-1.5",
     tab: "bg-[#172033] text-[#F0C46E]",
     price: "text-[#8A4F12]",
-    muted: "text-[#172033]/60",
-    pill: "border-[#172033]/25 text-[#172033]",
+    muted: "text-[#172033]/65",
+    pill: "border-[#172033]/25 bg-white/50 text-[#172033]",
     check: "text-[#A8691B]",
-    text: "text-[#172033]/85",
-    divider: "from-transparent via-[#A8691B]/60 to-transparent",
-    ghost: "border-[#A8691B]/55 text-[#7A4510] hover:bg-[#A8691B]/10",
+    text: "text-[#172033]/90",
+    divider: "from-transparent via-[#A8691B]/50 to-transparent",
+    ghost: "border-[#A8691B]/60 text-[#7A4510] hover:bg-[#A8691B]/10",
   },
+
   platinum: {
-    card: "dc-keep-colors border-[#D4A24C]/60 bg-gradient-to-b from-[#1D2A45] to-[#0B1220] text-[#F6EBD3]",
+    card: "dc-keep-colors border-[#D4A24C]/60 bg-gradient-to-b from-[#1C2842] to-[#0A101C] text-[#F6EBD3] shadow-md",
     tab: "bg-gradient-to-r from-[#C98A2E] to-[#EBC274] text-[#172033]",
     price: "text-[#F0C46E]",
-    muted: "text-[#F6EBD3]/55",
-    pill: "border-[#F0C46E]/40 text-[#F6EBD3]",
+    muted: "text-[#F6EBD3]/60",
+    pill: "border-[#F0C46E]/40 bg-white/5 text-[#F6EBD3]",
     check: "text-[#F0C46E]",
-    text: "text-[#F6EBD3]/80",
-    divider: "from-transparent via-[#F0C46E]/50 to-transparent",
-    ghost: "border-[#F0C46E]/50 text-[#F0C46E] hover:bg-white/5",
+    text: "text-[#F6EBD3]/85",
+    divider: "from-transparent via-[#F0C46E]/40 to-transparent",
+    ghost: "border-[#F0C46E]/60 text-[#F0C46E] hover:bg-white/10",
   },
 };
 
-const sectionWrap = "mx-auto max-w-6xl px-3 py-5 sm:px-5 sm:py-6 md:px-6";
+const sectionWrap =
+  "mx-auto max-w-6xl px-3 py-5 sm:px-5 sm:py-6 md:px-6";
 
 const sectionHeading =
   "text-lg font-bold leading-tight text-[#172033] dark:text-gray-100 sm:text-xl md:text-2xl";
@@ -279,22 +303,82 @@ const sectionSub =
 const pillPrimary =
   "inline-flex h-8 items-center justify-center gap-1 whitespace-nowrap rounded-full bg-[#B96928] px-4 text-[10px] font-semibold text-white transition-all duration-300 hover:bg-[#A85C22] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E0924F] sm:h-9 sm:text-xs";
 
+/* ================= MAIN PAGE ================= */
+
 export default function WeddingsPage() {
   const data = weddingPageData;
 
-  // Organisation contact details from the existing public profile hook.
   const { profile } = useOrganisationProfile();
 
-  const contact = useMemo(() => getContactDetails(profile), [profile]);
+  const contact = useMemo(
+    () => getContactDetails(profile),
+    [profile]
+  );
+
+  const [packages, setPackages] = useState(data.packages);
+
+  /* ================= FETCH PUBLIC PACKAGES ================= */
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchPackages = async () => {
+      try {
+        const res = await fetch(
+          `${API_BASE}/api/wedding-packages`
+        );
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch wedding packages");
+        }
+
+        const result = await res.json();
+
+        if (
+          isMounted &&
+          result.success &&
+          Array.isArray(result.data) &&
+          result.data.length > 0
+        ) {
+          setPackages(result.data);
+        }
+      } catch (err) {
+        console.warn(
+          "Using offline fallback wedding packages",
+          err
+        );
+      }
+    };
+
+    fetchPackages();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  /* ================= PACKAGE WHATSAPP ================= */
 
   const createWhatsAppLink = (pkg) => {
+    const pkgTitle = pkg.title || "Wedding";
+
+    const pkgPrice = pkg.price
+      ? `₹${pkg.price} Lakhs`
+      : "On Request";
+
+    const pkgPax = pkg.pax
+      ? `Guest count: ${pkg.pax}.`
+      : "";
+
     const message = [
       `Hello ${contact.name},`,
-      `I am interested in the ${pkg.title} Wedding Package.`,
-      `Indicative package price: ₹${pkg.price} Lakhs.`,
-      `Guest count: ${pkg.pax}.`,
+      `I am interested in the ${pkgTitle} Wedding Package.`,
+      `Indicative package price: ${pkgPrice}.`,
+      pkgPax,
       "Please share the details and a customised quotation.",
-    ].join(" ");
+    ]
+      .filter(Boolean)
+      .join(" ");
 
     return whatsappLink(contact.whatsapp, message);
   };
@@ -307,10 +391,10 @@ export default function WeddingsPage() {
   const phoneNumber = contact.phone.replace(/[^\d+]/g, "");
 
   return (
-    <main
-      className="min-h-screen bg-[#F7F5F0] text-[#172033] dark:bg-[#0e1210] dark:text-gray-100"
-    >
+    <main className="min-h-screen bg-[#F7F5F0] text-[#172033] dark:bg-[#0e1210] dark:text-gray-100">
+
       {/* ================= BREADCRUMB ================= */}
+
       <nav
         aria-label="Breadcrumb"
         className="mx-auto max-w-6xl px-3 pt-3 text-xs sm:px-5 sm:pt-4 sm:text-sm md:px-6"
@@ -334,58 +418,63 @@ export default function WeddingsPage() {
         </div>
       </nav>
 
-      {/* ================= COMPACT HERO ================= */}
+      {/* ================= HERO ================= */}
+
       <section className="px-3 pt-3 sm:px-5 sm:pt-4 md:px-6">
-        <div className="relative mx-auto h-[190px] max-w-6xl overflow-hidden rounded-xl bg-[#172033] text-white sm:h-[230px] sm:rounded-2xl lg:h-[260px]">
-          {/* Hero Image */}
-          <div className="absolute inset-0 lg:left-auto lg:w-[55%]">
+        <div className="relative mx-auto h-[350px] max-w-6xl overflow-hidden rounded-2xl bg-[#172033] text-white sm:h-[240px] md:h-[260px] lg:h-[280px]">
+
+          <div className="absolute inset-0 lg:left-auto lg:w-[58%]">
             <Image
               src={data.hero.image}
               alt="Destination wedding in Jim Corbett"
               fill
               priority
               quality={80}
-              sizes="(max-width: 1023px) 100vw, 700px"
-              className="object-cover object-center brightness-110"
+              sizes="(max-width: 1023px) 100vw, 750px"
+              className="object-cover object-[center_20%] brightness-105 sm:object-center"
             />
           </div>
 
-          {/* Image Overlays */}
-          <div className="pointer-events-none absolute inset-y-0 left-[45%] hidden w-[15%] bg-gradient-to-r from-[#172033] to-transparent lg:block" />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#172033]/90 via-[#172033]/55 to-transparent" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0B1220]/95 via-[#0B1220]/45 to-transparent sm:hidden" />
 
-          {/* Hero Content */}
-          <div className="relative z-10 flex h-full items-center px-4 py-4 sm:px-8 lg:px-10">
-            <div className="max-w-2xl">
-              <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-white/85 backdrop-blur-xl">
-                <Heart className="h-3 w-3 text-[#E0924F]" />
+          <div className="pointer-events-none absolute inset-y-0 left-[42%] hidden w-[20%] bg-gradient-to-r from-[#172033] to-transparent lg:block" />
+
+          <div className="pointer-events-none absolute inset-0 hidden bg-gradient-to-r from-[#172033]/95 via-[#172033]/65 to-transparent sm:block" />
+
+          <div className="relative z-10 flex h-full flex-col justify-end p-4 pb-4.5 sm:flex-row sm:items-center sm:justify-start sm:px-8 lg:px-10">
+            <div className="max-w-xl">
+
+              <div className="mb-1.5 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/30 px-2.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#F0C46E] backdrop-blur-md sm:mb-2 sm:bg-white/10 sm:py-1 sm:text-[10px]">
+                <Heart className="h-2.5 w-2.5 fill-[#F0C46E] text-[#F0C46E] sm:h-3 sm:w-3" />
                 {data.hero.eyebrow}
               </div>
 
-              <h1 className="text-xl font-bold leading-tight tracking-tight sm:text-2xl md:text-3xl lg:text-4xl">
+              <h1 className="text-[20px] font-bold leading-tight tracking-tight text-white sm:text-2xl md:text-3xl lg:text-4xl">
                 {data.hero.title}{" "}
-                <span className="text-[#E0924F]">{data.hero.highlight}</span>
+                <span className="text-[#F0C46E] sm:text-[#E0924F]">
+                  {data.hero.highlight}
+                </span>
               </h1>
 
-              <p className="mt-2 hidden max-w-md line-clamp-2 text-xs leading-5 text-white/80 sm:block sm:text-sm">
+              <p className="mt-1.5 hidden max-w-md line-clamp-2 text-xs leading-5 text-white/80 sm:block sm:text-sm">
                 {data.hero.description}
               </p>
 
-              <div className="mt-3 flex flex-wrap items-center gap-2">
+              <div className="mt-3 flex items-center gap-2 sm:mt-3.5">
                 <Link
                   href="/contact?type=wedding"
-                  className="inline-flex items-center justify-center gap-1.5 rounded-full bg-[#C87532] px-4 py-2 text-xs font-semibold text-white shadow-md transition-all duration-200 hover:bg-[#B96928] sm:text-sm"
+                  className="inline-flex h-9 items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-[#B96928] to-[#D4A24C] px-4 text-xs font-semibold text-white shadow-md transition-all duration-200 hover:brightness-110 sm:h-10 sm:px-5 sm:text-sm"
                 >
                   Plan Your Wedding
-                  <Send size={13} />
+                  <Send size={12} className="shrink-0" />
                 </Link>
 
                 <a
                   href="#packages"
-                  className="inline-flex items-center justify-center gap-1.5 rounded-full border border-white/30 bg-white/10 px-4 py-2 text-xs font-semibold text-white backdrop-blur transition hover:bg-white/20 sm:text-sm"
+                  className="inline-flex h-9 items-center justify-center gap-1.5 rounded-full border border-white/30 bg-white/15 px-3.5 text-xs font-semibold text-white backdrop-blur-sm transition-all duration-200 hover:bg-white/25 sm:h-10 sm:px-4 sm:text-sm"
                 >
                   View Packages
-                  <ArrowRight size={13} />
+                  <ArrowRight size={13} className="shrink-0" />
                 </a>
               </div>
             </div>
@@ -394,9 +483,12 @@ export default function WeddingsPage() {
       </section>
 
       {/* ================= INTRODUCTION ================= */}
+
       <section className={sectionWrap}>
         <div className="rounded-xl border border-black/5 bg-white p-3.5 shadow-sm dark:border-white/10 dark:bg-white/5 sm:p-4">
-          <h2 className={sectionHeading}>{data.introduction.title}</h2>
+          <h2 className={sectionHeading}>
+            {data.introduction.title}
+          </h2>
 
           <div className="mt-1.5 space-y-1.5 text-[11px] leading-4 text-gray-600 dark:text-gray-300 sm:text-sm sm:leading-5">
             {data.introduction.paragraphs.map((paragraph) => (
@@ -407,129 +499,150 @@ export default function WeddingsPage() {
       </section>
 
       {/* ================= WEDDING PACKAGES ================= */}
-      <section id="packages" className={`${sectionWrap} scroll-mt-20`}>
-        <div className="relative overflow-hidden rounded-xl bg-gradient-to-b from-[#0B1220] via-[#121C30] to-[#172033] px-3 py-6 text-white shadow-sm dark:border dark:border-white/10 sm:rounded-2xl sm:px-6 sm:py-8">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#F0C46E]/70 to-transparent" />
-          <div className="pointer-events-none absolute -top-20 left-1/2 h-40 w-80 -translate-x-1/2 rounded-full bg-[#D4A24C]/10 blur-3xl" />
 
-          {/* Heading */}
+      <section id="packages" className={`${sectionWrap} scroll-mt-20`}>
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-b from-[#0B1220] via-[#121C30] to-[#172033] px-3.5 py-6 text-white shadow-xl sm:px-6 sm:py-7">
+
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#F0C46E]/70 to-transparent" />
+
+          <div className="pointer-events-none absolute -top-20 left-1/2 h-36 w-72 -translate-x-1/2 rounded-full bg-[#D4A24C]/15 blur-3xl" />
+
           <div className="relative mx-auto max-w-xl text-center">
-            <div className="flex items-center justify-center gap-3 text-[#F0C46E]">
-              <span className="h-px w-10 bg-gradient-to-r from-transparent to-[#F0C46E]/70" />
-              <Heart size={13} />
-              <span className="h-px w-10 bg-gradient-to-l from-transparent to-[#F0C46E]/70" />
+            <div className="flex items-center justify-center gap-2.5 text-[#F0C46E]">
+              <span className="h-px w-8 bg-gradient-to-r from-transparent to-[#F0C46E]/70" />
+              <Heart size={12} className="fill-[#F0C46E]" />
+              <span className="h-px w-8 bg-gradient-to-l from-transparent to-[#F0C46E]/70" />
             </div>
 
-            <h2 className="mt-2.5 font-[family-name:var(--font-serif)] text-2xl font-semibold leading-tight sm:text-3xl md:text-4xl">
+            <h2 className="mt-2 font-[family-name:var(--font-serif)] text-2xl font-bold leading-tight sm:text-3xl">
               Wedding packages,{" "}
-              <span className="italic text-[#F0C46E]">crafted for you.</span>
+              <span className="italic text-[#F0C46E]">
+                crafted for you.
+              </span>
             </h2>
 
-            <p className="mt-1.5 text-[11px] leading-4 text-white/60 sm:text-sm sm:leading-5">
-              Prices are indicative for the stated guest count. Final
-              quotations depend on your requirements and availability.
+            <p className="mt-1 text-[11px] text-white/65 sm:text-xs">
+              Prices are indicative for the stated guest count. Customized quotations available on request.
             </p>
           </div>
 
-          {/* Cards: swipe on mobile, 3 columns from sm */}
-          <div className="relative -mx-3 mt-6 flex snap-x snap-mandatory gap-3 overflow-x-auto px-3 pb-3 pt-4 sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-4 sm:overflow-visible sm:px-0 sm:pb-0">
-            {data.packages.map((pkg) => {
-              const t = packageTones[pkg.id];
+          <div className="relative -mx-3 mt-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-3 pb-2 pt-2 sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-4 sm:overflow-visible sm:px-0 sm:pb-0">
+
+            {packages.map((pkg) => {
+              const tierKey = (
+                pkg.tier ||
+                pkg.id ||
+                pkg.title ||
+                "silver"
+              ).toLowerCase();
+
+              const t =
+                packageTones[tierKey] ||
+                (pkg.featured
+                  ? packageTones.gold
+                  : packageTones.silver);
+
               const packageWhatsApp = createWhatsAppLink(pkg);
 
               return (
                 <article
-                  key={pkg.id}
-                  className={`relative flex min-w-[74%] shrink-0 snap-center flex-col rounded-xl border p-3.5 sm:min-w-0 sm:shrink sm:p-4 ${t.card}`}
+                  key={pkg._id || pkg.id || pkg.title}
+                  className={`relative flex min-w-[76%] shrink-0 snap-center flex-col justify-between rounded-xl border p-3.5 transition-all duration-300 sm:min-w-0 sm:shrink sm:p-4.5 ${t.card}`}
                 >
-                  <div className="pointer-events-none absolute inset-1 rounded-lg border border-[#D4A24C]/30" />
+                  <div className="pointer-events-none absolute inset-1 rounded-lg border border-[#D4A24C]/25" />
 
                   {pkg.featured && (
-                    <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-[#B96928] to-[#D4A24C] px-3 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white shadow-md">
+                    <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-[#B96928] to-[#D4A24C] px-2.5 py-0.5 text-[8.5px] font-bold uppercase tracking-wider text-white shadow-sm">
                       Most Popular
                     </span>
                   )}
 
-                  <div className="relative text-center">
-                    <span
-                      className={`inline-block rounded-md px-5 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] sm:text-xs ${t.tab}`}
-                    >
-                      {pkg.title}
-                    </span>
+                  <div>
+                    <div className="text-center">
+                      <span
+                        className={`inline-block rounded-md px-4 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.2em] sm:text-[10px] ${t.tab}`}
+                      >
+                        {pkg.title}
+                      </span>
 
-                    <p
-                      className={`mt-3 font-[family-name:var(--font-serif)] text-5xl font-bold leading-none ${t.price}`}
-                    >
-                      <span className="align-top text-2xl">₹</span>
-                      {pkg.price}
-                    </p>
+                      <p
+                        className={`mt-2 font-[family-name:var(--font-serif)] text-3xl font-extrabold leading-none sm:text-4xl ${t.price}`}
+                      >
+                        <span className="align-top text-lg font-bold">
+                          ₹
+                        </span>
+                        {pkg.price}
+                      </p>
 
-                    <p
-                      className={`mt-1 text-[10px] font-semibold uppercase tracking-[0.28em] ${t.muted}`}
-                    >
-                      Lakhs
-                    </p>
+                      <p
+                        className={`mt-0.5 text-[9px] font-semibold uppercase tracking-[0.24em] ${t.muted}`}
+                      >
+                        {pkg.priceUnit || "Lakhs"}
+                      </p>
+
+                      <div
+                        className={`mt-1.5 inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[10px] font-semibold ${t.pill}`}
+                      >
+                        <Users size={11} />
+                        {pkg.pax}
+                      </div>
+                    </div>
 
                     <div
-                      className={`mt-2.5 inline-flex items-center gap-1.5 rounded-md border px-2.5 py-0.5 text-[11px] font-semibold ${t.pill}`}
+                      className={`relative my-2 h-px bg-gradient-to-r ${t.divider}`}
+                    />
+
+                    <p
+                      className={`relative mb-2 flex items-center justify-center gap-1 text-[10.5px] font-medium sm:text-[11px] ${t.text}`}
                     >
-                      <Users size={12} />
-                      {pkg.pax}
-                    </div>
+                      <CalendarDays size={12} className={t.check} />
+                      {pkg.duration}
+                    </p>
+
+                    <ul className="relative space-y-1 text-[11px] sm:text-xs">
+                      {pkg.features?.map((feature) => (
+                        <li
+                          key={feature}
+                          className={`flex items-start gap-1.5 ${t.text}`}
+                        >
+                          <CheckCircle2
+                            size={12}
+                            className={`mt-0.5 shrink-0 ${t.check}`}
+                          />
+                          <span className="leading-tight">
+                            {feature}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
 
-                  <div
-                    className={`relative my-3.5 h-px bg-gradient-to-r ${t.divider}`}
-                  />
-
-                  <p
-                    className={`relative mb-2.5 flex items-center justify-center gap-1.5 text-[11px] font-medium sm:text-xs ${t.text}`}
-                  >
-                    <CalendarDays size={13} className={t.check} />
-                    {pkg.duration}
-                  </p>
-
-                  <ul className="relative flex-1 space-y-1.5">
-                    {pkg.features.map((feature) => (
-                      <li
-                        key={feature}
-                        className={`flex items-start gap-2 text-[11px] leading-4 sm:text-xs ${t.text}`}
-                      >
-                        <CheckCircle2
-                          size={13}
-                          className={`mt-px shrink-0 ${t.check}`}
-                        />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-
-                  <div className="relative mt-4 flex flex-nowrap gap-1.5 sm:gap-2">
+                  <div className="relative mt-3.5 flex items-center gap-1.5 sm:gap-2">
                     {packageWhatsApp ? (
                       <a
                         href={packageWhatsApp}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={`inline-flex h-8 min-w-0 flex-1 items-center justify-center gap-1 whitespace-nowrap rounded-full border px-1 text-[10px] font-semibold transition sm:h-9 sm:text-xs ${t.ghost}`}
+                        className={`inline-flex h-8 min-w-0 flex-1 items-center justify-center gap-1 whitespace-nowrap rounded-full border px-1 text-[10px] font-semibold transition hover:bg-black/5 sm:text-xs ${t.ghost}`}
                       >
-                        <MessageCircle size={12} className="shrink-0" />
+                        <MessageCircle size={11} className="shrink-0" />
                         WhatsApp
                       </a>
                     ) : (
                       <Link
-                        href={`/contact?type=wedding&package=${encodeURIComponent(pkg.id)}`}
-                        className={`inline-flex h-8 min-w-0 flex-1 items-center justify-center gap-1 whitespace-nowrap rounded-full border px-1 text-[10px] font-semibold transition sm:h-9 sm:text-xs ${t.ghost}`}
+                        href={`/contact?type=wedding&package=${encodeURIComponent(pkg.title)}`}
+                        className={`inline-flex h-8 min-w-0 flex-1 items-center justify-center gap-1 whitespace-nowrap rounded-full border px-1 text-[10px] font-semibold transition sm:text-xs ${t.ghost}`}
                       >
-                        <MessageCircle size={12} className="shrink-0" />
+                        <MessageCircle size={11} className="shrink-0" />
                         Enquire
                       </Link>
                     )}
 
                     <Link
-                      href={`/booking?type=wedding&package=${encodeURIComponent(pkg.id)}`}
-                      className="inline-flex h-8 min-w-0 flex-1 items-center justify-center gap-1 whitespace-nowrap rounded-full bg-gradient-to-r from-[#B96928] to-[#D4A24C] px-1 text-[10px] font-semibold text-white shadow-sm transition hover:brightness-110 sm:h-9 sm:text-xs"
+                      href={`/booking?type=wedding&package=${encodeURIComponent(pkg.title)}`}
+                      className="inline-flex h-8 min-w-0 flex-1 items-center justify-center gap-1 whitespace-nowrap rounded-full bg-gradient-to-r from-[#B96928] to-[#D4A24C] px-1 text-[10px] font-semibold text-white shadow-xs transition hover:brightness-110 sm:text-xs"
                     >
-                      <CalendarCheck2 size={12} className="shrink-0" />
+                      <CalendarCheck2 size={11} className="shrink-0" />
                       Book Now
                     </Link>
                   </div>
@@ -541,6 +654,7 @@ export default function WeddingsPage() {
       </section>
 
       {/* ================= WEDDING SERVICES ================= */}
+
       <section className={sectionWrap}>
         <div className="mb-3.5 sm:mb-4">
           <h2 className={sectionHeading}>
@@ -597,9 +711,11 @@ export default function WeddingsPage() {
       </section>
 
       {/* ================= CORBETT EXPERIENCE ================= */}
+
       <section className={sectionWrap}>
         <div className="overflow-hidden rounded-xl border border-black/5 bg-white shadow-sm dark:border-white/10 dark:bg-white/5 sm:rounded-2xl">
           <div className="grid md:grid-cols-2">
+
             <div className="relative min-h-[170px] overflow-hidden sm:min-h-[220px] md:min-h-[260px]">
               <video
                 autoPlay
@@ -625,9 +741,13 @@ export default function WeddingsPage() {
 
             <div className="flex items-center p-4 sm:p-5">
               <div className="max-w-xl">
-                <h2 className={sectionHeading}>{data.experience.title}</h2>
+                <h2 className={sectionHeading}>
+                  {data.experience.title}
+                </h2>
 
-                <p className={sectionSub}>{data.experience.description}</p>
+                <p className={sectionSub}>
+                  {data.experience.description}
+                </p>
 
                 <div className="mt-3 grid grid-cols-2 gap-2">
                   {data.experience.points.map((item) => (
@@ -658,9 +778,12 @@ export default function WeddingsPage() {
       </section>
 
       {/* ================= HOW IT WORKS ================= */}
+
       <section className={sectionWrap}>
         <div className="mb-3.5 sm:mb-4">
-          <h2 className={sectionHeading}>From Idea to Celebration</h2>
+          <h2 className={sectionHeading}>
+            From Idea to Celebration
+          </h2>
 
           <p className={sectionSub}>
             Four simple steps to your Corbett wedding.
@@ -689,10 +812,13 @@ export default function WeddingsPage() {
         </div>
       </section>
 
-      {/* ================= FINAL CTA + ORGANISATION CONTACT ================= */}
+      {/* ================= FINAL CTA ================= */}
+
       <section className="mx-auto max-w-6xl px-3 pb-6 pt-1 sm:px-5 sm:pb-8 md:px-6">
         <div className="relative overflow-hidden rounded-xl bg-[#B96928] px-4 py-5 text-center text-white shadow-sm sm:rounded-2xl sm:px-6 sm:py-7">
+
           <div className="pointer-events-none absolute -left-10 -top-10 h-28 w-28 rounded-full bg-white/10 blur-3xl" />
+
           <div className="pointer-events-none absolute -bottom-10 -right-10 h-28 w-28 rounded-full bg-white/10 blur-3xl" />
 
           <div className="relative z-10 mx-auto max-w-xl">
@@ -708,6 +834,7 @@ export default function WeddingsPage() {
             </p>
 
             <div className="mt-3.5 flex flex-wrap justify-center gap-2">
+
               <Link
                 href="/contact?type=wedding"
                 className="inline-flex h-8 items-center justify-center gap-1 whitespace-nowrap rounded-full bg-white px-4 text-[10px] font-semibold text-[#172033] transition hover:bg-white/90 sm:h-9 sm:text-xs"
@@ -739,6 +866,7 @@ export default function WeddingsPage() {
 
             {(phoneNumber || contact.email) && (
               <div className="mt-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 border-t border-white/20 pt-3.5 text-[11px] text-white/90 sm:text-xs">
+
                 {phoneNumber && (
                   <a
                     href={`tel:${phoneNumber}`}
@@ -761,7 +889,9 @@ export default function WeddingsPage() {
               </div>
             )}
 
-            <p className="mt-2.5 text-[10px] text-white/70">{contact.name}</p>
+            <p className="mt-2.5 text-[10px] text-white/70">
+              {contact.name}
+            </p>
           </div>
         </div>
       </section>
