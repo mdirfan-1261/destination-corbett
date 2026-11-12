@@ -1,4 +1,4 @@
-﻿
+
 "use client";
 
 import Image from "next/image";
@@ -51,19 +51,19 @@ const outingBenefits = [
 
 const outingGallery = [
   {
-    image: "/images/events/optimized/team-outings-1.webp",
+    image: "/images/events/corbett_team_adventures.webp",
     title: "Team Adventures",
     description:
       "Take your team outside the usual workplace and create memorable shared experiences.",
   },
   {
-    image: "/images/events/optimized/team-outings-2.webp",
+    image: "/images/events/corbett_outdoor_activities.webp",
     title: "Outdoor Team Activities",
     description:
       "Plan engaging outdoor activities that encourage interaction, collaboration and team bonding.",
   },
   {
-    image: "/images/events/optimized/team-outings-3.webp",
+    image: "/images/events/corbett_relax_reconnect.webp",
     title: "Relax & Reconnect",
     description:
       "Combine adventure, nature and comfortable hospitality for a refreshing team getaway.",
@@ -119,7 +119,7 @@ export default function TeamOutingsPage() {
     {/* Hero Image */}
     <div className="absolute inset-0 lg:left-auto lg:w-[55%]">
       <Image
-        src="/images/events/optimized/team-outings-hero.webp"
+        src="/images/events/corbett_team_outings_hero.webp"
         alt="Team outing in Jim Corbett"
         fill
         priority
@@ -232,10 +232,10 @@ export default function TeamOutingsPage() {
                 loop
                 playsInline
                 preload="metadata"
-                poster="/images/events/optimized/team-outings-hero.webp"
+                poster="/images/events/corbett_team_outings_hero.webp"
               >
                 <source
-                  src="/videos/optimized/team-outings-video.mp4"
+                  src="/videos/team-optimized.mp4"
                   type="video/mp4"
                 />
                 Your browser does not support the video tag.
